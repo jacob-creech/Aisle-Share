@@ -1,17 +1,18 @@
-package com.compainion.grocery.shoppingbuddy;
+package com.aisleshare;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
-import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.bluetooth.BluetoothAdapter;
 import android.widget.Toast;
 
-
-public class ShoppingListFragment extends Fragment {
+public class ShoppingList extends AppCompatActivity {
 
     // duration that the device is discoverable
     private static final int DISCOVER_DURATION = 300;
@@ -23,7 +24,7 @@ public class ShoppingListFragment extends Fragment {
 
     Context context;
 
-    public ShoppingListFragment(Context context) {
+    public ShoppingList(Context context) {
         this.context = context;
     }
 
@@ -55,12 +56,9 @@ public class ShoppingListFragment extends Fragment {
             intent.setType("text/plain");
         }
     }
-
-    @Override
+    
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_shopping_list, container, false);
+        return inflater.inflate(R.layout.activity_shopping_list, container, false);
     }
-
-
 }

@@ -1,4 +1,4 @@
-package com.compainion.grocery.shoppingbuddy;
+package com.aisleshare;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

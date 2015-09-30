@@ -1,64 +1,39 @@
 package com.aisleshare;
 
-import android.bluetooth.BluetoothAdapter;
-import android.content.Context;
-import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Toast;
 
-public class ShoppingList extends AppCompatActivity {
 
-    // duration that the device is discoverable
-    private static final int DISCOVER_DURATION = 300;
+public class ShoppingList extends ActionBarActivity {
 
-    // our request code (must be greater than zero)
-    private static final int REQUEST_BLU = 1;
-
-    BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-
-    Context context;
-
-    public ShoppingList(Context context) {
-        this.context = context;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_shopping_list);
     }
 
-    public void sendViaBlutooth(View v){
-        if (btAdapter == null){
-            // Device does not support blutooth
-            // Inform user with an error message
-            Toast.makeText(context, "Blutooth is not supported on this device", Toast.LENGTH_LONG).show();
-        } else {
-            enableBlutooth();
-        }
 
-    }
-
-    public void enableBlutooth(){
-        if (!btAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_BLU);
-        }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_shopping_list, menu);
+        return true;
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
 
-        if(resultCode == DISCOVER_DURATION && requestCode == REQUEST_BLU){
-            Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_SEND);
-            intent.setType("text/plain");
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
         }
-    }
-    
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.activity_shopping_list, container, false);
+
+        return super.onOptionsItemSelected(item);
     }
 }

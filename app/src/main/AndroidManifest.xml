@@ -16,6 +16,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".AddListMenu"
+            android:theme="@style/AppTheme.AddMenu"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".CurrentList"
+            android:label="@string/title_activity_current_list"
+            android:parentActivityName=".ShoppingList" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.aisleshare.ShoppingList" />
+        </activity>
     </application>
 
 </manifest>

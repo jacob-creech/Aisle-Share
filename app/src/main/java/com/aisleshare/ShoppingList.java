@@ -18,6 +18,8 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
+import com.getbase.floatingactionbutton.FloatingActionButton;
+
 
 public class ShoppingList extends ActionBarActivity {
 
@@ -26,7 +28,7 @@ public class ShoppingList extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shopping_list);
 
-        Button b = (Button) findViewById(R.id.addButton);
+        FloatingActionButton b = (FloatingActionButton) findViewById(R.id.float_button);
 
         b.setOnClickListener(new View.OnClickListener(){
 

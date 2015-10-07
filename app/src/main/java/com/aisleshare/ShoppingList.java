@@ -9,6 +9,7 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -26,7 +27,7 @@ import android.widget.PopupWindow;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 
 
-public class ShoppingList extends ActionBarActivity {
+public class ShoppingList extends AppCompatActivity {
     public final static String LIST_NAME = "com.ShoppingList.MESSAGE";
 
     @Override
@@ -34,9 +35,9 @@ public class ShoppingList extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shopping_list);
 
-        FloatingActionButton b = (FloatingActionButton) findViewById(R.id.float_button);
+        FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.float_button);
 
-        b.setOnClickListener(new View.OnClickListener() {
+        addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //startActivity(new Intent(ShoppingList.this, AddListMenu.class));
@@ -61,7 +62,7 @@ public class ShoppingList extends ActionBarActivity {
 
                 // Negative Button
                 modal.setButton(-2, "Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which){
+                    public void onClick(DialogInterface dialog, int which) {
                     }
                 });
 

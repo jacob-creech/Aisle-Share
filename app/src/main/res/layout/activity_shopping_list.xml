@@ -21,4 +21,10 @@
             fab:fab_colorPressed="#18d50f"
             android:layout_gravity="right|bottom" />
     </FrameLayout>
+
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/currentItems"
+        android:visibility="visible" />
 </RelativeLayout>

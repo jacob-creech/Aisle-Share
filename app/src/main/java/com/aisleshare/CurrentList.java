@@ -11,6 +11,7 @@ import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -52,34 +53,7 @@ public class CurrentList extends AppCompatActivity {
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //startActivity(new Intent(ShoppingList.this, AddListMenu.class));
-
-                AlertDialog modal = new AlertDialog.Builder(CurrentList.this).create();
-                modal.setTitle("Add a New List");
-
-                // Set up the input
-                final EditText input = new EditText(CurrentList.this);
-                input.setInputType(InputType.TYPE_CLASS_TEXT);
-                input.setSingleLine(true);
-                modal.setView(input);
-
-                // Positive Button
-                modal.setButton(-1, "Add", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // TODO: Add item to list
-                        String text = input.getText().toString();
-                        itemList.add(text);
-                        itemAdapter.notifyDataSetChanged();
-                    }
-                });
-
-                // Negative Button
-                modal.setButton(-2, "Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                    }
-                });
-
-                modal.show();
+                addItem(itemAdapter);
             }
         });
     }
@@ -97,5 +71,59 @@ public class CurrentList extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void addItem(final ArrayAdapter<String> itemAdapter){
+        //startActivity(new Intent(ShoppingList.this, AddListMenu.class));
+
+        final AlertDialog modal = new AlertDialog.Builder(CurrentList.this).create();
+        modal.setTitle("Add a New Item");
+
+        // Set up the input
+        final EditText input = new EditText(CurrentList.this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setSingleLine(true);
+        modal.setView(input);
+
+        // Open keyboard automatically
+        input.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    modal.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+                }
+            }
+        });
+
+        // Done Button
+        modal.setButton(-1, "Done", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                if (!input.getText().toString().isEmpty()) {
+                    String text = input.getText().toString();
+                    itemList.add(text);
+                    itemAdapter.notifyDataSetChanged();
+                }
+            }
+        });
+
+        // More Button
+        modal.setButton(-2, "More", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                if (!input.getText().toString().isEmpty()) {
+                    String text = input.getText().toString();
+                    itemList.add(text);
+                    itemAdapter.notifyDataSetChanged();
+                }
+                addItem(itemAdapter);
+            }
+        });
+
+        // Cancel Button
+        modal.setButton(-3, "Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+
+        modal.show();
     }
 }

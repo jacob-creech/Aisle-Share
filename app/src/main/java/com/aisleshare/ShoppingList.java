@@ -42,7 +42,7 @@ public class ShoppingList extends AppCompatActivity {
             public void onClick(View v) {
                 //startActivity(new Intent(ShoppingList.this, AddListMenu.class));
 
-                AlertDialog modal = new AlertDialog.Builder(ShoppingList.this).create();
+                final AlertDialog modal = new AlertDialog.Builder(ShoppingList.this).create();
                 modal.setTitle("Add a New List");
 
                 // Set up the input
@@ -51,12 +51,24 @@ public class ShoppingList extends AppCompatActivity {
                 input.setSingleLine(true);
                 modal.setView(input);
 
+                // Open keyboard automatically
+                input.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus) {
+                        if (hasFocus) {
+                            modal.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+                        }
+                    }
+                });
+
                 // Positive Button
-                modal.setButton(-1, "Add", new DialogInterface.OnClickListener() {
+                modal.setButton(-1, "Done", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(ShoppingList.this, CurrentList.class);
-                        intent.putExtra(LIST_NAME, input.getText().toString());
-                        startActivity(intent);
+                        if (!input.getText().toString().isEmpty()) {
+                            Intent intent = new Intent(ShoppingList.this, CurrentList.class);
+                            intent.putExtra(LIST_NAME, input.getText().toString());
+                            startActivity(intent);
+                        }
                     }
                 });
 

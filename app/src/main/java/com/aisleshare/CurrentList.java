@@ -36,7 +36,7 @@ public class CurrentList extends AppCompatActivity {
         itemList = new ArrayList<>();
 
         final ArrayAdapter<String> itemAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, itemList);
-        //listView.setAdapter(itemAdapter);
+        listView.setAdapter(itemAdapter);
 
         String listTitle = "";
         if (savedInstanceState == null) {

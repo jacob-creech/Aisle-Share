@@ -19,6 +19,9 @@ import android.widget.Toast;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 
@@ -27,14 +30,36 @@ public class CurrentList extends AppCompatActivity {
 
     private ListView listView;
     private ArrayList<String> itemList;
+    private ArrayList<String> testList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_current_list);
 
-        listView = (ListView)findViewById(R.id.currentItems);
+        testList = new ArrayList<>();
         itemList = new ArrayList<>();
+
+        testList.add("{\"name\":itemName,\"quantity\":7,\"type\":defType, \"timeCreated\":12105543, \"checked\":0}");
+        testList.add("{\"name\":burgers,\"quantity\":5,\"type\":Meats, \"timeCreated\":12105543, \"checked\":0}");
+        testList.add("{\"name\":Eggs,\"quantity\":2,\"type\":Bread, \"timeCreated\":12104543, \"checked\":0}");
+        testList.add("{\"name\":Bacon,\"quantity\":100,\"type\":Meats, \"timeCreated\":12105533, \"checked\":0}");
+        testList.add("{\"name\":Cheese,\"quantity\":4,\"type\":Dairy, \"timeCreated\":13105543, \"checked\":0}");
+        testList.add("{\"name\":Buns,\"quantity\":6,\"type\":Bread, \"timeCreated\":12105843, \"checked\":0}");
+                    //"{\"phonetype\":\"N95\",\"cat\":\"WP\"}"
+
+        JSONObject obj = null;
+        for(int i = 0; i < testList.size(); i++){
+            try {
+                obj = new JSONObject(testList.get(i));
+                itemList.add(obj.getString("name"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        listView = (ListView)findViewById(R.id.currentItems);
+
 
         final ArrayAdapter<String> itemAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, itemList);
         listView.setAdapter(itemAdapter);

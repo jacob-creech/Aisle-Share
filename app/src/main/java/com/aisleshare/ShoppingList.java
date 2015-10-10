@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.app.ActionBarActivity;
@@ -19,24 +20,49 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.PopupWindow;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 
 public class ShoppingList extends AppCompatActivity {
+    private SharedPreferences sp;
     public final static String LIST_NAME = "com.ShoppingList.MESSAGE";
+    public final static String SHOP_PREF = "ShoppingPreferences";
+    private ListView listView;
+    private ArrayList<String> shoppingLists;
+    private Set<String> shoppingSet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shopping_list);
 
+        sp = getSharedPreferences(SHOP_PREF, Context.MODE_PRIVATE);
+        listView = (ListView)findViewById(R.id.shoppingLists);
+        Set<String> defSet = new HashSet<String>();
+        shoppingSet = sp.getStringSet("ShoppingSets", defSet);
+        shoppingLists = new ArrayList<String>(shoppingSet);
+
+
+        final ArrayAdapter<String> itemAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, shoppingLists);
+        listView.setAdapter(itemAdapter);
+
         FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.float_button);
 
+
+
+        // TODO: Remove from onCreate
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -66,7 +92,16 @@ public class ShoppingList extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         if (!input.getText().toString().isEmpty()) {
                             Intent intent = new Intent(ShoppingList.this, CurrentList.class);
-                            intent.putExtra(LIST_NAME, input.getText().toString());
+                            String listInput = input.getText().toString();
+
+                            SharedPreferences.Editor editor = sp.edit();
+                            shoppingSet.add(listInput);
+                            shoppingLists.add(listInput);
+                            itemAdapter.notifyDataSetChanged();
+                            editor.putStringSet("ShoppingSets", shoppingSet);
+                            editor.commit();
+
+                            intent.putExtra(LIST_NAME, listInput);
                             startActivity(intent);
                         }
                     }

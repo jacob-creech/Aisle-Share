@@ -24,9 +24,8 @@ import java.util.ArrayList;
 
 public class CurrentList extends AppCompatActivity {
 
-
-    ListView listView;
-    ArrayList<Model> itemList;
+    private ListView listView;
+    private ArrayList<Model> itemList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

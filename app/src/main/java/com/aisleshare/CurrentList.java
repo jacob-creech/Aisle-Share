@@ -26,7 +26,7 @@ public class CurrentList extends AppCompatActivity {
 
 
     ListView listView;
-    ArrayList<String> itemList;
+    ArrayList<Model> itemList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +36,7 @@ public class CurrentList extends AppCompatActivity {
         listView = (ListView)findViewById(R.id.currentItems);
         itemList = new ArrayList<>();
 
-        final ArrayAdapter<String> itemAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, itemList);
+        final CustomAdapter itemAdapter = new CustomAdapter(this, itemList);
         listView.setAdapter(itemAdapter);
 
         String listTitle = "";
@@ -100,18 +100,20 @@ public class CurrentList extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 if (!input.getText().toString().isEmpty()) {
                     String text = input.getText().toString();
-                    itemList.add(text);
+                    Model m = new Model(text, 0);
+                    itemList.add(m);
                     itemAdapter.notifyDataSetChanged();
                 }
             }
         });
 
         // More Button
-        modal.setButton(-2, "More", new DialogInterface.OnClickListener() {
+        modal.setButton(-3, "More", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 if (!input.getText().toString().isEmpty()) {
                     String text = input.getText().toString();
-                    itemList.add(text);
+                    Model m = new Model(text, 0);
+                    itemList.add(m);
                     itemAdapter.notifyDataSetChanged();
                 }
                 addItem(itemAdapter);
@@ -119,7 +121,7 @@ public class CurrentList extends AppCompatActivity {
         });
 
         // Cancel Button
-        modal.setButton(-3, "Cancel", new DialogInterface.OnClickListener() {
+        modal.setButton(-2, "Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
             }
         });

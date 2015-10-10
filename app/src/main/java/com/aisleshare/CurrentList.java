@@ -27,9 +27,8 @@ import java.util.ArrayList;
 
 public class CurrentList extends AppCompatActivity {
 
-
     private ListView listView;
-    private ArrayList<String> itemList;
+    private ArrayList<Model> itemList;
     private ArrayList<String> testList;
 
     @Override
@@ -52,7 +51,7 @@ public class CurrentList extends AppCompatActivity {
         for(int i = 0; i < testList.size(); i++){
             try {
                 obj = new JSONObject(testList.get(i));
-                itemList.add(obj.getString("name"));
+                itemList.add(new Model(obj.getString("name"),0));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -61,7 +60,7 @@ public class CurrentList extends AppCompatActivity {
         listView = (ListView)findViewById(R.id.currentItems);
 
 
-        final ArrayAdapter<String> itemAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, itemList);
+        final CustomAdapter itemAdapter = new CustomAdapter(this, itemList);
         listView.setAdapter(itemAdapter);
 
         String listTitle = "";
@@ -125,18 +124,20 @@ public class CurrentList extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 if (!input.getText().toString().isEmpty()) {
                     String text = input.getText().toString();
-                    itemList.add(text);
+                    Model m = new Model(text, 0);
+                    itemList.add(m);
                     itemAdapter.notifyDataSetChanged();
                 }
             }
         });
 
         // More Button
-        modal.setButton(-2, "More", new DialogInterface.OnClickListener() {
+        modal.setButton(-3, "More", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 if (!input.getText().toString().isEmpty()) {
                     String text = input.getText().toString();
-                    itemList.add(text);
+                    Model m = new Model(text, 0);
+                    itemList.add(m);
                     itemAdapter.notifyDataSetChanged();
                 }
                 addItem(itemAdapter);
@@ -144,7 +145,7 @@ public class CurrentList extends AppCompatActivity {
         });
 
         // Cancel Button
-        modal.setButton(-3, "Cancel", new DialogInterface.OnClickListener() {
+        modal.setButton(-2, "Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
             }
         });

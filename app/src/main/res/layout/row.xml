@@ -1,26 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/linearLayout"
+    android:tag="linearLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
     android:paddingBottom="10dp"
     android:paddingTop="10dp"
-    android:onClick="layoutClick">
+    android:onClick="itemClick">
 <CheckBox
     android:id="@+id/checkBox"
+    android:tag="checkBox"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:textSize="22sp"
     android:focusable="false"
     android:layout_marginRight="10dp"
-    android:onClick="checkBoxClick"/>
+    android:onClick="itemClick"/>
 <TextView
     android:id="@+id/textView"
+    android:tag="textView"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:text="TextView"
     android:textSize="22sp"
-    android:onClick="textClick"/>
+    android:onClick="itemClick"/>
 
 </LinearLayout>

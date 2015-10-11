@@ -14,11 +14,6 @@ import java.util.ArrayList;
 public class CustomAdapter extends ArrayAdapter{
     ArrayList<Item> items = null;
     Context context;
-    /*public CustomAdapter(Context context, Item[] resource) {
-        super(context,R.layout.row,resource);
-        this.context = context;
-        this.items = resource;
-    }*/
     public CustomAdapter(Context context, ArrayList resource) {
         super(context,R.layout.row,resource);
         this.context = context;
@@ -26,7 +21,6 @@ public class CustomAdapter extends ArrayAdapter{
     }
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-
         LayoutInflater inflater = ((Activity)context).getLayoutInflater();
         convertView = inflater.inflate(R.layout.row, parent, false);
         TextView name = (TextView) convertView.findViewById(R.id.textView);
@@ -45,22 +39,20 @@ public class CustomAdapter extends ArrayAdapter{
     }
     @Override
     public void notifyDataSetChanged() {
+        // Move checked items to the bottom of the list
         ArrayList<Item> uncheckedItems = new ArrayList<>();
         ArrayList<Item> checkedItems = new ArrayList<>();
-        System.out.println("Start");
         for(int x = 0; x < items.size(); x++){
             if(items.get(x).getValue() == 0){
                 uncheckedItems.add(items.get(x));
-                System.out.println("Unchecked");
             }
             else{
                 checkedItems.add(items.get(x));
-                System.out.println("Checked");
             }
         }
-        uncheckedItems.addAll(checkedItems);
         items.clear();
         items.addAll(uncheckedItems);
+        items.addAll(checkedItems);
 
         super.notifyDataSetChanged();
     }

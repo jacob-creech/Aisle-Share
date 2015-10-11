@@ -2,7 +2,6 @@ package com.aisleshare;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
@@ -14,19 +13,16 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-
 import com.getbase.floatingactionbutton.FloatingActionButton;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 
 
 public class CurrentList extends AppCompatActivity {
 
     private ListView listView;
-    private ArrayList<Item> itemList;
+    private ArrayList<Item> items;
     private CustomAdapter itemAdapter;
 
     @Override
@@ -36,29 +32,28 @@ public class CurrentList extends AppCompatActivity {
         setContentView(R.layout.activity_current_list);
 
         listView = (ListView)findViewById(R.id.currentItems);
-        ArrayList<String> testList= new ArrayList<>();
-        itemList = new ArrayList<>();
+        ArrayList<String> jsonList = new ArrayList<>();
+        items = new ArrayList<>();
 
-        testList.add("{\"name\":itemName,\"quantity\":7,\"type\":defType, \"timeCreated\":12105543, \"checked\":0}");
-        testList.add("{\"name\":burgers,\"quantity\":5,\"type\":Meats, \"timeCreated\":12105543, \"checked\":0}");
-        testList.add("{\"name\":Eggs,\"quantity\":2,\"type\":Bread, \"timeCreated\":12104543, \"checked\":0}");
-        testList.add("{\"name\":Bacon,\"quantity\":100,\"type\":Meats, \"timeCreated\":12105533, \"checked\":0}");
-        testList.add("{\"name\":Cheese,\"quantity\":4,\"type\":Dairy, \"timeCreated\":13105543, \"checked\":0}");
-        testList.add("{\"name\":Buns,\"quantity\":6,\"type\":Bread, \"timeCreated\":12105843, \"checked\":0}");
+        jsonList.add("{\"name\":itemName,\"quantity\":7,\"type\":defType, \"timeCreated\":12105543, \"checked\":0}");
+        jsonList.add("{\"name\":burgers,\"quantity\":5,\"type\":Meats, \"timeCreated\":12105543, \"checked\":0}");
+        jsonList.add("{\"name\":Eggs,\"quantity\":2,\"type\":Bread, \"timeCreated\":12104543, \"checked\":0}");
+        jsonList.add("{\"name\":Bacon,\"quantity\":100,\"type\":Meats, \"timeCreated\":12105533, \"checked\":0}");
+        jsonList.add("{\"name\":Cheese,\"quantity\":4,\"type\":Dairy, \"timeCreated\":13105543, \"checked\":0}");
+        jsonList.add("{\"name\":Buns,\"quantity\":6,\"type\":Bread, \"timeCreated\":12105843, \"checked\":0}");
                     //"{\"phonetype\":\"N95\",\"cat\":\"WP\"}"
 
         JSONObject obj;
-        for(int i = 0; i < testList.size(); i++){
+        for(int i = 0; i < jsonList.size(); i++){
             try {
-                obj = new JSONObject(testList.get(i));
-                itemList.add(new Item(obj.getString("name")));
+                obj = new JSONObject(jsonList.get(i));
+                items.add(new Item(obj.getString("name")));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
 
-
-        itemAdapter = new CustomAdapter(this, itemList);
+        itemAdapter = new CustomAdapter(this, items);
         listView.setAdapter(itemAdapter);
 
         String listTitle;
@@ -95,12 +90,10 @@ public class CurrentList extends AppCompatActivity {
     }
 
     public void addItemDialog(){
-        //startActivity(new Intent(ShoppingList.this, AddListMenu.class));
-
         final AlertDialog modal = new AlertDialog.Builder(CurrentList.this).create();
         modal.setTitle("Add a New Item");
 
-        // Set up the input
+        // Set up the text input
         final EditText input = new EditText(CurrentList.this);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         input.setSingleLine(true);
@@ -116,32 +109,32 @@ public class CurrentList extends AppCompatActivity {
             }
         });
 
-        // Done Button
+        // Done Button (Positive)
         modal.setButton(-1, "Done", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 if (!input.getText().toString().isEmpty()) {
                     String text = input.getText().toString();
                     Item m = new Item(text);
-                    itemList.add(m);
+                    items.add(m);
                     itemAdapter.notifyDataSetChanged();
                 }
             }
         });
 
-        // More Button
+        // More Button (Neutral)
         modal.setButton(-3, "More", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 if (!input.getText().toString().isEmpty()) {
                     String text = input.getText().toString();
                     Item m = new Item(text);
-                    itemList.add(m);
+                    items.add(m);
                     itemAdapter.notifyDataSetChanged();
                 }
                 addItemDialog();
             }
         });
 
-        // Cancel Button
+        // Cancel Button (Negative)
         modal.setButton(-2, "Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
             }
@@ -150,51 +143,34 @@ public class CurrentList extends AppCompatActivity {
         modal.show();
     }
 
-    public void layoutClick(View v){
-        final LinearLayout ll = (LinearLayout) v;
-        final CheckBox cb = (CheckBox)ll.getChildAt(0);
-        final TextView tv = (TextView)ll.getChildAt(1);
+    public void itemClick(View v){
+        if(v.getTag().equals("linearLayout")){
+            final LinearLayout ll = (LinearLayout) v;
+            final CheckBox cb = (CheckBox)ll.getChildAt(0);
 
-        cb.toggle();
-        toggleChecked(cb);
-        setStrikeThrough(cb, tv);
-        itemAdapter.notifyDataSetChanged();
-    }
-    public void textClick(View v){
-        final TextView tv = (TextView)v;
-        final LinearLayout ll = (LinearLayout) tv.getParent();
-        final CheckBox cb = (CheckBox)ll.getChildAt(0);
-
-        cb.toggle();
-        toggleChecked(cb);
-        setStrikeThrough(cb, tv);
-        itemAdapter.notifyDataSetChanged();
-    }
-    public void checkBoxClick(View v){
-        final CheckBox cb = (CheckBox)v;
-        final LinearLayout ll = (LinearLayout) v.getParent();
-        final TextView tv = (TextView)ll.getChildAt(1);
-
-        toggleChecked(cb);
-        setStrikeThrough(cb, tv);
-        itemAdapter.notifyDataSetChanged();
-    }
-
-    public void setStrikeThrough(CheckBox cb, TextView tv){
-        if(cb.isChecked()){
-            tv.setPaintFlags(tv.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            toggleChecked(cb);
         }
-        else {
-            tv.setPaintFlags(0);
+        else if(v.getTag().equals("textView")){
+            final TextView tv = (TextView)v;
+            final LinearLayout ll = (LinearLayout) tv.getParent();
+            final CheckBox cb = (CheckBox)ll.getChildAt(0);
+
+            toggleChecked(cb);
         }
+        else if(v.getTag().equals("checkBox")){
+            final CheckBox cb = (CheckBox)v;
+
+            toggleChecked(cb);
+        }
+        itemAdapter.notifyDataSetChanged();
     }
 
     public void toggleChecked(CheckBox cb){
-        if (itemList.get(cb.getId()).getValue() == 0){
-            itemList.get(cb.getId()).setValue(1);
+        if (items.get(cb.getId()).getValue() == 0){
+            items.get(cb.getId()).setValue(1);
         }
         else{
-            itemList.get(cb.getId()).setValue(0);
+            items.get(cb.getId()).setValue(0);
         }
     }
 }

@@ -46,6 +46,4 @@
             android:textColor="#6b6b6b"
             android:textStyle="italic" />
     </LinearLayout>
-
-
 </LinearLayout>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_weight=".9"
+    android:orientation="vertical"
+    >
+    <EditText
+        android:id="@+id/Name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:inputType="text"
+        android:singleLine="true"
+        android:hint="Name"/>
+    <EditText
+        android:id="@+id/Type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:inputType="text"
+        android:singleLine="true"
+        android:hint="(Optional) Category"/>
+    <LinearLayout
+        android:id="@+id/QuantityLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingEnd="10dp"
+        android:paddingStart="10dp">
+        <Button
+            android:id="@+id/Minus"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="-"
+            android:background="#ff362f"
+            android:textStyle="bold"
+            android:textSize="30dp"
+            android:layout_weight=".05" />
+        <TextView
+            android:id="@+id/Quantity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:inputType="number"
+            android:text="1"
+            android:singleLine="true"
+            android:layout_weight=".5"
+            android:gravity="center_horizontal"
+            android:textSize="22dp" />
+        <Button
+            android:id="@+id/Plus"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="+"
+            android:background="#51ff37"
+            android:textStyle="bold"
+            android:textSize="30dp"
+            android:layout_weight=".05" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/Buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp">
+        <Button
+            android:id="@+id/Cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight=".33"
+            android:text="Cancel"/>
+        <Button
+            android:id="@+id/More"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight=".33"
+            android:text="More"/>
+        <Button
+            android:id="@+id/Done"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight=".33"
+            android:text="Done"/>
+    </LinearLayout>
+</LinearLayout>

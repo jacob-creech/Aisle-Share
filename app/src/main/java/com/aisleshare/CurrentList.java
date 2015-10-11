@@ -1,6 +1,7 @@
 package com.aisleshare;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -8,10 +9,12 @@ import android.text.InputType;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import org.json.JSONException;
@@ -47,7 +50,8 @@ public class CurrentList extends AppCompatActivity {
         for(int i = 0; i < jsonList.size(); i++){
             try {
                 obj = new JSONObject(jsonList.get(i));
-                items.add(new Item(obj.getString("name"), obj.getString("type")));
+                items.add(new Item(obj.getString("name"), obj.getString("type"), obj.getInt("quantity"),
+                        obj.getInt("timeCreated"), obj.getInt("checked")));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -90,72 +94,87 @@ public class CurrentList extends AppCompatActivity {
     }
 
     public void addItemDialog(){
-        final AlertDialog modal = new AlertDialog.Builder(CurrentList.this).create();
-        modal.setTitle("Add a New Item");
+        // custom dialog
+        final Dialog dialog = new Dialog(CurrentList.this);
+        dialog.setContentView(R.layout.add_item_dialog);
+        dialog.setTitle("Add a New Item");
 
-        LinearLayout layout = new LinearLayout(CurrentList.this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-
-        // Item Name Input
-        final EditText itemName = new EditText(CurrentList.this);
-        itemName.setInputType(InputType.TYPE_CLASS_TEXT);
-        itemName.setSingleLine(true);
-        itemName.setHint("Name");
-        layout.addView(itemName);
-
-        //Item Type Input
-        final EditText itemType = new EditText(CurrentList.this);
-        itemType.setInputType(InputType.TYPE_CLASS_TEXT);
-        itemType.setSingleLine(true);
-        itemType.setHint("(Optional) Category");
-        layout.addView(itemType);
-
-        modal.setView(layout);
+        final EditText itemName = (EditText) dialog.findViewById(R.id.Name);
+        final EditText itemType = (EditText) dialog.findViewById(R.id.Type);
+        final TextView itemQuantity = (TextView) dialog.findViewById(R.id.Quantity);
+        final Button minus = (Button) dialog.findViewById(R.id.Minus);
+        final Button plus = (Button) dialog.findViewById(R.id.Plus);
+        final Button cancel = (Button) dialog.findViewById(R.id.Cancel);
+        final Button more = (Button) dialog.findViewById(R.id.More);
+        final Button done = (Button) dialog.findViewById(R.id.Done);
 
         // Open keyboard automatically
         itemName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
-                    modal.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+                    dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
                 }
             }
         });
 
-        // Done Button (Positive)
-        modal.setButton(-1, "Done", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                if (!itemName.getText().toString().isEmpty()) {
-                    String name = itemName.getText().toString();
-                    String type = itemType.getText().toString();
-                    Item m = new Item(name, type);
-                    items.add(m);
-                    itemAdapter.notifyDataSetChanged();
+        minus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int value = Integer.parseInt(itemQuantity.getText().toString());
+                if (value > 1) {
+                    itemQuantity.setText("" + (value - 1));
                 }
             }
         });
 
-        // More Button (Neutral)
-        modal.setButton(-3, "More", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
+        plus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int value = Integer.parseInt(itemQuantity.getText().toString());
+                itemQuantity.setText("" + (value + 1));
+            }
+        });
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        more.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 if (!itemName.getText().toString().isEmpty()) {
                     String name = itemName.getText().toString();
                     String type = itemType.getText().toString();
-                    Item m = new Item(name, type);
+                    int quantity = Integer.parseInt(itemQuantity.getText().toString());
+                    Item m = new Item(name, type, quantity);
                     items.add(m);
                     itemAdapter.notifyDataSetChanged();
                 }
+                dialog.dismiss();
                 addItemDialog();
             }
         });
 
-        // Cancel Button (Negative)
-        modal.setButton(-2, "Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
+        done.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!itemName.getText().toString().isEmpty()) {
+                    String name = itemName.getText().toString();
+                    String type = itemType.getText().toString();
+                    int quantity = Integer.parseInt(itemQuantity.getText().toString());
+                    Item m = new Item(name, type, quantity);
+                    items.add(m);
+                    itemAdapter.notifyDataSetChanged();
+                }
+                dialog.dismiss();
             }
         });
 
-        modal.show();
+        dialog.show();
     }
 
     public void itemClick(View v){
@@ -197,11 +216,11 @@ public class CurrentList extends AppCompatActivity {
     }
 
     public void toggleChecked(CheckBox cb){
-        if (items.get(cb.getId()).getValue() == 0){
-            items.get(cb.getId()).setValue(1);
+        if (items.get(cb.getId()).getChecked() == 0){
+            items.get(cb.getId()).setChecked(1);
         }
         else{
-            items.get(cb.getId()).setValue(0);
+            items.get(cb.getId()).setChecked(0);
         }
     }
 }

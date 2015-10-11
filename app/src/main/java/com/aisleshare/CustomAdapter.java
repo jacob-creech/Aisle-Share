@@ -28,8 +28,18 @@ public class CustomAdapter extends ArrayAdapter{
         TextView type = (TextView) convertView.findViewById(R.id.type);
         CheckBox cb = (CheckBox) convertView.findViewById(R.id.checkBox);
 
-        name.setText(items.get(position).getName());
+        // Name
+        if(items.get(position).getQuantity() > 1){
+            name.setText(items.get(position).getName() +
+                    " (" + items.get(position).getQuantity() + ")");
+        }
+        else{
+            name.setText(items.get(position).getName());
+        }
         name.setId(position);
+
+
+        // Type
         if (!items.get(position).getType().equals("")) {
             type.setText(items.get(position).getType());
             type.setId(position);
@@ -37,15 +47,18 @@ public class CustomAdapter extends ArrayAdapter{
         else{
             type.setVisibility(View.GONE);
         }
-        cb.setId(position);
 
-        if(items.get(position).getValue() == 1) {
+        // Checked
+        if(items.get(position).getChecked() == 1) {
             cb.setChecked(true);
             name.setPaintFlags(name.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         }
         else {
             cb.setChecked(false);
         }
+        cb.setId(position);
+
+
         return convertView;
     }
     @Override
@@ -54,7 +67,7 @@ public class CustomAdapter extends ArrayAdapter{
         ArrayList<Item> uncheckedItems = new ArrayList<>();
         ArrayList<Item> checkedItems = new ArrayList<>();
         for(int x = 0; x < items.size(); x++){
-            if(items.get(x).getValue() == 0){
+            if(items.get(x).getChecked() == 0){
                 uncheckedItems.add(items.get(x));
             }
             else{

@@ -2,6 +2,7 @@ package com.aisleshare;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
@@ -151,8 +152,10 @@ public class CurrentList extends AppCompatActivity {
     public void layoutClick(View v){
         final LinearLayout ll = (LinearLayout) v;
         final CheckBox cb = (CheckBox)ll.getChildAt(0);
+        final TextView tv = (TextView)ll.getChildAt(1);
 
         cb.toggle();
+        setStrikeThrough(cb, tv);
     }
     public void textClick(View v){
         final TextView tv = (TextView)v;
@@ -160,5 +163,22 @@ public class CurrentList extends AppCompatActivity {
         final CheckBox cb = (CheckBox)ll.getChildAt(0);
 
         cb.toggle();
+        setStrikeThrough(cb, tv);
+    }
+    public void checkBoxClick(View v){
+        final CheckBox cb = (CheckBox)v;
+        final LinearLayout ll = (LinearLayout) v.getParent();
+        final TextView tv = (TextView)ll.getChildAt(1);
+
+        setStrikeThrough(cb, tv);
+    }
+
+    public void setStrikeThrough(CheckBox cb, TextView tv){
+        if(cb.isChecked()){
+            tv.setPaintFlags(tv.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+        }
+        else {
+            tv.setPaintFlags(0);
+        }
     }
 }

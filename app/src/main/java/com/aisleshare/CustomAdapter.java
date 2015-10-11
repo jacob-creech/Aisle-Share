@@ -11,9 +11,9 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 public class CustomAdapter extends ArrayAdapter{
-    ArrayList<Model> modelItems = null;
+    ArrayList<Item> modelItems = null;
     Context context;
-    /*public CustomAdapter(Context context, Model[] resource) {
+    /*public CustomAdapter(Context context, Item[] resource) {
         super(context,R.layout.row,resource);
         this.context = context;
         this.modelItems = resource;
@@ -28,13 +28,15 @@ public class CustomAdapter extends ArrayAdapter{
 
         LayoutInflater inflater = ((Activity)context).getLayoutInflater();
         convertView = inflater.inflate(R.layout.row, parent, false);
-        TextView name = (TextView) convertView.findViewById(R.id.textView1);
-        CheckBox cb = (CheckBox) convertView.findViewById(R.id.checkBox1);
+        TextView name = (TextView) convertView.findViewById(R.id.textView);
+        CheckBox cb = (CheckBox) convertView.findViewById(R.id.checkBox);
         name.setText(modelItems.get(position).getName());
-        if(modelItems.get(position).getValue() == 1)
+        if(modelItems.get(position).getValue() == 1) {
             cb.setChecked(true);
-        else
+        }
+        else {
             cb.setChecked(false);
+        }
         return convertView;
     }
 }

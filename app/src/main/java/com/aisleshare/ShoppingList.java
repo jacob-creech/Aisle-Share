@@ -1,36 +1,22 @@
 package com.aisleshare;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Point;
-import android.graphics.drawable.BitmapDrawable;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.PopupWindow;
-
 import com.getbase.floatingactionbutton.FloatingActionButton;
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -50,17 +36,15 @@ public class ShoppingList extends AppCompatActivity {
 
         sp = getSharedPreferences(SHOP_PREF, Context.MODE_PRIVATE);
         listView = (ListView)findViewById(R.id.shoppingLists);
-        Set<String> defSet = new HashSet<String>();
+        Set<String> defSet = new HashSet<>();
         shoppingSet = sp.getStringSet("ShoppingSets", defSet);
-        shoppingLists = new ArrayList<String>(shoppingSet);
+        shoppingLists = new ArrayList<>(shoppingSet);
 
 
-        final ArrayAdapter<String> itemAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, shoppingLists);
+        final ArrayAdapter<String> itemAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1, shoppingLists);
         listView.setAdapter(itemAdapter);
 
         FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.float_button);
-
-
 
         // TODO: Remove from onCreate
         addButton.setOnClickListener(new View.OnClickListener() {

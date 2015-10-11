@@ -23,11 +23,22 @@ public class CustomAdapter extends ArrayAdapter{
     public View getView(int position, View convertView, ViewGroup parent) {
         LayoutInflater inflater = ((Activity)context).getLayoutInflater();
         convertView = inflater.inflate(R.layout.row, parent, false);
-        TextView name = (TextView) convertView.findViewById(R.id.textView);
+
+        TextView name = (TextView) convertView.findViewById(R.id.name);
+        TextView type = (TextView) convertView.findViewById(R.id.type);
         CheckBox cb = (CheckBox) convertView.findViewById(R.id.checkBox);
+
         name.setText(items.get(position).getName());
         name.setId(position);
+        if (!items.get(position).getType().equals("")) {
+            type.setText(items.get(position).getType());
+            type.setId(position);
+        }
+        else{
+            type.setVisibility(View.GONE);
+        }
         cb.setId(position);
+
         if(items.get(position).getValue() == 1) {
             cb.setChecked(true);
             name.setPaintFlags(name.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);

@@ -47,7 +47,7 @@ public class CurrentList extends AppCompatActivity {
         for(int i = 0; i < jsonList.size(); i++){
             try {
                 obj = new JSONObject(jsonList.get(i));
-                items.add(new Item(obj.getString("name")));
+                items.add(new Item(obj.getString("name"), obj.getString("type")));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -93,14 +93,27 @@ public class CurrentList extends AppCompatActivity {
         final AlertDialog modal = new AlertDialog.Builder(CurrentList.this).create();
         modal.setTitle("Add a New Item");
 
-        // Set up the text input
-        final EditText input = new EditText(CurrentList.this);
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        input.setSingleLine(true);
-        modal.setView(input);
+        LinearLayout layout = new LinearLayout(CurrentList.this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+
+        // Item Name Input
+        final EditText itemName = new EditText(CurrentList.this);
+        itemName.setInputType(InputType.TYPE_CLASS_TEXT);
+        itemName.setSingleLine(true);
+        itemName.setHint("Name");
+        layout.addView(itemName);
+
+        //Item Type Input
+        final EditText itemType = new EditText(CurrentList.this);
+        itemType.setInputType(InputType.TYPE_CLASS_TEXT);
+        itemType.setSingleLine(true);
+        itemType.setHint("(Optional) Category");
+        layout.addView(itemType);
+
+        modal.setView(layout);
 
         // Open keyboard automatically
-        input.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        itemName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
@@ -112,9 +125,10 @@ public class CurrentList extends AppCompatActivity {
         // Done Button (Positive)
         modal.setButton(-1, "Done", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                if (!input.getText().toString().isEmpty()) {
-                    String text = input.getText().toString();
-                    Item m = new Item(text);
+                if (!itemName.getText().toString().isEmpty()) {
+                    String name = itemName.getText().toString();
+                    String type = itemType.getText().toString();
+                    Item m = new Item(name, type);
                     items.add(m);
                     itemAdapter.notifyDataSetChanged();
                 }
@@ -124,9 +138,10 @@ public class CurrentList extends AppCompatActivity {
         // More Button (Neutral)
         modal.setButton(-3, "More", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                if (!input.getText().toString().isEmpty()) {
-                    String text = input.getText().toString();
-                    Item m = new Item(text);
+                if (!itemName.getText().toString().isEmpty()) {
+                    String name = itemName.getText().toString();
+                    String type = itemType.getText().toString();
+                    Item m = new Item(name, type);
                     items.add(m);
                     itemAdapter.notifyDataSetChanged();
                 }
@@ -144,21 +159,37 @@ public class CurrentList extends AppCompatActivity {
     }
 
     public void itemClick(View v){
-        if(v.getTag().equals("linearLayout")){
-            final LinearLayout ll = (LinearLayout) v;
-            final CheckBox cb = (CheckBox)ll.getChildAt(0);
+        if(v.getTag().equals("row")){
+            final LinearLayout row = (LinearLayout) v;
+            final CheckBox cb = (CheckBox)row.getChildAt(0);
 
             toggleChecked(cb);
         }
-        else if(v.getTag().equals("textView")){
-            final TextView tv = (TextView)v;
-            final LinearLayout ll = (LinearLayout) tv.getParent();
-            final CheckBox cb = (CheckBox)ll.getChildAt(0);
+        else if(v.getTag().equals("name")){
+            final TextView name = (TextView)v;
+            final LinearLayout column = (LinearLayout) name.getParent();
+            final LinearLayout row = (LinearLayout) column.getParent();
+            final CheckBox cb = (CheckBox)row.getChildAt(0);
 
             toggleChecked(cb);
         }
         else if(v.getTag().equals("checkBox")){
             final CheckBox cb = (CheckBox)v;
+
+            toggleChecked(cb);
+        }
+        else if(v.getTag().equals("column")){
+            final LinearLayout column = (LinearLayout) v;
+            final LinearLayout row = (LinearLayout) column.getParent();
+            final CheckBox cb = (CheckBox)row.getChildAt(0);
+
+            toggleChecked(cb);
+        }
+        else if(v.getTag().equals("type")){
+            final TextView type = (TextView)v;
+            final LinearLayout column = (LinearLayout) type.getParent();
+            final LinearLayout row = (LinearLayout) column.getParent();
+            final CheckBox cb = (CheckBox)row.getChildAt(0);
 
             toggleChecked(cb);
         }

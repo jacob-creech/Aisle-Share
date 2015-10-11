@@ -18,5 +18,7 @@ public class Item {
     public int getValue(){
         return this.value;
     }
-
+    public void setValue(int v){
+        this.value = v;
+    }
 }

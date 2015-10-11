@@ -27,6 +27,7 @@ public class CurrentList extends AppCompatActivity {
 
     private ListView listView;
     private ArrayList<Item> itemList;
+    private CustomAdapter itemAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +58,7 @@ public class CurrentList extends AppCompatActivity {
         }
 
 
-        final CustomAdapter itemAdapter = new CustomAdapter(this, itemList);
+        itemAdapter = new CustomAdapter(this, itemList);
         listView.setAdapter(itemAdapter);
 
         String listTitle;
@@ -73,7 +74,7 @@ public class CurrentList extends AppCompatActivity {
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addItem(itemAdapter);
+                addItemDialog();
             }
         });
     }
@@ -93,7 +94,7 @@ public class CurrentList extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void addItem(final CustomAdapter itemAdapter){
+    public void addItemDialog(){
         //startActivity(new Intent(ShoppingList.this, AddListMenu.class));
 
         final AlertDialog modal = new AlertDialog.Builder(CurrentList.this).create();
@@ -136,7 +137,7 @@ public class CurrentList extends AppCompatActivity {
                     itemList.add(m);
                     itemAdapter.notifyDataSetChanged();
                 }
-                addItem(itemAdapter);
+                addItemDialog();
             }
         });
 
@@ -155,7 +156,9 @@ public class CurrentList extends AppCompatActivity {
         final TextView tv = (TextView)ll.getChildAt(1);
 
         cb.toggle();
+        toggleChecked(cb);
         setStrikeThrough(cb, tv);
+        itemAdapter.notifyDataSetChanged();
     }
     public void textClick(View v){
         final TextView tv = (TextView)v;
@@ -163,14 +166,18 @@ public class CurrentList extends AppCompatActivity {
         final CheckBox cb = (CheckBox)ll.getChildAt(0);
 
         cb.toggle();
+        toggleChecked(cb);
         setStrikeThrough(cb, tv);
+        itemAdapter.notifyDataSetChanged();
     }
     public void checkBoxClick(View v){
         final CheckBox cb = (CheckBox)v;
         final LinearLayout ll = (LinearLayout) v.getParent();
         final TextView tv = (TextView)ll.getChildAt(1);
 
+        toggleChecked(cb);
         setStrikeThrough(cb, tv);
+        itemAdapter.notifyDataSetChanged();
     }
 
     public void setStrikeThrough(CheckBox cb, TextView tv){
@@ -179,6 +186,15 @@ public class CurrentList extends AppCompatActivity {
         }
         else {
             tv.setPaintFlags(0);
+        }
+    }
+
+    public void toggleChecked(CheckBox cb){
+        if (itemList.get(cb.getId()).getValue() == 0){
+            itemList.get(cb.getId()).setValue(1);
+        }
+        else{
+            itemList.get(cb.getId()).setValue(0);
         }
     }
 }

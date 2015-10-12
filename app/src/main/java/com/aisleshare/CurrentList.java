@@ -3,9 +3,16 @@ package com.aisleshare;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Paint;
+import android.content.Intent;
+import android.support.v7.app.ActionBarActivity;
+
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -14,6 +21,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import java.util.TreeMap;
+import android.widget.Toast;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
 
@@ -21,6 +30,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 
 public class CurrentList extends AppCompatActivity {
@@ -28,7 +38,8 @@ public class CurrentList extends AppCompatActivity {
     private ListView listView;
     private ArrayList<Item> itemList;
     private CustomAdapter itemAdapter;
-
+    private ArrayList<String> testList;
+    private boolean[] reverseSort = {false, false, false, false};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -36,7 +47,7 @@ public class CurrentList extends AppCompatActivity {
         setContentView(R.layout.activity_current_list);
 
         listView = (ListView)findViewById(R.id.currentItems);
-        ArrayList<String> testList= new ArrayList<>();
+        testList = new ArrayList<>();
         itemList = new ArrayList<>();
 
         testList.add("{\"name\":itemName,\"quantity\":7,\"type\":defType, \"timeCreated\":12105543, \"checked\":0}");
@@ -79,6 +90,62 @@ public class CurrentList extends AppCompatActivity {
         });
     }
 
+    //Function obtained from http://stackoverflow.com/questions/1448369/how-to-sort-a-treemap-based-on-its-values
+    public static <K, V extends Comparable<V>> Map<K, V> sortByValues(final Map<K, V> map) {
+        Comparator<K> valueComparator =  new Comparator<K>() {
+            public int compare(K k1, K k2) {
+                int compare = map.get(k2).compareTo(map.get(k1));
+                if (compare == 0) return 1;
+                else return compare;
+            }
+        };
+        Map<K, V> sortedByValues = new TreeMap<K, V>(valueComparator);
+        sortedByValues.putAll(map);
+        return sortedByValues;
+    }
+
+    public void sort_list(String variable, int reverser) {
+        itemList.clear();
+        Map pairMap;
+        if(reverser == 1 || reverser == 2) {
+            pairMap = new HashMap<String, Integer>();
+        }
+        else {
+            pairMap = new HashMap<String, String>();
+        }
+        JSONObject obj = null;
+        try {
+            for (int i = 0; i < testList.size(); i++) {
+                obj = new JSONObject(testList.get(i));
+                pairMap.put(obj.getString("name"), obj.get(variable));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Map<String, String> treeMap = sortByValues(pairMap);
+        for (String key : treeMap.keySet()) {
+            itemList.add(new Item(key, 0));
+        }
+        if (reverseSort[reverser]) {
+            reverseSort[reverser] = false;
+        } else {
+            reverseSort[reverser] = true;
+            Collections.reverse(itemList);
+        }
+
+
+        listView = (ListView) findViewById(R.id.currentItems);
+
+        final CustomAdapter itemAdapter = new CustomAdapter(this, itemList);
+        listView.setAdapter(itemAdapter);
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_current_list, menu);
+        return true;
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -87,8 +154,19 @@ public class CurrentList extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch(id) {
+            case R.id.sort_name:
+                sort_list("name", 0);
+                break;
+            case R.id.sort_quantity:
+                sort_list("quantity", 1);
+                break;
+            case R.id.sort_time:
+                sort_list("timeCreated", 2);
+                break;
+            case R.id.sort_type:
+                sort_list("type", 3);
+                break;
         }
 
         return super.onOptionsItemSelected(item);

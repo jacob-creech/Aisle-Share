@@ -1,3 +1,1 @@
 include ':app', ':library', ':plusButton'
-project(':library').projectDir = new File('android-floating-action-button-master/library')
-project(':plusButton').projectDir = new File('android-floating-action-button-master/sample')

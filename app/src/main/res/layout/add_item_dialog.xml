@@ -35,13 +35,13 @@
         <Button
             android:id="@+id/Minus"
             android:layout_width="wrap_content"
-            android:layout_height="fill_parent"
+            android:layout_height="40dp"
             android:text="-"
-            android:background="#ff362f"
             android:textStyle="bold"
             android:textSize="30dp"
-            android:layout_weight=".05" />
-        <TextView
+            android:layout_weight=".05"
+            android:background="#7fff0000" />
+        <EditText
             android:id="@+id/Quantity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -58,10 +58,11 @@
             android:layout_width="wrap_content"
             android:layout_height="40dp"
             android:text="+"
-            android:background="#51ff37"
             android:textStyle="bold"
             android:textSize="30dp"
-            android:layout_weight=".05" />
+            android:layout_weight=".05"
+            android:textAlignment="gravity"
+            android:background="#7f00ff00" />
     </LinearLayout>
 
 

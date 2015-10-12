@@ -101,8 +101,8 @@ public class CurrentList extends AppCompatActivity {
 
         final EditText itemName = (EditText) dialog.findViewById(R.id.Name);
         final EditText itemType = (EditText) dialog.findViewById(R.id.Type);
-        final TextView itemQuantity = (TextView) dialog.findViewById(R.id.Quantity);
         final Button minus = (Button) dialog.findViewById(R.id.Minus);
+        final EditText itemQuantity = (EditText) dialog.findViewById(R.id.Quantity);
         final Button plus = (Button) dialog.findViewById(R.id.Plus);
         final Button cancel = (Button) dialog.findViewById(R.id.Cancel);
         final Button more = (Button) dialog.findViewById(R.id.More);
@@ -121,9 +121,11 @@ public class CurrentList extends AppCompatActivity {
         minus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int value = Integer.parseInt(itemQuantity.getText().toString());
-                if (value > 1) {
-                    itemQuantity.setText("" + (value - 1));
+                if(!itemQuantity.getText().toString().isEmpty()){
+                    int value = Integer.parseInt(itemQuantity.getText().toString());
+                    if (value > 1) {
+                        itemQuantity.setText("" + (value - 1));
+                    }
                 }
             }
         });
@@ -131,8 +133,10 @@ public class CurrentList extends AppCompatActivity {
         plus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int value = Integer.parseInt(itemQuantity.getText().toString());
-                itemQuantity.setText("" + (value + 1));
+                if(!itemQuantity.getText().toString().isEmpty()) {
+                    int value = Integer.parseInt(itemQuantity.getText().toString());
+                    itemQuantity.setText("" + (value + 1));
+                }
             }
         });
 
@@ -149,7 +153,13 @@ public class CurrentList extends AppCompatActivity {
                 if (!itemName.getText().toString().isEmpty()) {
                     String name = itemName.getText().toString();
                     String type = itemType.getText().toString();
-                    int quantity = Integer.parseInt(itemQuantity.getText().toString());
+                    int quantity;
+                    if(!itemQuantity.getText().toString().isEmpty()) {
+                        quantity = Integer.parseInt(itemQuantity.getText().toString());
+                    }
+                    else{
+                        quantity = 1;
+                    }
                     Item m = new Item(name, type, quantity);
                     items.add(m);
                     itemAdapter.notifyDataSetChanged();
@@ -165,7 +175,13 @@ public class CurrentList extends AppCompatActivity {
                 if (!itemName.getText().toString().isEmpty()) {
                     String name = itemName.getText().toString();
                     String type = itemType.getText().toString();
-                    int quantity = Integer.parseInt(itemQuantity.getText().toString());
+                    int quantity;
+                    if(!itemQuantity.getText().toString().isEmpty()) {
+                        quantity = Integer.parseInt(itemQuantity.getText().toString());
+                    }
+                    else{
+                        quantity = 1;
+                    }
                     Item m = new Item(name, type, quantity);
                     items.add(m);
                     itemAdapter.notifyDataSetChanged();

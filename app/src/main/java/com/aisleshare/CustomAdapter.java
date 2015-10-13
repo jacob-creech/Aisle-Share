@@ -14,11 +14,6 @@ import java.util.ArrayList;
 public class CustomAdapter extends ArrayAdapter{
     ArrayList<Item> items = null;
     Context context;
-    /*public CustomAdapter(Context context, Item[] resource) {
-        super(context,R.layout.row,resource);
-        this.context = context;
-        this.items = resource;
-    }*/
     public CustomAdapter(Context context, ArrayList resource) {
         super(context,R.layout.row,resource);
         this.context = context;
@@ -26,41 +21,62 @@ public class CustomAdapter extends ArrayAdapter{
     }
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-
         LayoutInflater inflater = ((Activity)context).getLayoutInflater();
         convertView = inflater.inflate(R.layout.row, parent, false);
-        TextView name = (TextView) convertView.findViewById(R.id.textView);
+
+        TextView name = (TextView) convertView.findViewById(R.id.name);
+        TextView type = (TextView) convertView.findViewById(R.id.type);
         CheckBox cb = (CheckBox) convertView.findViewById(R.id.checkBox);
-        name.setText(items.get(position).getName());
+
+        // Name
+        if(items.get(position).getQuantity() > 1){
+            name.setText(items.get(position).getName() +
+                    " (" + items.get(position).getQuantity() + ")");
+        }
+        else{
+            name.setText(items.get(position).getName());
+        }
         name.setId(position);
-        cb.setId(position);
-        if(items.get(position).getValue() == 1) {
+
+
+        // Type
+        if (!items.get(position).getType().equals("")) {
+            type.setText(items.get(position).getType());
+            type.setId(position);
+        }
+        else{
+            type.setVisibility(View.GONE);
+        }
+
+        // Checked
+        if(items.get(position).getChecked() == 1) {
             cb.setChecked(true);
             name.setPaintFlags(name.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         }
         else {
             cb.setChecked(false);
         }
+        cb.setId(position);
+
+
         return convertView;
     }
     @Override
     public void notifyDataSetChanged() {
+        // Move checked items to the bottom of the list
         ArrayList<Item> uncheckedItems = new ArrayList<>();
         ArrayList<Item> checkedItems = new ArrayList<>();
-        System.out.println("Start");
         for(int x = 0; x < items.size(); x++){
-            if(items.get(x).getValue() == 0){
+            if(items.get(x).getChecked() == 0){
                 uncheckedItems.add(items.get(x));
-                System.out.println("Unchecked");
             }
             else{
                 checkedItems.add(items.get(x));
-                System.out.println("Checked");
             }
         }
-        uncheckedItems.addAll(checkedItems);
         items.clear();
         items.addAll(uncheckedItems);
+        items.addAll(checkedItems);
 
         super.notifyDataSetChanged();
     }

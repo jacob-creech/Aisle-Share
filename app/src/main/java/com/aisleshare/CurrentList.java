@@ -6,6 +6,10 @@ import android.content.DialogInterface;
 import android.graphics.Paint;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,8 +25,11 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+<<<<<<< Updated upstream
 import android.widget.NumberPicker;
 import android.widget.TextView;
+=======
+>>>>>>> Stashed changes
 import java.util.TreeMap;
 import android.widget.Toast;
 import com.getbase.floatingactionbutton.FloatingActionButton;
@@ -35,19 +42,29 @@ import java.util.Collections;
 public class CurrentList extends AppCompatActivity {
 
     private ListView listView;
+<<<<<<< Updated upstream
     private ArrayList<Item> items;
     private CustomAdapter itemAdapter;
     private ArrayList<String> jsonList;
+=======
+    private ArrayList<Model> itemList;
+    private ArrayList<String> testList;
+>>>>>>> Stashed changes
     private boolean[] reverseSort = {false, false, false, false};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_current_list);
+<<<<<<< Updated upstream
 
         listView = (ListView)findViewById(R.id.currentItems);
         ArrayList<String> jsonList = new ArrayList<>();
         items = new ArrayList<>();
+=======
+        testList = new ArrayList<>();
+        itemList = new ArrayList<>();
+>>>>>>> Stashed changes
 
         jsonList.add("{\"name\":itemName,\"quantity\":7,\"type\":defType, \"timeCreated\":12105543, \"checked\":0}");
         jsonList.add("{\"name\":burgers,\"quantity\":5,\"type\":Meats, \"timeCreated\":12105543, \"checked\":0}");
@@ -104,6 +121,7 @@ public class CurrentList extends AppCompatActivity {
     }
 
     public void sort_list(String variable, int reverser) {
+<<<<<<< Updated upstream
         String str1 = "", str2 = "";
         Integer int1 = 0, int2 = 0;
         for(int i = 0; i < items.size() - 1; i++) {
@@ -141,11 +159,34 @@ public class CurrentList extends AppCompatActivity {
                     }
                 }
             }
+=======
+        itemList.clear();
+        Map pairMap;
+        if(reverser == 1 || reverser == 2) {
+            pairMap = new HashMap<String, Integer>();
+        }
+        else {
+            pairMap = new HashMap<String, String>();
+        }
+        JSONObject obj = null;
+        try {
+            for (int i = 0; i < testList.size(); i++) {
+                obj = new JSONObject(testList.get(i));
+                pairMap.put(obj.getString("name"), obj.get(variable));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Map<String, String> treeMap = sortByValues(pairMap);
+        for (String key : treeMap.keySet()) {
+            itemList.add(new Model(key, 0));
+>>>>>>> Stashed changes
         }
         if (reverseSort[reverser]) {
             reverseSort[reverser] = false;
         } else {
             reverseSort[reverser] = true;
+<<<<<<< Updated upstream
             Collections.reverse(items);
         }
         for(int i = 0; i < 4; i++) {
@@ -157,6 +198,15 @@ public class CurrentList extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.currentItems);
 
         final CustomAdapter itemAdapter = new CustomAdapter(this, items);
+=======
+            Collections.reverse(itemList);
+        }
+
+
+        listView = (ListView) findViewById(R.id.currentItems);
+
+        final CustomAdapter itemAdapter = new CustomAdapter(this, itemList);
+>>>>>>> Stashed changes
         listView.setAdapter(itemAdapter);
     }
 

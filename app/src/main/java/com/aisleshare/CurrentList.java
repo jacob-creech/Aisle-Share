@@ -1,17 +1,10 @@
 package com.aisleshare;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
-import android.graphics.Paint;
-import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Map;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,10 +14,8 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.NumberPicker;
 import android.widget.TextView;
 import java.util.TreeMap;
-import android.widget.Toast;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,8 +28,8 @@ public class CurrentList extends AppCompatActivity {
     private ListView listView;
     private ArrayList<Item> items;
     private CustomAdapter itemAdapter;
-    private ArrayList<String> jsonList;
     private boolean[] reverseSort = {false, false, false, false};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -98,7 +89,7 @@ public class CurrentList extends AppCompatActivity {
                 else return compare;
             }
         };
-        Map<K, V> sortedByValues = new TreeMap<K, V>(valueComparator);
+        Map<K, V> sortedByValues = new TreeMap<>(valueComparator);
         sortedByValues.putAll(map);
         return sortedByValues;
     }
@@ -154,10 +145,7 @@ public class CurrentList extends AppCompatActivity {
             }
         }
 
-        listView = (ListView) findViewById(R.id.currentItems);
-
-        final CustomAdapter itemAdapter = new CustomAdapter(this, items);
-        listView.setAdapter(itemAdapter);
+        itemAdapter.notifyDataSetChanged();
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -167,11 +155,11 @@ public class CurrentList extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem option) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        int id = option.getItemId();
 
         //noinspection SimplifiableIfStatement
         switch(id) {
@@ -189,7 +177,7 @@ public class CurrentList extends AppCompatActivity {
                 break;
         }
 
-        return super.onOptionsItemSelected(item);
+        return super.onOptionsItemSelected(option);
     }
 
     public void addItemDialog(){

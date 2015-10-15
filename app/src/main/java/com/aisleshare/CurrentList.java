@@ -1,8 +1,6 @@
 package com.aisleshare;
 
 import android.app.Dialog;
-import java.util.Comparator;
-import java.util.Map;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -15,7 +13,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import java.util.TreeMap;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,28 +22,30 @@ import java.util.Collections;
 
 public class CurrentList extends AppCompatActivity {
 
+    // Class Variables
     private ListView listView;
     private ArrayList<Item> items;
     private CustomAdapter itemAdapter;
-    private boolean[] reverseSort = {false, false, false, false};
+    private boolean isIncreasingOrder;
+    private int currentOrder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_current_list);
 
         listView = (ListView)findViewById(R.id.currentItems);
-        ArrayList<String> jsonList = new ArrayList<>();
         items = new ArrayList<>();
+        isIncreasingOrder = true;
+        currentOrder = -1;
 
-        jsonList.add("{\"name\":itemName,\"quantity\":7,\"type\":defType, \"timeCreated\":12105543, \"checked\":0}");
+        ArrayList<String> jsonList = new ArrayList<>();
+        jsonList.add("{\"name\":itemName,\"quantity\":1,\"type\":defType, \"timeCreated\":12105543, \"checked\":0}");
         jsonList.add("{\"name\":burgers,\"quantity\":5,\"type\":Meats, \"timeCreated\":12105543, \"checked\":0}");
-        jsonList.add("{\"name\":Eggs,\"quantity\":2,\"type\":Bread, \"timeCreated\":12104543, \"checked\":0}");
+        jsonList.add("{\"name\":Eggs,\"quantity\":2,\"type\":\"\", \"timeCreated\":12104543, \"checked\":0}");
         jsonList.add("{\"name\":Bacon,\"quantity\":100,\"type\":Meats, \"timeCreated\":12105533, \"checked\":0}");
         jsonList.add("{\"name\":Cheese,\"quantity\":4,\"type\":Dairy, \"timeCreated\":13105543, \"checked\":0}");
-        jsonList.add("{\"name\":Buns,\"quantity\":6,\"type\":Bread, \"timeCreated\":12105843, \"checked\":0}");
-                    //"{\"phonetype\":\"N95\",\"cat\":\"WP\"}"
+        jsonList.add("{\"name\":Buns,\"quantity\":1,\"type\":\"\", \"timeCreated\":12105843, \"checked\":0}");
 
         JSONObject obj;
         for(int i = 0; i < jsonList.size(); i++){
@@ -80,72 +79,46 @@ public class CurrentList extends AppCompatActivity {
         });
     }
 
-    //Function obtained from http://stackoverflow.com/questions/1448369/how-to-sort-a-treemap-based-on-its-values
-    public static <K, V extends Comparable<V>> Map<K, V> sortByValues(final Map<K, V> map) {
-        Comparator<K> valueComparator =  new Comparator<K>() {
-            public int compare(K k1, K k2) {
-                int compare = map.get(k2).compareTo(map.get(k1));
-                if (compare == 0) return 1;
-                else return compare;
-            }
-        };
-        Map<K, V> sortedByValues = new TreeMap<>(valueComparator);
-        sortedByValues.putAll(map);
-        return sortedByValues;
-    }
-
-    public void sort_list(String variable, int reverser) {
-        String str1 = "", str2 = "";
-        Integer int1 = 0, int2 = 0;
-        for(int i = 0; i < items.size() - 1; i++) {
-            for(int j = 0; j < items.size() - i - 1; j++) {
-                switch(variable) {
-                    case "name":
-                        str1 = items.get(j).getName();
-                        str2 = items.get(j+1).getName();
-                        break;
-                    case "type":
-                        str1 = items.get(j).getType();
-                        str2 = items.get(j+1).getType();
-                        break;
-                    case "timeCreated":
-                        int1 = items.get(j).getCreated();
-                        int2 = items.get(j+1).getCreated();
-                        break;
-                    case "quantity":
-                        int1 = items.get(j).getQuantity();
-                        int2 = items.get(j+1).getQuantity();
-                        break;
-                }
-                if(reverser == 1 || reverser == 2) {
-                    if(int1 > int2) {
-                        Item temp = items.get(j);
-                        items.set(j, items.get(j+1));
-                        items.set(j+1, temp);
-                    }
-                }
-                else {
-                    if(str1.compareTo(str2) < 0) {
-                        Item temp = items.get(j);
-                        items.set(j, items.get(j+1));
-                        items.set(j+1, temp);
-                    }
-                }
-            }
+    // Sorted based on the order index parameter
+    public void sortList(boolean reverseOrder, int order) {
+        if(reverseOrder) {
+            isIncreasingOrder = !isIncreasingOrder;
         }
-        if (reverseSort[reverser]) {
-            reverseSort[reverser] = false;
-        } else {
-            reverseSort[reverser] = true;
+        if(order != currentOrder){
+            currentOrder = order;
+            isIncreasingOrder = true;
+        }
+
+        ItemComparator compare = new ItemComparator();
+
+        // Unsorted
+        if(currentOrder == -1){
+            return;
+        }
+        // Name
+        else if(currentOrder == 0){
+            ItemComparator.Name sorter = compare.new Name();
+            Collections.sort(items, sorter);
+        }
+        // Quantity
+        else if(currentOrder == 1){
+            ItemComparator.Quantity sorter = compare.new Quantity();
+            Collections.sort(items, sorter);
+        }
+        // Time Created
+        else if(currentOrder == 2){
+            ItemComparator.Created sorter = compare.new Created();
+            Collections.sort(items, sorter);
+        }
+        // Type
+        else if(currentOrder == 3){
+            ItemComparator.Type sorter = compare.new Type();
+            Collections.sort(items, sorter);
+        }
+
+        if(!isIncreasingOrder){
             Collections.reverse(items);
         }
-        for(int i = 0; i < 4; i++) {
-            if(i != reverser) {
-                reverseSort[i] = false;
-            }
-        }
-
-        itemAdapter.notifyDataSetChanged();
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -164,22 +137,24 @@ public class CurrentList extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         switch(id) {
             case R.id.sort_name:
-                sort_list("name", 0);
+                sortList(true, 0);
                 break;
             case R.id.sort_quantity:
-                sort_list("quantity", 1);
+                sortList(true, 1);
                 break;
             case R.id.sort_time:
-                sort_list("timeCreated", 2);
+                sortList(true, 2);
                 break;
             case R.id.sort_type:
-                sort_list("type", 3);
+                sortList(true, 3);
                 break;
         }
 
+        itemAdapter.notifyDataSetChanged();
         return super.onOptionsItemSelected(option);
     }
 
+    // Popup for adding an Item
     public void addItemDialog(){
         // custom dialog
         final Dialog dialog = new Dialog(CurrentList.this);
@@ -249,6 +224,7 @@ public class CurrentList extends AppCompatActivity {
                     }
                     Item m = new Item(name, type, quantity);
                     items.add(m);
+                    sortList(false, currentOrder);
                     itemAdapter.notifyDataSetChanged();
                 }
                 dialog.dismiss();
@@ -271,6 +247,7 @@ public class CurrentList extends AppCompatActivity {
                     }
                     Item m = new Item(name, type, quantity);
                     items.add(m);
+                    sortList(false, currentOrder);
                     itemAdapter.notifyDataSetChanged();
                 }
                 dialog.dismiss();
@@ -280,6 +257,7 @@ public class CurrentList extends AppCompatActivity {
         dialog.show();
     }
 
+    // Checks/UnChecks an item by clicking on any element in its row
     public void itemClick(View v){
         if(v.getTag().equals("row")){
             final LinearLayout row = (LinearLayout) v;
@@ -315,6 +293,8 @@ public class CurrentList extends AppCompatActivity {
 
             toggleChecked(cb);
         }
+
+        sortList(false, currentOrder);
         itemAdapter.notifyDataSetChanged();
     }
 

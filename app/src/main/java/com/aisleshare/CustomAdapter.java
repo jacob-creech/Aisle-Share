@@ -1,4 +1,5 @@
 package com.aisleshare;
+
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Paint;
@@ -8,8 +9,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.TextView;
-
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class CustomAdapter extends ArrayAdapter{
     ArrayList<Item> items = null;
@@ -27,6 +28,11 @@ public class CustomAdapter extends ArrayAdapter{
         TextView name = (TextView) convertView.findViewById(R.id.name);
         TextView type = (TextView) convertView.findViewById(R.id.type);
         CheckBox cb = (CheckBox) convertView.findViewById(R.id.checkBox);
+
+        // Move Checked Items to the Bottom
+        ItemComparator compare = new ItemComparator();
+        ItemComparator.Checked sorter = compare.new Checked();
+        Collections.sort(items, sorter);
 
         // Name
         if(items.get(position).getQuantity() > 1){
@@ -60,25 +66,6 @@ public class CustomAdapter extends ArrayAdapter{
 
 
         return convertView;
-    }
-    @Override
-    public void notifyDataSetChanged() {
-        // Move checked items to the bottom of the list
-        ArrayList<Item> uncheckedItems = new ArrayList<>();
-        ArrayList<Item> checkedItems = new ArrayList<>();
-        for(int x = 0; x < items.size(); x++){
-            if(items.get(x).getChecked() == 0){
-                uncheckedItems.add(items.get(x));
-            }
-            else{
-                checkedItems.add(items.get(x));
-            }
-        }
-        items.clear();
-        items.addAll(uncheckedItems);
-        items.addAll(checkedItems);
-
-        super.notifyDataSetChanged();
     }
 }
 

@@ -1,6 +1,7 @@
 package com.aisleshare;
 
 public class Item {
+    private String owner;
     private String name;
     private String type;
     private double quantity;
@@ -8,7 +9,8 @@ public class Item {
     private int created;
     private int checked; /* 0 : checkbox disable, 1 : checkbox enable */
 
-    Item(String name){
+    Item(String owner, String name){
+        this.owner = owner;
         this.name = name;
         this.type = "";
         this.quantity = 1;
@@ -16,7 +18,8 @@ public class Item {
         this.created = 0;
         this.checked = 0;
     }
-    Item(String name, String type){
+    Item(String owner, String name, String type){
+        this.owner = owner;
         this.name = name;
         this.type = type;
         this.quantity = 1;
@@ -24,7 +27,8 @@ public class Item {
         this.created = 0;
         this.checked = 0;
     }
-    Item(String name, String type, double quantity){
+    Item(String owner, String name, String type, double quantity){
+        this.owner = owner;
         this.name = name;
         this.type = type;
         this.quantity = quantity;
@@ -32,7 +36,8 @@ public class Item {
         this.created = 0;
         this.checked = 0;
     }
-    Item(String name, String type, double quantity, String units){
+    Item(String owner, String name, String type, double quantity, String units){
+        this.owner = owner;
         this.name = name;
         this.type = type;
         this.quantity = quantity;
@@ -40,7 +45,8 @@ public class Item {
         this.created = 0;
         this.checked = 0;
     }
-    Item(String name, String type, double quantity, String units, int created){
+    Item(String owner, String name, String type, double quantity, String units, int created){
+        this.owner = owner;
         this.name = name;
         this.type = type;
         this.quantity = quantity;
@@ -48,7 +54,8 @@ public class Item {
         this.created = created;
         this.checked = 0;
     }
-    Item(String name, String type, double quantity, String units, int created, int value){
+    Item(String owner, String name, String type, double quantity, String units, int created, int value){
+        this.owner = owner;
         this.name = name;
         this.type = type;
         this.quantity = quantity;
@@ -58,6 +65,9 @@ public class Item {
     }
 
     // Accessors
+    public String getOwner(){
+        return this.owner;
+    }
     public String getName(){
         return this.name;
     }

@@ -2,22 +2,32 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" tools:context="com.aisleshare.CurrentList">
     <item
-        android:title="Sort  "
-        android:orderInCategory="101"
-        app:showAsAction="ifRoom|withText">
+        android:title="Share"
+        android:id="@+id/share"
+        app:showAsAction="ifRoom|withText"
+        />
+    <item
+        android:title="Sort"
+        android:id="@+id/sort_root"
+        app:showAsAction="ifRoom|withText"
+        android:icon="@mipmap/inc_sort">
         <menu
             android:id="@+id/sort">
             <item android:id="@+id/sort_name"
-                android:title="By Name"/>
+                android:title="Sort By Name"/>
             <item android:id="@+id/sort_type"
-                android:title="By Type"/>
+                android:title="Sort By Type"/>
             <item android:id="@+id/sort_time"
-                android:title="By Time"/>
+                android:title="Sort By Time"/>
             <item android:id="@+id/sort_quantity"
-                android:title="By Quantity"/>
+                android:title="Sort By Quantity"/>
+            <!--   <item android:id="@+id/sort_custom"
+                android:title="Custom Sort"/>   -->
         </menu>
     </item>
-
-    <!--   <item android:id="@+id/sort_custom"
-        android:title="Custom Sort"/>   -->
+    <item
+        android:title="Delete"
+        android:id="@+id/delete_items"
+        app:showAsAction="ifRoom"
+        android:icon="@mipmap/trash"/>
 </menu>

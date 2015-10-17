@@ -14,6 +14,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
+
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,6 +42,10 @@ public class ShoppingList extends AppCompatActivity {
         shoppingSet = sp.getStringSet("ShoppingSets", defSet);
         shoppingLists = new ArrayList<>(shoppingSet);
 
+        if(shoppingLists.size() == 0){
+            TextView emptyNotice = (TextView) findViewById(R.id.empty_notice);
+            emptyNotice.setVisibility(View.VISIBLE);
+        }
 
         itemAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1, shoppingLists);
         listView.setAdapter(itemAdapter);
@@ -87,6 +93,7 @@ public class ShoppingList extends AppCompatActivity {
             public void onClick(View v) {
                 if (!listName.getText().toString().isEmpty()) {
                     String name = listName.getText().toString();
+                    TextView emptyNotice = (TextView) findViewById(R.id.empty_notice);
 
                     for(int index = 0; index < shoppingLists.size(); index++){
                         if(shoppingLists.get(index).equals(name)){
@@ -105,6 +112,7 @@ public class ShoppingList extends AppCompatActivity {
                     itemAdapter.notifyDataSetChanged();
                     editor.putStringSet("ShoppingSets", shoppingSet);
                     editor.commit();
+                    emptyNotice.setVisibility(View.INVISIBLE);
 
                     intent.putExtra(LIST_NAME, name);
                     startActivity(intent);

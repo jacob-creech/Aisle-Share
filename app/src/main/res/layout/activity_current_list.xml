@@ -9,6 +9,7 @@
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:longClickable="true"
         android:id="@+id/currentItems"/>
 
     <FrameLayout
@@ -25,6 +26,15 @@
             fab:fab_colorPressed="#18d50f"
             android:layout_gravity="right|bottom"
             android:alpha=".75" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="You do not have any items."
+            android:id="@+id/empty_notice"
+            android:layout_gravity="center"
+            android:textSize="14sp"
+            android:visibility="invisible" />
     </FrameLayout>
 
 </RelativeLayout>

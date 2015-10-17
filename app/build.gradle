@@ -19,8 +19,14 @@ android {
     }
 }
 
+repositories {
+    mavenCentral()
+}
+
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:22.1.1'
     compile 'com.getbase:floatingactionbutton:1.10.0'
+    compile 'com.hudomju:swipe-to-dismiss-undo:1.0'
 }

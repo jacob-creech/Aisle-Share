@@ -11,15 +11,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
-
 import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.hudomju.swipe.SwipeToDismissTouchListener;
+import com.hudomju.swipe.adapter.ListViewAdapter;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class CurrentList extends AppCompatActivity {
     // Class Variables
     private ListView listView;
     private ArrayList<Item> items;
-    private CustomAdapter itemAdapter;
+    private CustomAdapter customAdapter;
     private boolean isIncreasingOrder;
     private int currentOrder;
 
@@ -44,45 +44,13 @@ public class CurrentList extends AppCompatActivity {
         items = new ArrayList<>();
         isIncreasingOrder = true;
         currentOrder = -1;
+        customAdapter = new CustomAdapter(this, items);
+        listView.setAdapter(customAdapter);
 
-        ArrayList<String> jsonList = new ArrayList<>();
-        jsonList.add("{\"name\":itemName,\"quantity\":1,\"units\":unit,\"type\":defType, \"timeCreated\":12105543, \"checked\":0}");
-        jsonList.add("{\"name\":burgers,\"quantity\":5,\"units\":\"\",\"type\":Meats, \"timeCreated\":12105543, \"checked\":0}");
-        jsonList.add("{\"name\":Eggs,\"quantity\":2,\"units\":dozen,\"type\":\"\", \"timeCreated\":12104543, \"checked\":0}");
-        jsonList.add("{\"name\":Bacon,\"quantity\":100,\"units\":strips,\"type\":Meats, \"timeCreated\":12105533, \"checked\":0}");
-        jsonList.add("{\"name\":Cheese,\"quantity\":4,\"units\":slices,\"type\":Dairy, \"timeCreated\":13105543, \"checked\":0}");
-        jsonList.add("{\"name\":Buns,\"quantity\":1,\"units\":\"\",\"type\":\"\", \"timeCreated\":12105843, \"checked\":0}");
-
-        JSONObject obj;
-        for(int i = 0; i < jsonList.size(); i++){
-            try {
-                obj = new JSONObject(jsonList.get(i));
-                items.add(new Item(obj.getString("name"), obj.getString("type"), obj.getInt("quantity"),
-                        obj.getString("units"), obj.getInt("timeCreated"), obj.getInt("checked")));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-
-        itemAdapter = new CustomAdapter(this, items);
-        listView.setAdapter(itemAdapter);
-
-        String listTitle;
-        if (savedInstanceState == null) {
-            listTitle = getIntent().getStringExtra("com.ShoppingList.MESSAGE");
-        }
-        else {
-            listTitle = (String) savedInstanceState.getSerializable("com.ShoppingList.MESSAGE");
-        }
-        getSupportActionBar().setTitle(listTitle);
-
-        FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.float_button);
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addItemDialog();
-            }
-        });
+        setupTestItems();
+        setListTitle(savedInstanceState);
+        addButtonListener();
+        setSwipeAdapter();
     }
 
     // Sorted based on the order index parameter
@@ -160,7 +128,7 @@ public class CurrentList extends AppCompatActivity {
                 break;
         }
 
-        itemAdapter.notifyDataSetChanged();
+        customAdapter.notifyDataSetChanged();
         return super.onOptionsItemSelected(option);
     }
 
@@ -221,7 +189,7 @@ public class CurrentList extends AppCompatActivity {
                 if(!itemQuantity.getText().toString().isEmpty()){
                     double value = Double.parseDouble(itemQuantity.getText().toString());
                     if (value > 1) {
-                        itemQuantity.setText(Integer.toString((int) Math.ceil(value - 1)));
+                        itemQuantity.setText(String.format("%s", (int) Math.ceil(value - 1)));
                     }
                 }
             }
@@ -232,7 +200,7 @@ public class CurrentList extends AppCompatActivity {
             public void onClick(View v) {
                 if(!itemQuantity.getText().toString().isEmpty()) {
                     double value = Double.parseDouble(itemQuantity.getText().toString());
-                    itemQuantity.setText(Integer.toString((int)Math.floor(value + 1)));
+                    itemQuantity.setText(String.format("%s", (int)Math.floor(value + 1)));
                 }
             }
         });
@@ -261,7 +229,7 @@ public class CurrentList extends AppCompatActivity {
                     Item m = new Item(name, type, quantity, units);
                     items.add(m);
                     sortList(false, currentOrder);
-                    itemAdapter.notifyDataSetChanged();
+                    customAdapter.notifyDataSetChanged();
                     dialog.dismiss();
                     addItemDialog();
                 }
@@ -288,7 +256,7 @@ public class CurrentList extends AppCompatActivity {
                     Item m = new Item(name, type, quantity, units);
                     items.add(m);
                     sortList(false, currentOrder);
-                    itemAdapter.notifyDataSetChanged();
+                    customAdapter.notifyDataSetChanged();
                     dialog.dismiss();
                 }
                 else{
@@ -302,43 +270,99 @@ public class CurrentList extends AppCompatActivity {
 
     // Checks/UnChecks an item by clicking on any element in its row
     public void itemClick(View v){
-        if(v.getTag().equals("row")){
-            final LinearLayout row = (LinearLayout) v;
-            final CheckBox cb = (CheckBox)row.getChildAt(0);
-
-            toggleChecked(cb);
-        }
-        else if(v.getTag().equals("text")){
-            final TextView name = (TextView)v;
-            final LinearLayout column = (LinearLayout) name.getParent();
-            final LinearLayout row = (LinearLayout) column.getParent();
-            final CheckBox cb = (CheckBox)row.getChildAt(0);
-
-            toggleChecked(cb);
-        }
-        else if(v.getTag().equals("checkBox")){
-            final CheckBox cb = (CheckBox)v;
-
-            toggleChecked(cb);
-        }
-        else if(v.getTag().equals("column")){
-            final LinearLayout column = (LinearLayout) v;
-            final LinearLayout row = (LinearLayout) column.getParent();
-            final CheckBox cb = (CheckBox)row.getChildAt(0);
-
-            toggleChecked(cb);
-        }
-
-        sortList(false, currentOrder);
-        itemAdapter.notifyDataSetChanged();
-    }
-
-    public void toggleChecked(CheckBox cb){
-        if (items.get(cb.getId()).getChecked() == 0){
-            items.get(cb.getId()).setChecked(1);
+        Item item = items.get(v.getId());
+        if (item.getChecked() == 0){
+            item.setChecked(1);
         }
         else{
-            items.get(cb.getId()).setChecked(0);
+            item.setChecked(0);
         }
+        sortList(false, currentOrder);
+        customAdapter.notifyDataSetChanged();
+    }
+
+    public void rowClick(int position){
+        Item item = items.get(position);
+        if (item.getChecked() == 0){
+            item.setChecked(1);
+        }
+        else{
+            item.setChecked(0);
+        }
+        sortList(false, currentOrder);
+        customAdapter.notifyDataSetChanged();
+    }
+
+    public void setSwipeAdapter(){
+        // TODO: Fix issue with swiping multiple items concurrently
+        final SwipeToDismissTouchListener<ListViewAdapter> touchListener =
+                new SwipeToDismissTouchListener<>(
+                        new ListViewAdapter(listView),
+                        new SwipeToDismissTouchListener.DismissCallbacks<ListViewAdapter>() {
+                            @Override
+                            public boolean canDismiss(int position) {
+                                return true;
+                            }
+
+                            @Override
+                            public void onDismiss(ListViewAdapter view, int position) {
+                                items.remove(position);
+                                customAdapter.notifyDataSetChanged();
+                            }
+                        });
+        listView.setOnTouchListener(touchListener);
+        listView.setOnScrollListener((AbsListView.OnScrollListener) touchListener.makeScrollListener());
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (touchListener.existPendingDismisses()) {
+                    touchListener.undoPendingDismiss();
+                } else {
+                    rowClick(position);
+                }
+            }
+        });
+    }
+
+    public void setupTestItems(){
+        ArrayList<String> jsonList = new ArrayList<>();
+        jsonList.add("{\"name\":itemName,\"quantity\":1,\"units\":unit,\"type\":defType, \"timeCreated\":12105543, \"checked\":0}");
+        jsonList.add("{\"name\":burgers,\"quantity\":5,\"units\":\"\",\"type\":Meats, \"timeCreated\":12105543, \"checked\":0}");
+        jsonList.add("{\"name\":Eggs,\"quantity\":2,\"units\":dozen,\"type\":\"\", \"timeCreated\":12104543, \"checked\":0}");
+        jsonList.add("{\"name\":Bacon,\"quantity\":100,\"units\":strips,\"type\":Meats, \"timeCreated\":12105533, \"checked\":0}");
+        jsonList.add("{\"name\":Cheese,\"quantity\":4,\"units\":slices,\"type\":Dairy, \"timeCreated\":13105543, \"checked\":0}");
+        jsonList.add("{\"name\":Buns,\"quantity\":1,\"units\":\"\",\"type\":\"\", \"timeCreated\":12105843, \"checked\":0}");
+
+        JSONObject obj;
+        for(int i = 0; i < jsonList.size(); i++){
+            try {
+                obj = new JSONObject(jsonList.get(i));
+                items.add(new Item(obj.getString("name"), obj.getString("type"), obj.getInt("quantity"),
+                        obj.getString("units"), obj.getInt("timeCreated"), obj.getInt("checked")));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void setListTitle(Bundle savedInstanceState){
+        String listTitle;
+        if (savedInstanceState == null) {
+            listTitle = getIntent().getStringExtra("com.ShoppingList.MESSAGE");
+        }
+        else {
+            listTitle = (String) savedInstanceState.getSerializable("com.ShoppingList.MESSAGE");
+        }
+        setTitle(listTitle);
+    }
+
+    public void addButtonListener(){
+        FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.float_button);
+        addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addItemDialog();
+            }
+        });
     }
 }

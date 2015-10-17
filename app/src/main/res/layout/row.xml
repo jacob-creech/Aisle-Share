@@ -1,88 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/row"
-    android:tag="row"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
-    android:paddingBottom="10dp"
-    android:paddingTop="10dp"
-    android:paddingRight="10dp"
-    android:onClick="itemClick"
     android:gravity="center_vertical">
 
-    <CheckBox
-        android:id="@+id/checkBox"
-        android:tag="checkBox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:focusable="false"
-        android:layout_marginRight="10dp"
-        android:onClick="itemClick"
-        android:scaleX="1.25"
-        android:scaleY="1.25"
-        android:minWidth="20dp" />
-
     <LinearLayout
-        android:id="@+id/column1"
-        android:tag="column"
-        android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight=".9"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:gravity="center_vertical"
-        android:minWidth="50dp">
-        <TextView
-            android:id="@+id/name"
-            android:tag="text"
-            android:text="Name"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp">
+
+        <CheckBox
+            android:id="@+id/checkBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="22sp"
-            android:onClick="itemClick"
-            android:textStyle="bold" />
-        <TextView
-            android:id="@+id/type"
-            android:tag="text"
-            android:text="Type"
+            android:focusable="false"
+            android:layout_marginRight="10dp"
+            android:scaleX="1.25"
+            android:scaleY="1.25"
+            android:onClick="itemClick"/>
+
+        <LinearLayout
+            android:id="@+id/column1"
+            android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:onClick="itemClick"
-            android:textColor="#6b6b6b"
-            android:textStyle="italic" />
+            android:layout_weight=".9"
+            android:gravity="center_vertical"
+            android:minWidth="50dp">
+            <TextView
+                android:id="@+id/name"
+                android:text="Name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/type"
+                android:text="Type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="#6b6b6b"
+                android:textStyle="italic" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/column2"
+            android:layout_weight=".1"
+            android:gravity="center_vertical|right"
+            android:minWidth="50dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="####"
+                android:id="@+id/quantity"
+                android:textStyle="bold"
+                android:textSize="22sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Units"
+                android:id="@+id/units"
+                android:textStyle="italic"
+                android:textSize="14sp"/>
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/column2"
-        android:tag="column"
-        android:layout_weight=".1"
-        android:gravity="center_vertical|right"
-        android:onClick="itemClick"
-        android:minWidth="50dp">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:weightSum="3"
+        android:background="#3a3a3a"
+        android:visibility="invisible">
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="####"
-            android:id="@+id/quantity"
-            android:tag="text"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:id="@+id/txt_delete"
+            android:gravity="center_vertical"
+            android:text="Deleted"
+            android:clickable="false"
+            android:layout_weight="2"
+            android:hapticFeedbackEnabled="true"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:paddingLeft="25dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:id="@+id/txt_undo"
+            android:text="UNDO"
+            android:clickable="false"
+            android:layout_weight="1"
+            android:textColor="#ffea00"
             android:textStyle="bold"
-            android:textSize="22sp"
-            android:onClick="itemClick"/>
+            android:textSize="22sp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Units"
-            android:id="@+id/units"
-            android:tag="text"
-            android:textStyle="italic"
-            android:textSize="14sp"
-            android:onClick="itemClick"/>
     </LinearLayout>
 
-</LinearLayout>
+</FrameLayout>

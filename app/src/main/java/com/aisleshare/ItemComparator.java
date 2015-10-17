@@ -15,7 +15,7 @@ public  class ItemComparator{
     }
     public class Quantity implements Comparator<Item>{
         public int compare(Item left, Item right) {
-            return left.getQuantity() - right.getQuantity();
+            return (int)Math.round(left.getQuantity() - right.getQuantity());
         }
     }
     public class Created implements Comparator<Item>{

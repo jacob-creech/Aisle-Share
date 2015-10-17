@@ -1,8 +1,12 @@
 package com.aisleshare;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,6 +17,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,19 +46,19 @@ public class CurrentList extends AppCompatActivity {
         currentOrder = -1;
 
         ArrayList<String> jsonList = new ArrayList<>();
-        jsonList.add("{\"name\":itemName,\"quantity\":1,\"type\":defType, \"timeCreated\":12105543, \"checked\":0}");
-        jsonList.add("{\"name\":burgers,\"quantity\":5,\"type\":Meats, \"timeCreated\":12105543, \"checked\":0}");
-        jsonList.add("{\"name\":Eggs,\"quantity\":2,\"type\":\"\", \"timeCreated\":12104543, \"checked\":0}");
-        jsonList.add("{\"name\":Bacon,\"quantity\":100,\"type\":Meats, \"timeCreated\":12105533, \"checked\":0}");
-        jsonList.add("{\"name\":Cheese,\"quantity\":4,\"type\":Dairy, \"timeCreated\":13105543, \"checked\":0}");
-        jsonList.add("{\"name\":Buns,\"quantity\":1,\"type\":\"\", \"timeCreated\":12105843, \"checked\":0}");
+        jsonList.add("{\"name\":itemName,\"quantity\":1,\"units\":unit,\"type\":defType, \"timeCreated\":12105543, \"checked\":0}");
+        jsonList.add("{\"name\":burgers,\"quantity\":5,\"units\":\"\",\"type\":Meats, \"timeCreated\":12105543, \"checked\":0}");
+        jsonList.add("{\"name\":Eggs,\"quantity\":2,\"units\":dozen,\"type\":\"\", \"timeCreated\":12104543, \"checked\":0}");
+        jsonList.add("{\"name\":Bacon,\"quantity\":100,\"units\":strips,\"type\":Meats, \"timeCreated\":12105533, \"checked\":0}");
+        jsonList.add("{\"name\":Cheese,\"quantity\":4,\"units\":slices,\"type\":Dairy, \"timeCreated\":13105543, \"checked\":0}");
+        jsonList.add("{\"name\":Buns,\"quantity\":1,\"units\":\"\",\"type\":\"\", \"timeCreated\":12105843, \"checked\":0}");
 
         JSONObject obj;
         for(int i = 0; i < jsonList.size(); i++){
             try {
                 obj = new JSONObject(jsonList.get(i));
                 items.add(new Item(obj.getString("name"), obj.getString("type"), obj.getInt("quantity"),
-                        obj.getInt("timeCreated"), obj.getInt("checked")));
+                        obj.getString("units"), obj.getInt("timeCreated"), obj.getInt("checked")));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -134,6 +140,10 @@ public class CurrentList extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = option.getItemId();
 
+        if(id == R.id.sort){
+            return super.onOptionsItemSelected(option);
+        }
+
         //noinspection SimplifiableIfStatement
         switch(id) {
             case R.id.sort_name:
@@ -165,6 +175,7 @@ public class CurrentList extends AppCompatActivity {
         final EditText itemType = (EditText) dialog.findViewById(R.id.Type);
         final Button minus = (Button) dialog.findViewById(R.id.Minus);
         final EditText itemQuantity = (EditText) dialog.findViewById(R.id.Quantity);
+        final EditText itemUnits = (EditText) dialog.findViewById(R.id.units);
         final Button plus = (Button) dialog.findViewById(R.id.Plus);
         final Button cancel = (Button) dialog.findViewById(R.id.Cancel);
         final Button more = (Button) dialog.findViewById(R.id.More);
@@ -180,13 +191,37 @@ public class CurrentList extends AppCompatActivity {
             }
         });
 
+        // Notify user about duplicate item
+        itemName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                String name = itemName.getText().toString();
+                for(int index = 0; index < items.size(); index++){
+                    if(name.toLowerCase().equals(items.get(index).getName().toLowerCase())){
+                        Context context = getApplicationContext();
+                        CharSequence text = "Is this a Duplicate?";
+                        int duration = Toast.LENGTH_LONG;
+
+                        Toast toast = Toast.makeText(context, text, duration);
+                        toast.setGravity(Gravity.TOP, 0, 30);
+                        toast.show();
+                    }
+                }
+
+            }
+        });
+
         minus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(!itemQuantity.getText().toString().isEmpty()){
-                    int value = Integer.parseInt(itemQuantity.getText().toString());
+                    double value = Double.parseDouble(itemQuantity.getText().toString());
                     if (value > 1) {
-                        itemQuantity.setText("" + (value - 1));
+                        itemQuantity.setText(Integer.toString((int) Math.ceil(value - 1)));
                     }
                 }
             }
@@ -196,8 +231,8 @@ public class CurrentList extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(!itemQuantity.getText().toString().isEmpty()) {
-                    int value = Integer.parseInt(itemQuantity.getText().toString());
-                    itemQuantity.setText("" + (value + 1));
+                    double value = Double.parseDouble(itemQuantity.getText().toString());
+                    itemQuantity.setText(Integer.toString((int)Math.floor(value + 1)));
                 }
             }
         });
@@ -215,20 +250,24 @@ public class CurrentList extends AppCompatActivity {
                 if (!itemName.getText().toString().isEmpty()) {
                     String name = itemName.getText().toString();
                     String type = itemType.getText().toString();
-                    int quantity;
+                    double quantity;
+                    String units = itemUnits.getText().toString();
                     if(!itemQuantity.getText().toString().isEmpty()) {
-                        quantity = Integer.parseInt(itemQuantity.getText().toString());
+                        quantity = Double.parseDouble(itemQuantity.getText().toString());
                     }
                     else{
                         quantity = 1;
                     }
-                    Item m = new Item(name, type, quantity);
+                    Item m = new Item(name, type, quantity, units);
                     items.add(m);
                     sortList(false, currentOrder);
                     itemAdapter.notifyDataSetChanged();
+                    dialog.dismiss();
+                    addItemDialog();
                 }
-                dialog.dismiss();
-                addItemDialog();
+                else{
+                    itemName.setError("Name is empty...");
+                }
             }
         });
 
@@ -238,19 +277,23 @@ public class CurrentList extends AppCompatActivity {
                 if (!itemName.getText().toString().isEmpty()) {
                     String name = itemName.getText().toString();
                     String type = itemType.getText().toString();
-                    int quantity;
+                    double quantity;
+                    String units = itemUnits.getText().toString();
                     if(!itemQuantity.getText().toString().isEmpty()) {
-                        quantity = Integer.parseInt(itemQuantity.getText().toString());
+                        quantity = Double.parseDouble(itemQuantity.getText().toString());
                     }
                     else{
                         quantity = 1;
                     }
-                    Item m = new Item(name, type, quantity);
+                    Item m = new Item(name, type, quantity, units);
                     items.add(m);
                     sortList(false, currentOrder);
                     itemAdapter.notifyDataSetChanged();
+                    dialog.dismiss();
                 }
-                dialog.dismiss();
+                else{
+                    itemName.setError("Name is empty...");
+                }
             }
         });
 
@@ -265,7 +308,7 @@ public class CurrentList extends AppCompatActivity {
 
             toggleChecked(cb);
         }
-        else if(v.getTag().equals("name")){
+        else if(v.getTag().equals("text")){
             final TextView name = (TextView)v;
             final LinearLayout column = (LinearLayout) name.getParent();
             final LinearLayout row = (LinearLayout) column.getParent();
@@ -280,14 +323,6 @@ public class CurrentList extends AppCompatActivity {
         }
         else if(v.getTag().equals("column")){
             final LinearLayout column = (LinearLayout) v;
-            final LinearLayout row = (LinearLayout) column.getParent();
-            final CheckBox cb = (CheckBox)row.getChildAt(0);
-
-            toggleChecked(cb);
-        }
-        else if(v.getTag().equals("type")){
-            final TextView type = (TextView)v;
-            final LinearLayout column = (LinearLayout) type.getParent();
             final LinearLayout row = (LinearLayout) column.getParent();
             final CheckBox cb = (CheckBox)row.getChildAt(0);
 

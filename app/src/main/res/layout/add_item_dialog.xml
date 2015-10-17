@@ -3,8 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_weight=".9"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
     <EditText
         android:id="@+id/Name"
         android:layout_width="match_parent"
@@ -23,7 +22,7 @@
         android:layout_marginRight="10dp"
         android:inputType="text"
         android:singleLine="true"
-        android:hint="(Optional) Category"/>
+        android:hint="Category (Optional)"/>
     <LinearLayout
         android:id="@+id/QuantityLayout"
         android:layout_width="match_parent"
@@ -34,35 +33,58 @@
         android:paddingStart="10dp">
         <Button
             android:id="@+id/Minus"
-            android:layout_width="wrap_content"
+            android:layout_width="70dp"
             android:layout_height="40dp"
             android:text="-"
             android:textStyle="bold"
             android:textSize="30dp"
             android:layout_weight=".05"
-            android:background="#7fff0000" />
+            android:background="#7fff0000"
+            android:minWidth="60dp"
+            android:maxWidth="70dp" />
         <EditText
             android:id="@+id/Quantity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:inputType="number"
+            android:inputType="number|numberDecimal"
             android:text="1"
             android:singleLine="true"
             android:layout_weight=".5"
             android:gravity="center_horizontal"
-            android:textSize="22dp" />
+            android:textSize="22dp"
+            android:layout_gravity="bottom"
+            android:minWidth="20dp"
+            android:maxWidth="70dp" />
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/units"
+            android:layout_weight=".4"
+            android:inputType="text"
+            android:hint="Units"
+            android:layout_marginRight="10dp"
+            android:singleLine="true"
+            android:gravity="center_horizontal"
+            android:layout_gravity="bottom"
+            android:minWidth="20dp"
+            android:maxWidth="70dp" />
+
         <Button
             android:id="@+id/Plus"
-            android:layout_width="wrap_content"
+            android:layout_width="70dp"
             android:layout_height="40dp"
             android:text="+"
             android:textStyle="bold"
             android:textSize="30dp"
             android:layout_weight=".05"
             android:textAlignment="gravity"
-            android:background="#7f00ff00" />
+            android:background="#7f00ff00"
+            android:minWidth="60dp"
+            android:maxWidth="70dp" />
+
     </LinearLayout>
 
 
@@ -91,4 +113,5 @@
             android:layout_weight=".33"
             android:text="Done"/>
     </LinearLayout>
+
 </LinearLayout>

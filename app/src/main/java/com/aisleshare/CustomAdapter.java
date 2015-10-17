@@ -15,7 +15,7 @@ import java.util.Collections;
 public class CustomAdapter extends ArrayAdapter{
     ArrayList<Item> items = null;
     Context context;
-    public CustomAdapter(Context context, ArrayList resource) {
+    public CustomAdapter(Context context, ArrayList<Item> resource) {
         super(context,R.layout.row,resource);
         this.context = context;
         this.items = resource;
@@ -27,7 +27,13 @@ public class CustomAdapter extends ArrayAdapter{
 
         TextView name = (TextView) convertView.findViewById(R.id.name);
         TextView type = (TextView) convertView.findViewById(R.id.type);
+        TextView quantity = (TextView) convertView.findViewById(R.id.quantity);
+        TextView units = (TextView) convertView.findViewById(R.id.units);
         CheckBox cb = (CheckBox) convertView.findViewById(R.id.checkBox);
+
+        boolean hasType = items.get(position).getType().equals("");
+        boolean hasUnits = items.get(position).getUnits().equals("");
+        double quantityVal = items.get(position).getQuantity();
 
         // Move Checked Items to the Bottom
         ItemComparator compare = new ItemComparator();
@@ -35,23 +41,40 @@ public class CustomAdapter extends ArrayAdapter{
         Collections.sort(items, sorter);
 
         // Name
-        if(items.get(position).getQuantity() > 1){
-            name.setText(items.get(position).getName() +
-                    " (" + items.get(position).getQuantity() + ")");
-        }
-        else{
-            name.setText(items.get(position).getName());
-        }
+        name.setText(items.get(position).getName());
         name.setId(position);
 
-
         // Type
-        if (!items.get(position).getType().equals("")) {
+        if (!hasType) {
             type.setText(items.get(position).getType());
             type.setId(position);
         }
         else{
             type.setVisibility(View.GONE);
+        }
+
+        // Quantity
+        Double value = items.get(position).getQuantity();
+        if(quantityVal > 0 && (quantityVal != 1 || !hasUnits)){
+            if(value % 1 == 0) {
+                quantity.setText(Integer.toString((int) Math.round(value)));
+            }
+            else{
+                quantity.setText(Double.toString(value));
+            }
+        }
+        else{
+            quantity.setText("");
+        }
+        quantity.setId(position);
+
+        // Units
+        if (!hasUnits) {
+            units.setText(items.get(position).getUnits());
+            units.setId(position);
+        }
+        else{
+            units.setVisibility(View.GONE);
         }
 
         // Checked

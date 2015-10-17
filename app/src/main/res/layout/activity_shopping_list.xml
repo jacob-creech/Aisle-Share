@@ -19,7 +19,8 @@
             fab:fab_plusIconColor="#FFFFFF"
             fab:fab_colorNormal="#23ff14"
             fab:fab_colorPressed="#18d50f"
-            android:layout_gravity="right|bottom" />
+            android:layout_gravity="right|bottom"
+            android:alpha=".75" />
     </FrameLayout>
 
     <ListView

@@ -1,18 +1,17 @@
 package com.aisleshare;
 
-import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import com.getbase.floatingactionbutton.FloatingActionButton;
@@ -28,6 +27,7 @@ public class ShoppingList extends AppCompatActivity {
     private ListView listView;
     private ArrayList<String> shoppingLists;
     private Set<String> shoppingSet;
+    private ArrayAdapter<String> itemAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,67 +41,82 @@ public class ShoppingList extends AppCompatActivity {
         shoppingLists = new ArrayList<>(shoppingSet);
 
 
-        final ArrayAdapter<String> itemAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1, shoppingLists);
+        itemAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1, shoppingLists);
         listView.setAdapter(itemAdapter);
 
         FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.float_button);
 
-        // TODO: Remove from onCreate
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //startActivity(new Intent(ShoppingList.this, AddListMenu.class));
-
-                final AlertDialog modal = new AlertDialog.Builder(ShoppingList.this).create();
-                modal.setTitle("Add a New List");
-
-                // Set up the input
-                final EditText input = new EditText(ShoppingList.this);
-                input.setInputType(InputType.TYPE_CLASS_TEXT);
-                input.setSingleLine(true);
-                modal.setView(input);
-
-                // Open keyboard automatically
-                input.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                    @Override
-                    public void onFocusChange(View v, boolean hasFocus) {
-                        if (hasFocus) {
-                            modal.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-                        }
-                    }
-                });
-
-                // Positive Button
-                modal.setButton(-1, "Done", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (!input.getText().toString().isEmpty()) {
-                            Intent intent = new Intent(ShoppingList.this, CurrentList.class);
-                            String listInput = input.getText().toString();
-
-                            SharedPreferences.Editor editor = sp.edit();
-                            shoppingSet.add(listInput);
-                            shoppingLists.add(listInput);
-                            itemAdapter.notifyDataSetChanged();
-                            editor.putStringSet("ShoppingSets", shoppingSet);
-                            editor.commit();
-
-                            intent.putExtra(LIST_NAME, listInput);
-                            startActivity(intent);
-                        }
-                    }
-                });
-
-                // Negative Button
-                modal.setButton(-2, "Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                    }
-                });
-
-                modal.show();
+                addListDialog();
             }
         });
     }
 
+    // Popup for adding a List
+    public void addListDialog(){
+        // custom dialog
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.add_list_dialog);
+        dialog.setTitle("Add a New List");
+
+        final EditText listName = (EditText) dialog.findViewById(R.id.Name);
+        final Button cancel = (Button) dialog.findViewById(R.id.Cancel);
+        final Button done = (Button) dialog.findViewById(R.id.Done);
+
+        // Open keyboard automatically
+        listName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+                }
+            }
+        });
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        done.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!listName.getText().toString().isEmpty()) {
+                    String name = listName.getText().toString();
+
+                    for(int index = 0; index < shoppingLists.size(); index++){
+                        if(shoppingLists.get(index).equals(name)){
+                            listName.setError("List already exists...");
+                            return;
+                        }
+                    }
+
+                    dialog.dismiss();
+
+                    Intent intent = new Intent(ShoppingList.this, CurrentList.class);
+
+                    SharedPreferences.Editor editor = sp.edit();
+                    shoppingSet.add(name);
+                    shoppingLists.add(name);
+                    itemAdapter.notifyDataSetChanged();
+                    editor.putStringSet("ShoppingSets", shoppingSet);
+                    editor.commit();
+
+                    intent.putExtra(LIST_NAME, name);
+                    startActivity(intent);
+                }
+                else{
+                    listName.setError("Name is empty...");
+                }
+            }
+        });
+
+        dialog.show();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

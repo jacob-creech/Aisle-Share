@@ -3,11 +3,11 @@ package com.aisleshare;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,6 +17,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,10 +35,12 @@ public class CurrentList extends AppCompatActivity {
     // Class Variables
     private ListView listView;
     private ArrayList<Item> items;
+    private ArrayList<Item> items_backup;
     private CustomAdapter customAdapter;
     private boolean isIncreasingOrder;
     private int currentOrder;
     private MenuItem sortRoot;
+    private MenuItem unsortOption;
     private String deviceName;
 
     @Override
@@ -47,6 +50,7 @@ public class CurrentList extends AppCompatActivity {
 
         listView = (ListView)findViewById(R.id.currentItems);
         items = new ArrayList<>();
+        items_backup = new ArrayList<>();
         isIncreasingOrder = true;
         currentOrder = -1;
         customAdapter = new CustomAdapter(this, items);
@@ -55,8 +59,7 @@ public class CurrentList extends AppCompatActivity {
 
         setupTestItems();
         setListTitle(savedInstanceState);
-        addButtonListener();
-        addLongClickListener();
+        setListeners();
         setSwipeAdapter();
     }
 
@@ -74,10 +77,16 @@ public class CurrentList extends AppCompatActivity {
 
         // Unsorted
         if(currentOrder == -1){
+            sortRoot.setIcon(0);
+            unsortOption.setVisible(false);
             return;
         }
+        else{
+            unsortOption.setVisible(true);
+        }
+
         // Name
-        else if(currentOrder == 0){
+        if(currentOrder == 0){
             ItemComparator.Name sorter = compare.new Name();
             Collections.sort(items, sorter);
         }
@@ -97,7 +106,7 @@ public class CurrentList extends AppCompatActivity {
             Collections.sort(items, sorter);
         }
 
-        if(isIncreasingOrder){
+        if(isIncreasingOrder) {
             sortRoot.setIcon(R.mipmap.inc_sort);
         }
         else{
@@ -110,6 +119,8 @@ public class CurrentList extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_current_list, menu);
         sortRoot = menu.findItem(R.id.sort_root);
+        unsortOption = menu.findItem(R.id.unsorted);
+        unsortOption.setVisible(false);
         return true;
     }
 
@@ -133,6 +144,9 @@ public class CurrentList extends AppCompatActivity {
                 break;
             case R.id.sort_type:
                 sortList(true, 3);
+                break;
+            case R.id.unsorted:
+                sortList(false, -1);
                 break;
             case R.id.delete_items:
                 deleteItems();
@@ -288,11 +302,11 @@ public class CurrentList extends AppCompatActivity {
     // Checks/UnChecks an item by clicking on any element in its row
     public void itemClick(View v){
         Item item = items.get(v.getId());
-        if (item.getChecked() == 0){
-            item.setChecked(1);
+        if (item.getChecked()){
+            item.setChecked(false);
         }
         else{
-            item.setChecked(0);
+            item.setChecked(true);
         }
         sortList(false, currentOrder);
         customAdapter.notifyDataSetChanged();
@@ -300,11 +314,11 @@ public class CurrentList extends AppCompatActivity {
 
     public void rowClick(int position){
         Item item = items.get(position);
-        if (item.getChecked() == 0){
-            item.setChecked(1);
+        if (item.getChecked()){
+            item.setChecked(false);
         }
         else{
-            item.setChecked(0);
+            item.setChecked(true);
         }
         sortList(false, currentOrder);
         customAdapter.notifyDataSetChanged();
@@ -357,12 +371,12 @@ public class CurrentList extends AppCompatActivity {
 
     public void setupTestItems(){
         ArrayList<String> jsonList = new ArrayList<>();
-        jsonList.add("{\"owner\":" + deviceName + ",\"name\":itemName,\"quantity\":1,\"units\":unit,\"type\":defType, \"timeCreated\":12105543, \"checked\":0}");
-        jsonList.add("{\"owner\":" + deviceName + ",\"name\":burgers,\"quantity\":5,\"units\":\"\",\"type\":Meats, \"timeCreated\":12105543, \"checked\":0}");
-        jsonList.add("{\"owner\":" + deviceName + ",\"name\":Eggs,\"quantity\":2,\"units\":dozen,\"type\":\"\", \"timeCreated\":12104543, \"checked\":0}");
-        jsonList.add("{\"owner\":" + deviceName + ",\"name\":Bacon,\"quantity\":100,\"units\":strips,\"type\":Meats, \"timeCreated\":12105533, \"checked\":0}");
-        jsonList.add("{\"owner\":" + deviceName + ",\"name\":Cheese,\"quantity\":4,\"units\":slices,\"type\":Dairy, \"timeCreated\":13105543, \"checked\":0}");
-        jsonList.add("{\"owner\":" + deviceName + ",\"name\":Buns,\"quantity\":1,\"units\":\"\",\"type\":\"\", \"timeCreated\":12105843, \"checked\":0}");
+        jsonList.add("{\"owner\":" + deviceName + ",\"name\":itemName,\"quantity\":1,\"units\":unit,\"type\":defType, \"timeCreated\":12105543, \"checked\":false}");
+        jsonList.add("{\"owner\":" + deviceName + ",\"name\":burgers,\"quantity\":5,\"units\":\"\",\"type\":Meats, \"timeCreated\":12105543, \"checked\":false}");
+        jsonList.add("{\"owner\":" + deviceName + ",\"name\":Eggs,\"quantity\":2,\"units\":dozen,\"type\":\"\", \"timeCreated\":12104543, \"checked\":false}");
+        jsonList.add("{\"owner\":" + deviceName + ",\"name\":Bacon,\"quantity\":100,\"units\":strips,\"type\":Meats, \"timeCreated\":12105533, \"checked\":false}");
+        jsonList.add("{\"owner\":" + deviceName + ",\"name\":Cheese,\"quantity\":4,\"units\":slices,\"type\":Dairy, \"timeCreated\":13105543, \"checked\":false}");
+        jsonList.add("{\"owner\":" + deviceName + ",\"name\":Buns,\"quantity\":1,\"units\":\"\",\"type\":\"\", \"timeCreated\":12105843, \"checked\":false}");
 
         JSONObject obj;
         for(int i = 0; i < jsonList.size(); i++){
@@ -375,7 +389,7 @@ public class CurrentList extends AppCompatActivity {
                         obj.getInt("quantity"),
                         obj.getString("units"),
                         obj.getInt("timeCreated"),
-                        obj.getInt("checked")));
+                        obj.getBoolean("checked")));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -393,7 +407,102 @@ public class CurrentList extends AppCompatActivity {
         setTitle(listTitle);
     }
 
-    public void addButtonListener(){
+    public void deleteItems(){
+        // custom dialog
+        final Dialog dialog = new Dialog(CurrentList.this);
+        dialog.setContentView(R.layout.delete_items_dialog);
+        dialog.setTitle("What Should We Delete?");
+
+        final Button cancel = (Button) dialog.findViewById(R.id.cancel);
+        final Button delete_all = (Button) dialog.findViewById(R.id.delete_all);
+        final Button delete_checked = (Button) dialog.findViewById(R.id.delete_checked);
+
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        delete_all.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
+                boolean removals = false;
+
+                items_backup.clear();
+                for(Item item : items){
+                    items_backup.add(item);
+                }
+
+                int length = items.size();
+                for(int index = length - 1; index > -1; index--){
+                    if(deviceName.equals(items.get(index).getOwner())){
+                        items.remove(index);
+                        removals = true;
+                    }
+                }
+                customAdapter.notifyDataSetChanged();
+                if(items.size() == 0){
+                    TextView emptyNotice = (TextView) findViewById(R.id.empty_notice);
+                    emptyNotice.setVisibility(View.VISIBLE);
+                }
+                if(removals){
+                    undoBox.setVisibility(View.VISIBLE);
+                }
+                dialog.dismiss();
+                hideUndoBoxTimer();
+            }
+        });
+
+        delete_checked.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
+                boolean removals = false;
+
+                items_backup.clear();
+                for (Item item : items) {
+                    items_backup.add(item);
+                }
+
+                int length = items.size();
+                for (int index = length - 1; index > -1; index--) {
+                    if (deviceName.equals(items.get(index).getOwner()) &&
+                            items.get(index).getChecked()) {
+                        items.remove(index);
+                        removals = true;
+                    }
+                }
+                customAdapter.notifyDataSetChanged();
+                if (items.size() == 0) {
+                    TextView emptyNotice = (TextView) findViewById(R.id.empty_notice);
+                    emptyNotice.setVisibility(View.VISIBLE);
+                }
+                if (removals) {
+                    undoBox.setVisibility(View.VISIBLE);
+                }
+                dialog.dismiss();
+                hideUndoBoxTimer();
+            }
+        });
+
+        dialog.show();
+    }
+
+    public void hideUndoBoxTimer(){
+        new CountDownTimer(5000, 5000) {
+            public void onTick(long millisUntilFinished) {}
+            public void onFinish() {
+                LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
+                undoBox.setVisibility(View.INVISIBLE);
+            }
+        }.start();
+    }
+
+    public void setListeners() {
+        // Floating Action Button
         FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.float_button);
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -401,22 +510,35 @@ public class CurrentList extends AppCompatActivity {
                 addItemDialog();
             }
         });
-    }
 
-    public void deleteItems(){
-
-    }
-
-    public void addLongClickListener(){
+        //Long Click for editing
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
-                editItemDialog(items.get(pos), pos);
+                editItemDialog(pos);
                 return true;
+            }
+        });
+
+        // Undo Listener
+        Button undo = (Button) findViewById(R.id.undo);
+        undo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
+                TextView emptyNotice = (TextView) findViewById(R.id.empty_notice);
+                items.clear();
+                for(Item item : items_backup){
+                    items.add(item);
+                }
+                customAdapter.notifyDataSetChanged();
+                undoBox.setVisibility(View.INVISIBLE);
+                emptyNotice.setVisibility(View.INVISIBLE);
             }
         });
     }
 
-    public void editItemDialog(final Item item, final int position){
+    public void editItemDialog(final int position){
+        final Item item = items.get(position);
         if(!deviceName.equals(item.getOwner())){
             Context context = getApplicationContext();
             CharSequence text = "You are not the owner...";

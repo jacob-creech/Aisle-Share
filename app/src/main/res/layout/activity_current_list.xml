@@ -4,7 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="10dp"
-    tools:context="com.aisleshare.CurrentList">
+    tools:context="com.aisleshare.CurrentList"
+    android:id="@+id/root"
+    android:clickable="true">
 
     <ListView
         android:layout_width="match_parent"
@@ -15,7 +17,8 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentTop="true">
+        android:layout_alignParentTop="true"
+        android:id="@+id/frame">
 
         <com.getbase.floatingactionbutton.AddFloatingActionButton
             android:id="@+id/float_button"
@@ -35,6 +38,33 @@
             android:layout_gravity="center"
             android:textSize="14sp"
             android:visibility="invisible" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|left"
+            android:background="#bc3e47fd"
+            android:gravity="center_vertical"
+            android:visibility="invisible"
+            android:id="@+id/undo_box">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Items Deleted"
+                android:id="@+id/textView2"
+                android:textSize="22sp"
+                android:textColor="#ffffff"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="UNDO"
+                android:id="@+id/undo" />
+        </LinearLayout>
     </FrameLayout>
 
 </RelativeLayout>

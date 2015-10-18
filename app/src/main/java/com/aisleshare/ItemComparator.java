@@ -25,7 +25,12 @@ public  class ItemComparator{
     }
     public class Checked implements Comparator<Item>{
         public int compare(Item left, Item right) {
-            return left.getChecked() - right.getChecked();
+            int leftInt, rightInt;
+            if(left.getChecked()) leftInt = 1;
+            else leftInt = 0;
+            if(right.getChecked()) rightInt = 1;
+            else rightInt = 0;
+            return leftInt - rightInt;
         }
     }
 }

@@ -7,7 +7,7 @@ public class Item {
     private double quantity;
     private String units;
     private int created;
-    private int checked; /* 0 : checkbox disable, 1 : checkbox enable */
+    private boolean checked; /* 0 : checkbox disable, 1 : checkbox enable */
 
     Item(String owner, String name){
         this.owner = owner;
@@ -16,7 +16,7 @@ public class Item {
         this.quantity = 1;
         this.units = "";
         this.created = 0;
-        this.checked = 0;
+        this.checked = false;
     }
     Item(String owner, String name, String type){
         this.owner = owner;
@@ -25,7 +25,7 @@ public class Item {
         this.quantity = 1;
         this.units = "";
         this.created = 0;
-        this.checked = 0;
+        this.checked = false;
     }
     Item(String owner, String name, String type, double quantity){
         this.owner = owner;
@@ -34,7 +34,7 @@ public class Item {
         this.quantity = quantity;
         this.units = "";
         this.created = 0;
-        this.checked = 0;
+        this.checked = false;
     }
     Item(String owner, String name, String type, double quantity, String units){
         this.owner = owner;
@@ -43,7 +43,7 @@ public class Item {
         this.quantity = quantity;
         this.units = units;
         this.created = 0;
-        this.checked = 0;
+        this.checked = false;
     }
     Item(String owner, String name, String type, double quantity, String units, int created){
         this.owner = owner;
@@ -52,9 +52,9 @@ public class Item {
         this.quantity = quantity;
         this.units = units;
         this.created = created;
-        this.checked = 0;
+        this.checked = false;
     }
-    Item(String owner, String name, String type, double quantity, String units, int created, int value){
+    Item(String owner, String name, String type, double quantity, String units, int created, boolean value){
         this.owner = owner;
         this.name = name;
         this.type = type;
@@ -83,7 +83,7 @@ public class Item {
     public int getCreated(){
         return this.created;
     }
-    public int getChecked(){
+    public boolean getChecked(){
         return this.checked;
     }
 
@@ -100,7 +100,7 @@ public class Item {
     public void setUnits(String units){
         this.units = units;
     }
-    public void setChecked(int checked){
+    public void setChecked(boolean checked){
         this.checked = checked;
     }
 }

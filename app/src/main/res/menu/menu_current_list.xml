@@ -9,8 +9,7 @@
     <item
         android:title="Sort"
         android:id="@+id/sort_root"
-        app:showAsAction="ifRoom|withText"
-        android:icon="@mipmap/inc_sort">
+        app:showAsAction="ifRoom|withText">
         <menu
             android:id="@+id/sort">
             <item android:id="@+id/sort_name"
@@ -21,6 +20,8 @@
                 android:title="Sort By Time"/>
             <item android:id="@+id/sort_quantity"
                 android:title="Sort By Quantity"/>
+            <item android:id="@+id/unsorted"
+                android:title="Turn Off Sort"/>
             <!--   <item android:id="@+id/sort_custom"
                 android:title="Custom Sort"/>   -->
         </menu>

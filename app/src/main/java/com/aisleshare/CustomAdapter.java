@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,6 +26,7 @@ public class CustomAdapter extends ArrayAdapter{
         LayoutInflater inflater = ((Activity)context).getLayoutInflater();
         convertView = inflater.inflate(R.layout.row, parent, false);
 
+        FrameLayout row = (FrameLayout) convertView.findViewById(R.id.row);
         TextView name = (TextView) convertView.findViewById(R.id.name);
         TextView type = (TextView) convertView.findViewById(R.id.type);
         TextView quantity = (TextView) convertView.findViewById(R.id.quantity);
@@ -39,6 +41,9 @@ public class CustomAdapter extends ArrayAdapter{
         ItemComparator compare = new ItemComparator();
         ItemComparator.Checked sorter = compare.new Checked();
         Collections.sort(items, sorter);
+
+        // Frame
+        row.setId(position);
 
         // Name
         name.setText(items.get(position).getName());
@@ -78,7 +83,7 @@ public class CustomAdapter extends ArrayAdapter{
         }
 
         // Checked
-        if(items.get(position).getChecked() == 1) {
+        if(items.get(position).getChecked()) {
             cb.setChecked(true);
             name.setPaintFlags(name.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         }

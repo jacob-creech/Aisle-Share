@@ -4,7 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
-    android:gravity="center_vertical">
+    android:gravity="center_vertical"
+    android:onClick="itemClick"
+    android:longClickable="true">
 
     <LinearLayout
         android:orientation="horizontal"

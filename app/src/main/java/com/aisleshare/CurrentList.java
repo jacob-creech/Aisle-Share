@@ -332,26 +332,16 @@ public class CurrentList extends AppCompatActivity {
                         new SwipeToDismissTouchListener.DismissCallbacks<ListViewAdapter>() {
                             @Override
                             public boolean canDismiss(int position) {
-                                return true;
+                                return deviceName.equals(items.get(position).getOwner());
                             }
 
                             @Override
                             public void onDismiss(ListViewAdapter view, int position) {
-                                if(deviceName.equals(items.get(position).getOwner())){
-                                    items.remove(position);
-                                    customAdapter.notifyDataSetChanged();
-                                    if(items.size() == 0){
-                                        TextView emptyNotice = (TextView) findViewById(R.id.empty_notice);
-                                        emptyNotice.setVisibility(View.VISIBLE);
-                                    }
-                                }
-                                else{
-                                    Context context = getApplicationContext();
-                                    CharSequence text = "You are not the owner...";
-                                    int duration = Toast.LENGTH_LONG;
-
-                                    Toast toast = Toast.makeText(context, text, duration);
-                                    toast.show();
+                                items.remove(position);
+                                customAdapter.notifyDataSetChanged();
+                                if(items.size() == 0){
+                                    TextView emptyNotice = (TextView) findViewById(R.id.empty_notice);
+                                    emptyNotice.setVisibility(View.VISIBLE);
                                 }
                             }
                         });
@@ -371,7 +361,7 @@ public class CurrentList extends AppCompatActivity {
 
     public void setupTestItems(){
         ArrayList<String> jsonList = new ArrayList<>();
-        jsonList.add("{\"owner\":" + deviceName + ",\"name\":itemName,\"quantity\":1,\"units\":unit,\"type\":defType, \"timeCreated\":12105543, \"checked\":false}");
+        jsonList.add("{\"owner\":owner,\"name\":itemName,\"quantity\":1,\"units\":unit,\"type\":defType, \"timeCreated\":12105543, \"checked\":false}");
         jsonList.add("{\"owner\":" + deviceName + ",\"name\":burgers,\"quantity\":5,\"units\":\"\",\"type\":Meats, \"timeCreated\":12105543, \"checked\":false}");
         jsonList.add("{\"owner\":" + deviceName + ",\"name\":Eggs,\"quantity\":2,\"units\":dozen,\"type\":\"\", \"timeCreated\":12104543, \"checked\":false}");
         jsonList.add("{\"owner\":" + deviceName + ",\"name\":Bacon,\"quantity\":100,\"units\":strips,\"type\":Meats, \"timeCreated\":12105533, \"checked\":false}");
@@ -492,7 +482,7 @@ public class CurrentList extends AppCompatActivity {
     }
 
     public void hideUndoBoxTimer(){
-        new CountDownTimer(5000, 5000) {
+        new CountDownTimer(10000, 10000) {
             public void onTick(long millisUntilFinished) {}
             public void onFinish() {
                 LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);

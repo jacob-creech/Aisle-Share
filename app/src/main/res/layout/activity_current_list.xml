@@ -4,9 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="10dp"
-    tools:context="com.aisleshare.CurrentList"
-    android:id="@+id/root"
-    android:clickable="true">
+    tools:context="com.aisleshare.CurrentList">
 
     <ListView
         android:layout_width="match_parent"
@@ -17,8 +15,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
-        android:id="@+id/frame">
+        android:layout_alignParentTop="true">
 
         <com.getbase.floatingactionbutton.AddFloatingActionButton
             android:id="@+id/float_button"

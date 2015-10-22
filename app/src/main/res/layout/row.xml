@@ -12,10 +12,9 @@
         android:layout_height="match_parent"
         android:gravity="center_vertical"
         android:layout_marginTop="10dp"
-        android:layout_marginRight="10dp"
         android:layout_marginBottom="10dp"
         android:paddingLeft="10dp"
-        android:paddingRight="10dp">
+        android:paddingRight="20dp">
 
         <CheckBox
             android:id="@+id/checkBox"
@@ -25,27 +24,27 @@
             android:layout_marginRight="10dp"
             android:scaleX="1.25"
             android:scaleY="1.25"
-            android:onClick="itemClick"/>
+            android:onClick="itemClick"
+            android:layout_weight=".01" />
 
         <LinearLayout
             android:id="@+id/column1"
             android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight=".9"
-            android:gravity="center_vertical"
-            android:minWidth="50dp">
+            android:layout_weight=".8"
+            android:gravity="center_vertical">
             <TextView
                 android:id="@+id/name"
                 android:text="Name"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="22sp"
                 android:textStyle="bold" />
             <TextView
                 android:id="@+id/type"
                 android:text="Type"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="14sp"
                 android:textColor="#6b6b6b"
@@ -57,17 +56,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/column2"
-            android:layout_weight=".1"
-            android:gravity="center_vertical|right"
-            android:minWidth="50dp">
+            android:layout_weight=".19"
+            android:gravity="center_vertical|right">
 
             <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:text="####"
                 android:id="@+id/quantity"
                 android:textStyle="bold"
-                android:textSize="22sp"/>
+                android:textSize="22sp"
+                android:singleLine="true"
+                android:gravity="right"
+                android:minWidth="110dp"
+                android:maxLength="5"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -75,7 +77,11 @@
                 android:text="Units"
                 android:id="@+id/units"
                 android:textStyle="italic"
-                android:textSize="14sp"/>
+                android:textSize="14sp"
+                android:singleLine="false"
+                android:gravity="right"
+                android:maxLength="10"
+                android:minWidth="110dp" />
         </LinearLayout>
     </LinearLayout>
 

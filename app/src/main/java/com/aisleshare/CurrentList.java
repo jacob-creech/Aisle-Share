@@ -237,7 +237,9 @@ public class CurrentList extends AppCompatActivity {
             public void onClick(View v) {
                 if(!itemQuantity.getText().toString().isEmpty()) {
                     double value = Double.parseDouble(itemQuantity.getText().toString());
-                    itemQuantity.setText(String.format("%s", (int)Math.floor(value + 1)));
+                    if (value < 99999) {
+                        itemQuantity.setText(String.format("%s", (int) Math.floor(value + 1)));
+                    }
                 }
             }
         });
@@ -588,9 +590,11 @@ public class CurrentList extends AppCompatActivity {
         plus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!itemQuantity.getText().toString().isEmpty()) {
+                if (!itemQuantity.getText().toString().isEmpty()) {
                     double value = Double.parseDouble(itemQuantity.getText().toString());
-                    itemQuantity.setText(String.format("%s", (int)Math.floor(value + 1)));
+                    if (value < 99999) {
+                        itemQuantity.setText(String.format("%s", (int) Math.floor(value + 1)));
+                    }
                 }
             }
         });

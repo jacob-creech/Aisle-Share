@@ -28,6 +28,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class CurrentList extends AppCompatActivity {
@@ -39,8 +41,7 @@ public class CurrentList extends AppCompatActivity {
     private CustomAdapter customAdapter;
     private boolean isIncreasingOrder;
     private int currentOrder;
-    private MenuItem sortRoot;
-    private MenuItem unsortOption;
+    private Map<String, MenuItem> menuItems;
     private String deviceName;
 
     @Override
@@ -56,6 +57,7 @@ public class CurrentList extends AppCompatActivity {
         customAdapter = new CustomAdapter(this, items);
         listView.setAdapter(customAdapter);
         deviceName = Settings.Secure.getString(CurrentList.this.getContentResolver(), Settings.Secure.ANDROID_ID);
+        menuItems = new HashMap<>();
 
         setupTestItems();
         setListTitle(savedInstanceState);
@@ -77,12 +79,12 @@ public class CurrentList extends AppCompatActivity {
 
         // Unsorted
         if(currentOrder == -1){
-            sortRoot.setIcon(0);
-            unsortOption.setVisible(false);
+            menuItems.get("sort").setIcon(0);
+            menuItems.get("unsorted").setVisible(false);
             return;
         }
         else{
-            unsortOption.setVisible(true);
+            menuItems.get("unsorted").setVisible(true);
         }
 
         switch (currentOrder){
@@ -114,20 +116,33 @@ public class CurrentList extends AppCompatActivity {
         }
 
         if(isIncreasingOrder) {
-            sortRoot.setIcon(R.mipmap.inc_sort);
+            menuItems.get("sort").setIcon(R.mipmap.inc_sort);
         }
         else{
             Collections.reverse(items);
-            sortRoot.setIcon(R.mipmap.dec_sort);
+            menuItems.get("sort").setIcon(R.mipmap.dec_sort);
         }
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_current_list, menu);
-        sortRoot = menu.findItem(R.id.sort_root);
-        unsortOption = menu.findItem(R.id.unsorted);
-        unsortOption.setVisible(false);
+        menuItems.put("share", menu.findItem(R.id.share));
+        menuItems.put("sort", menu.findItem(R.id.sort_root));
+        menuItems.put("name", menu.findItem(R.id.sort_name));
+        menuItems.put("type", menu.findItem(R.id.sort_type));
+        menuItems.put("time", menu.findItem(R.id.sort_time));
+        menuItems.put("quantity", menu.findItem(R.id.sort_quantity));
+        menuItems.put("owner", menu.findItem(R.id.sort_owner));
+        menuItems.put("unsorted", menu.findItem(R.id.unsorted));
+        menuItems.put("delete", menu.findItem(R.id.delete_items));
+
+        menuItems.get("name").setCheckable(true);
+        menuItems.get("type").setCheckable(true);
+        menuItems.get("time").setCheckable(true);
+        menuItems.get("quantity").setCheckable(true);
+        menuItems.get("owner").setCheckable(true);
+        menuItems.get("unsorted").setVisible(false);
         return true;
     }
 
@@ -142,21 +157,32 @@ public class CurrentList extends AppCompatActivity {
         switch(id) {
             case R.id.sort_name:
                 sortList(true, 0);
+                clearMenuCheckables();
+                option.setChecked(true);
                 break;
             case R.id.sort_quantity:
                 sortList(true, 1);
+                clearMenuCheckables();
+                option.setChecked(true);
                 break;
             case R.id.sort_time:
                 sortList(true, 2);
+                clearMenuCheckables();
+                option.setChecked(true);
                 break;
             case R.id.sort_type:
                 sortList(true, 3);
+                clearMenuCheckables();
+                option.setChecked(true);
                 break;
             case R.id.sort_owner:
                 sortList(true, 4);
+                clearMenuCheckables();
+                option.setChecked(true);
                 break;
             case R.id.unsorted:
                 sortList(false, -1);
+                clearMenuCheckables();
                 break;
             case R.id.delete_items:
                 deleteItems();
@@ -167,6 +193,14 @@ public class CurrentList extends AppCompatActivity {
 
         customAdapter.notifyDataSetChanged();
         return super.onOptionsItemSelected(option);
+    }
+
+    public void clearMenuCheckables(){
+        menuItems.get("name").setChecked(false);
+        menuItems.get("type").setChecked(false);
+        menuItems.get("time").setChecked(false);
+        menuItems.get("quantity").setChecked(false);
+        menuItems.get("owner").setChecked(false);
     }
 
     // Popup for adding an Item

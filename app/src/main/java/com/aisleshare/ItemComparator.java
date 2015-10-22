@@ -1,8 +1,31 @@
 package com.aisleshare;
 
+import android.content.Context;
+import android.provider.Settings;
+
 import java.util.Comparator;
 
 public  class ItemComparator{
+    private String deviceName;
+
+    public ItemComparator(Context context) {
+        deviceName = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
+
+    public class Owner implements Comparator<Item>{
+        public int compare(Item left, Item right) {
+            boolean leftOwner = left.getOwner().equals(deviceName);
+            if(left.getOwner().equals(right.getOwner())){
+                return 0;
+            }
+            else if(leftOwner){
+                return -1;
+            }
+            else{
+                return 1;
+            }
+        }
+    }
     public class Name implements Comparator<Item>{
         public int compare(Item left, Item right) {
             return left.getName().toLowerCase().compareTo(right.getName().toLowerCase());

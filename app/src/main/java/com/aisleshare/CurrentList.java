@@ -73,7 +73,7 @@ public class CurrentList extends AppCompatActivity {
             isIncreasingOrder = true;
         }
 
-        ItemComparator compare = new ItemComparator();
+        ItemComparator compare = new ItemComparator(CurrentList.this);
 
         // Unsorted
         if(currentOrder == -1){
@@ -85,25 +85,32 @@ public class CurrentList extends AppCompatActivity {
             unsortOption.setVisible(true);
         }
 
-        // Name
-        if(currentOrder == 0){
-            ItemComparator.Name sorter = compare.new Name();
-            Collections.sort(items, sorter);
-        }
-        // Quantity
-        else if(currentOrder == 1){
-            ItemComparator.Quantity sorter = compare.new Quantity();
-            Collections.sort(items, sorter);
-        }
-        // Time Created
-        else if(currentOrder == 2){
-            ItemComparator.Created sorter = compare.new Created();
-            Collections.sort(items, sorter);
-        }
-        // Type
-        else if(currentOrder == 3){
-            ItemComparator.Type sorter = compare.new Type();
-            Collections.sort(items, sorter);
+        switch (currentOrder){
+            // Name
+            case 0:{
+                ItemComparator.Name sorter = compare.new Name();
+                Collections.sort(items, sorter);
+                break;}
+            // Quantity
+            case 1:{
+                ItemComparator.Quantity sorter = compare.new Quantity();
+                Collections.sort(items, sorter);
+                break;}
+            // Time Created
+            case 2:{
+                ItemComparator.Created sorter = compare.new Created();
+                Collections.sort(items, sorter);
+                break;}
+            // Type
+            case 3:{
+                ItemComparator.Type sorter = compare.new Type();
+                Collections.sort(items, sorter);
+                break;}
+            // Owner
+            case 4:{
+                ItemComparator.Owner sorter = compare.new Owner();
+                Collections.sort(items, sorter);
+                break;}
         }
 
         if(isIncreasingOrder) {
@@ -144,6 +151,9 @@ public class CurrentList extends AppCompatActivity {
                 break;
             case R.id.sort_type:
                 sortList(true, 3);
+                break;
+            case R.id.sort_owner:
+                sortList(true, 4);
                 break;
             case R.id.unsorted:
                 sortList(false, -1);

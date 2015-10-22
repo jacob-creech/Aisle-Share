@@ -13,13 +13,15 @@
         <menu
             android:id="@+id/sort">
             <item android:id="@+id/sort_name"
-                android:title="Sort By Name"/>
+                android:title="Name"/>
             <item android:id="@+id/sort_type"
-                android:title="Sort By Type"/>
+                android:title="Type"/>
             <item android:id="@+id/sort_time"
-                android:title="Sort By Time"/>
+                android:title="Time Created"/>
             <item android:id="@+id/sort_quantity"
-                android:title="Sort By Quantity"/>
+                android:title="Quantity"/>
+            <item android:id="@+id/sort_owner"
+                android:title="Owner"/>
             <item android:id="@+id/unsorted"
                 android:title="Turn Off Sort"/>
             <!--   <item android:id="@+id/sort_custom"

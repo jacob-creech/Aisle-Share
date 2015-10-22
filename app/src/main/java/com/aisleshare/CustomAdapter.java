@@ -2,7 +2,10 @@ package com.aisleshare;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,12 +17,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class CustomAdapter extends ArrayAdapter{
-    ArrayList<Item> items = null;
-    Context context;
+    private ArrayList<Item> items = null;
+    private Context context;
+    private String deviceName;
+
     public CustomAdapter(Context context, ArrayList<Item> resource) {
         super(context,R.layout.row,resource);
         this.context = context;
         this.items = resource;
+        this.deviceName = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -38,12 +44,15 @@ public class CustomAdapter extends ArrayAdapter{
         double quantityVal = items.get(position).getQuantity();
 
         // Move Checked Items to the Bottom
-        ItemComparator compare = new ItemComparator();
+        ItemComparator compare = new ItemComparator(context);
         ItemComparator.Checked sorter = compare.new Checked();
         Collections.sort(items, sorter);
 
         // Frame
         row.setId(position);
+        if(!items.get(position).getOwner().equals(deviceName)){
+            row.setBackgroundColor(Color.parseColor("#d7d7d7"));
+        }
 
         // Name
         name.setText(items.get(position).getName());

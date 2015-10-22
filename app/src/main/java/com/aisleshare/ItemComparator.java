@@ -15,7 +15,16 @@ public  class ItemComparator{
     }
     public class Quantity implements Comparator<Item>{
         public int compare(Item left, Item right) {
-            return (int)Math.round(left.getQuantity() - right.getQuantity());
+            double difference = left.getQuantity() - right.getQuantity();
+            if(difference > 0){
+                return 1;
+            }
+            else if(difference == 0){
+                return 0;
+            }
+            else{
+                return -1;
+            }
         }
     }
     public class Created implements Comparator<Item>{

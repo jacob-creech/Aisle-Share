@@ -98,7 +98,7 @@
             android:layout_height="match_parent"
             android:id="@+id/txt_delete"
             android:gravity="center_vertical"
-            android:text="Swipe to Confirm"
+            android:text="Swipe to Delete"
             android:clickable="false"
             android:layout_weight="2"
             android:hapticFeedbackEnabled="true"

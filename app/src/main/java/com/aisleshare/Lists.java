@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -66,6 +67,16 @@ public class Lists extends Fragment {
                 addListDialog();
             }
         });
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long id) {
+
+                Intent intent = new Intent(dashboard, CurrentList.class);
+                String name = shoppingLists.get(pos);
+                intent.putExtra(LIST_NAME, name);
+                startActivity(intent);
+            }
+        });
     }
 
     // Popup for adding a List
@@ -114,12 +125,11 @@ public class Lists extends Fragment {
 
                     Intent intent = new Intent(dashboard, CurrentList.class);
 
-                    SharedPreferences.Editor editor = sp.edit();
+
                     shoppingSet.add(name);
                     shoppingLists.add(name);
                     itemAdapter.notifyDataSetChanged();
-                    editor.putStringSet("ShoppingSets", shoppingSet);
-                    editor.commit();
+                    updateStorage();
                     emptyNotice.setVisibility(View.INVISIBLE);
 
                     intent.putExtra(LIST_NAME, name);
@@ -132,5 +142,41 @@ public class Lists extends Fragment {
         });
 
         dialog.show();
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        updateStorage();
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        updateStorage();
+    }
+
+    /*@Override
+    public void onBackPressed(){
+        super.onBackPressed();
+        updateStorage();
+    }*/
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        updateStorage();
+    }
+
+    public void updateStorage(){
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putStringSet("ShoppingSets", shoppingSet);
+        editor.commit();
+        editor.apply();
+
+        editor.remove("ShoppingSets");
+        editor.apply();
+        editor.putStringSet("ShoppingSets", shoppingSet);
+        editor.apply();
     }
 }

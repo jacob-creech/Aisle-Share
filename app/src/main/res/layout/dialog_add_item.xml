@@ -11,7 +11,7 @@
         android:layout_marginTop="10dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:inputType="text"
+        android:inputType="text|textCapWords"
         android:singleLine="true"
         android:hint="Name"/>
     <EditText
@@ -20,7 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:inputType="text"
+        android:inputType="text|textCapWords"
         android:singleLine="true"
         android:hint="Category (Optional)"/>
     <LinearLayout
@@ -64,7 +64,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/units"
             android:layout_weight=".4"
-            android:inputType="text"
+            android:inputType="text|textCapWords"
             android:hint="Units"
             android:layout_marginRight="10dp"
             android:singleLine="true"

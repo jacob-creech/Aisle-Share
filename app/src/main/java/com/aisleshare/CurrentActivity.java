@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Set;
 
 
-public class CurrentList extends AppCompatActivity {
+public class CurrentActivity extends AppCompatActivity {
 
     // Class Variables
     private ListView listView;
@@ -49,22 +49,20 @@ public class CurrentList extends AppCompatActivity {
     private String deviceName;
     private Set<String> currentSet;
     private SharedPreferences settings;
-    private String listTitle;
+    private String activityTitle;
     private TextView emptyNotice;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_current_list);
+        setContentView(R.layout.activity_current_activity);
 
         //TODO: put block in function
         settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         //sp = getSharedPreferences("ShoppingPreferences", Context.MODE_PRIVATE);
-        setListTitle(savedInstanceState);
+        setActivityTitle(savedInstanceState);
         Set<String> defSet = new HashSet<>();
-        currentSet = settings.getStringSet(listTitle, defSet);
-
-
+        currentSet = settings.getStringSet(activityTitle, defSet);
 
         listView = (ListView)findViewById(R.id.currentItems);
         items = new ArrayList<>();
@@ -72,10 +70,8 @@ public class CurrentList extends AppCompatActivity {
         isIncreasingOrder = true;
         currentOrder = 2;
         emptyNotice = (TextView) findViewById(R.id.empty_notice);
-
-        deviceName = Settings.Secure.getString(CurrentList.this.getContentResolver(), Settings.Secure.ANDROID_ID);
+        deviceName = Settings.Secure.getString(CurrentActivity.this.getContentResolver(), Settings.Secure.ANDROID_ID);
         menuItems = new HashMap<>();
-
 
         ArrayList<String> jsonItems = new ArrayList<>(currentSet);
         JSONObject obj;
@@ -99,70 +95,11 @@ public class CurrentList extends AppCompatActivity {
             emptyNotice.setVisibility(View.VISIBLE);
         }
 
-        customAdapter = new CustomAdapter(this, items, R.layout.row_list);
+        customAdapter = new CustomAdapter(this, items, R.layout.row_activity);
         listView.setAdapter(customAdapter);
 
         setListeners();
         setSwipeAdapter();
-    }
-
-    // Sorted based on the order index parameter
-    public void sortList(boolean reverseOrder, int order) {
-        if(reverseOrder) {
-            isIncreasingOrder = !isIncreasingOrder;
-        }
-        if(order != currentOrder){
-            currentOrder = order;
-            isIncreasingOrder = true;
-        }
-
-        ItemComparator compare = new ItemComparator(CurrentList.this);
-
-        // Unsorted
-        if(currentOrder == -1){
-            menuItems.get("sort").setIcon(0);
-            menuItems.get("unsorted").setVisible(false);
-            return;
-        }
-        else{
-            menuItems.get("unsorted").setVisible(true);
-        }
-
-        switch (currentOrder){
-            // Name
-            case 0:{
-                ItemComparator.Name sorter = compare.new Name();
-                Collections.sort(items, sorter);
-                break;}
-            // Quantity
-            case 1:{
-                ItemComparator.Quantity sorter = compare.new Quantity();
-                Collections.sort(items, sorter);
-                break;}
-            // Time Created
-            case 2:{
-                ItemComparator.Created sorter = compare.new Created();
-                Collections.sort(items, sorter);
-                break;}
-            // Type
-            case 3:{
-                ItemComparator.Type sorter = compare.new Type();
-                Collections.sort(items, sorter);
-                break;}
-            // Owner
-            case 4:{
-                ItemComparator.Owner sorter = compare.new Owner();
-                Collections.sort(items, sorter);
-                break;}
-        }
-
-        if(isIncreasingOrder) {
-            menuItems.get("sort").setIcon(R.mipmap.inc_sort);
-        }
-        else{
-            Collections.reverse(items);
-            menuItems.get("sort").setIcon(R.mipmap.dec_sort);
-        }
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -229,7 +166,7 @@ public class CurrentList extends AppCompatActivity {
                 clearMenuCheckables();
                 break;
             case R.id.delete_items:
-                deleteItems();
+                deleteItemsDialog();
                 break;
             case R.id.sort:
                 return super.onOptionsItemSelected(option);
@@ -247,10 +184,186 @@ public class CurrentList extends AppCompatActivity {
         menuItems.get("owner").setChecked(false);
     }
 
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        updateStorage();
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        updateStorage();
+    }
+
+    @Override
+    public void onBackPressed(){
+        super.onBackPressed();
+        updateStorage();
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        updateStorage();
+    }
+
+    public void updateStorage(){
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putStringSet(activityTitle, currentSet);
+        editor.commit();
+        editor.apply();
+
+        editor.remove(activityTitle);
+        editor.apply();
+        editor.putStringSet(activityTitle, currentSet);
+        editor.apply();
+    }
+
+    public void setListeners() {
+
+        // Floating Action Button
+        FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.float_button);
+        addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addItemDialog();
+            }
+        });
+
+        //Long Click for editing
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
+                editItemDialog(pos);
+                return true;
+            }
+        });
+
+        // Undo Listener
+        Button undo = (Button) findViewById(R.id.undo);
+        undo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
+                items.clear();
+                for (Item item : items_backup) {
+                    items.add(item);
+                }
+                customAdapter.notifyDataSetChanged();
+                undoBox.setVisibility(View.INVISIBLE);
+                emptyNotice.setVisibility(View.INVISIBLE);
+            }
+        });
+    }
+
+    public void setActivityTitle(Bundle savedInstanceState){
+        Bundle extras = getIntent().getExtras();
+        if (savedInstanceState == null) {
+            activityTitle = getIntent().getStringExtra("com.ShoppingList.MESSAGE");
+        }
+        else {
+            activityTitle = extras.getString("com.ShoppingList.MESSAGE");
+        }
+        setTitle(activityTitle);
+    }
+
+    public void setSwipeAdapter(){
+        // TODO: Fix issue with swiping multiple items concurrently
+        final SwipeToDismissTouchListener<ListViewAdapter> touchListener =
+                new SwipeToDismissTouchListener<>(
+                        new ListViewAdapter(listView),
+                        new SwipeToDismissTouchListener.DismissCallbacks<ListViewAdapter>() {
+                            @Override
+                            public boolean canDismiss(int position) {
+                                return deviceName.equals(items.get(position).getOwner());
+                            }
+
+                            @Override
+                            public void onDismiss(ListViewAdapter view, int position) {
+                                currentSet.remove(items.get(position).getJSONString());
+                                updateStorage();
+                                items.remove(position);
+                                customAdapter.notifyDataSetChanged();
+                                if(items.size() == 0){
+                                    emptyNotice.setVisibility(View.VISIBLE);
+                                }
+                            }
+                        });
+        listView.setOnTouchListener(touchListener);
+        listView.setOnScrollListener((AbsListView.OnScrollListener) touchListener.makeScrollListener());
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (touchListener.existPendingDismisses()) {
+                    touchListener.undoPendingDismiss();
+                }
+            }
+        });
+    }
+
+    // Sorted based on the order index parameter
+    public void sortList(boolean reverseOrder, int order) {
+        if(reverseOrder) {
+            isIncreasingOrder = !isIncreasingOrder;
+        }
+        if(order != currentOrder){
+            currentOrder = order;
+            isIncreasingOrder = true;
+        }
+
+        ItemComparator compare = new ItemComparator(CurrentActivity.this);
+
+        // Unsorted
+        if(currentOrder == -1){
+            menuItems.get("sort").setIcon(0);
+            menuItems.get("unsorted").setVisible(false);
+            return;
+        }
+        else{
+            menuItems.get("unsorted").setVisible(true);
+        }
+
+        switch (currentOrder){
+            // Name
+            case 0:{
+                ItemComparator.Name sorter = compare.new Name();
+                Collections.sort(items, sorter);
+                break;}
+            // Quantity
+            case 1:{
+                ItemComparator.Quantity sorter = compare.new Quantity();
+                Collections.sort(items, sorter);
+                break;}
+            // Time Created
+            case 2:{
+                ItemComparator.Created sorter = compare.new Created();
+                Collections.sort(items, sorter);
+                break;}
+            // Type
+            case 3:{
+                ItemComparator.Type sorter = compare.new Type();
+                Collections.sort(items, sorter);
+                break;}
+            // Owner
+            case 4:{
+                ItemComparator.Owner sorter = compare.new Owner();
+                Collections.sort(items, sorter);
+                break;}
+        }
+
+        if(isIncreasingOrder) {
+            menuItems.get("sort").setIcon(R.mipmap.inc_sort);
+        }
+        else{
+            Collections.reverse(items);
+            menuItems.get("sort").setIcon(R.mipmap.dec_sort);
+        }
+    }
+
     // Popup for adding an Item
     public void addItemDialog(){
         // custom dialog
-        final Dialog dialog = new Dialog(CurrentList.this);
+        final Dialog dialog = new Dialog(CurrentActivity.this);
         dialog.setContentView(R.layout.dialog_add_item);
         dialog.setTitle("Add a New Item");
 
@@ -395,246 +508,6 @@ public class CurrentList extends AppCompatActivity {
         dialog.show();
     }
 
-    // Checks/UnChecks an item by clicking on any element in its row
-    public void itemClick(View v){
-        Item item = items.get(v.getId());
-        currentSet.remove(item.getJSONString());
-        item.toggleChecked();
-        currentSet.add(item.getJSONString());
-        updateStorage();
-
-        sortList(false, currentOrder);
-        customAdapter.notifyDataSetChanged();
-    }
-
-    public void rowClick(int position){
-        Item item = items.get(position);
-        currentSet.remove(item.getJSONString());
-        item.toggleChecked();
-        currentSet.add(item.getJSONString());
-        updateStorage();
-
-        sortList(false, currentOrder);
-        customAdapter.notifyDataSetChanged();
-    }
-
-    public void setSwipeAdapter(){
-        // TODO: Fix issue with swiping multiple items concurrently
-        final SwipeToDismissTouchListener<ListViewAdapter> touchListener =
-                new SwipeToDismissTouchListener<>(
-                        new ListViewAdapter(listView),
-                        new SwipeToDismissTouchListener.DismissCallbacks<ListViewAdapter>() {
-                            @Override
-                            public boolean canDismiss(int position) {
-                                return deviceName.equals(items.get(position).getOwner());
-                            }
-
-                            @Override
-                            public void onDismiss(ListViewAdapter view, int position) {
-                                currentSet.remove(items.get(position).getJSONString());
-                                updateStorage();
-                                items.remove(position);
-                                customAdapter.notifyDataSetChanged();
-                                if(items.size() == 0){
-                                    emptyNotice.setVisibility(View.VISIBLE);
-                                }
-                            }
-                        });
-        listView.setOnTouchListener(touchListener);
-        listView.setOnScrollListener((AbsListView.OnScrollListener) touchListener.makeScrollListener());
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (touchListener.existPendingDismisses()) {
-                    touchListener.undoPendingDismiss();
-                } else {
-                    rowClick(position);
-                }
-            }
-        });
-    }
-
-    public void setListTitle(Bundle savedInstanceState){
-        Bundle extras = getIntent().getExtras();
-        if (savedInstanceState == null) {
-            listTitle = getIntent().getStringExtra("com.ShoppingList.MESSAGE");
-        }
-        else {
-            listTitle = extras.getString("com.ShoppingList.MESSAGE");
-        }
-        setTitle(listTitle);
-    }
-
-    public void deleteItems(){
-        // custom dialog
-        final Dialog dialog = new Dialog(CurrentList.this);
-        dialog.setContentView(R.layout.dialog_delete_items);
-        dialog.setTitle("What Should We Delete?");
-
-        final Button cancel = (Button) dialog.findViewById(R.id.cancel);
-        final Button delete_all = (Button) dialog.findViewById(R.id.delete_all);
-        final Button delete_checked = (Button) dialog.findViewById(R.id.delete_checked);
-
-
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
-
-        delete_all.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
-                boolean removals = false;
-
-                items_backup.clear();
-                for(Item item : items){
-                    items_backup.add(item);
-                }
-
-                int length = items.size();
-                for(int index = length - 1; index > -1; index--){
-                    if(deviceName.equals(items.get(index).getOwner())){
-                        currentSet.remove(items.get(index).getJSONString());
-                        items.remove(index);
-                        removals = true;
-                    }
-                }
-                updateStorage();
-                customAdapter.notifyDataSetChanged();
-                if(items.size() == 0){
-                    emptyNotice.setVisibility(View.VISIBLE);
-                }
-                if(removals){
-                    undoBox.setVisibility(View.VISIBLE);
-                }
-                dialog.dismiss();
-                hideUndoBoxTimer();
-            }
-        });
-
-        delete_checked.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
-                boolean removals = false;
-
-                items_backup.clear();
-                for (Item item : items) {
-                    items_backup.add(item);
-                }
-
-                int length = items.size();
-                for (int index = length - 1; index > -1; index--) {
-                    if (deviceName.equals(items.get(index).getOwner()) &&
-                            items.get(index).getChecked()) {
-                        currentSet.remove(items.get(index).getJSONString());
-                        items.remove(index);
-                        removals = true;
-                    }
-                }
-                updateStorage();
-                customAdapter.notifyDataSetChanged();
-                if (items.size() == 0) {
-                    emptyNotice.setVisibility(View.VISIBLE);
-                }
-                if (removals) {
-                    undoBox.setVisibility(View.VISIBLE);
-                }
-                dialog.dismiss();
-                hideUndoBoxTimer();
-            }
-        });
-
-        dialog.show();
-    }
-
-    public void hideUndoBoxTimer(){
-        new CountDownTimer(5000, 5000) {
-            public void onTick(long millisUntilFinished) {}
-            public void onFinish() {
-                LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
-                undoBox.setVisibility(View.INVISIBLE);
-            }
-        }.start();
-    }
-
-    @Override
-    public void onDestroy(){
-        super.onDestroy();
-        updateStorage();
-    }
-
-    @Override
-    public void onStop(){
-        super.onStop();
-        updateStorage();
-    }
-
-    @Override
-    public void onBackPressed(){
-        super.onBackPressed();
-        updateStorage();
-    }
-
-    @Override
-    public void onPause(){
-        super.onPause();
-        updateStorage();
-    }
-
-    public void updateStorage(){
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putStringSet(listTitle, currentSet);
-        editor.commit();
-        editor.apply();
-
-        editor.remove(listTitle);
-        editor.apply();
-        editor.putStringSet(listTitle, currentSet);
-        editor.apply();
-    }
-
-    public void setListeners() {
-
-
-
-        // Floating Action Button
-        FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.float_button);
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addItemDialog();
-            }
-        });
-
-        //Long Click for editing
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
-                editItemDialog(pos);
-                return true;
-            }
-        });
-
-        // Undo Listener
-        Button undo = (Button) findViewById(R.id.undo);
-        undo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
-                items.clear();
-                for(Item item : items_backup){
-                    items.add(item);
-                }
-                customAdapter.notifyDataSetChanged();
-                undoBox.setVisibility(View.INVISIBLE);
-                emptyNotice.setVisibility(View.INVISIBLE);
-            }
-        });
-    }
-
     public void editItemDialog(final int position){
         final Item item = items.get(position);
         if(!deviceName.equals(item.getOwner())){
@@ -648,7 +521,7 @@ public class CurrentList extends AppCompatActivity {
         }
 
         // custom dialog
-        final Dialog dialog = new Dialog(CurrentList.this);
+        final Dialog dialog = new Dialog(CurrentActivity.this);
         dialog.setContentView(R.layout.dialog_edit_item);
         dialog.setTitle("Edit Item");
 
@@ -735,5 +608,101 @@ public class CurrentList extends AppCompatActivity {
         });
 
         dialog.show();
+    }
+
+    public void deleteItemsDialog(){
+        // custom dialog
+        final Dialog dialog = new Dialog(CurrentActivity.this);
+        dialog.setContentView(R.layout.dialog_delete_items);
+        dialog.setTitle("What Should We Delete?");
+
+        final Button cancel = (Button) dialog.findViewById(R.id.cancel);
+        final Button delete_all = (Button) dialog.findViewById(R.id.delete_all);
+        final Button delete_checked = (Button) dialog.findViewById(R.id.delete_checked);
+
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        delete_all.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
+                boolean removals = false;
+
+                items_backup.clear();
+                for (Item item : items) {
+                    items_backup.add(item);
+                }
+
+                int length = items.size();
+                for (int index = length - 1; index > -1; index--) {
+                    if (deviceName.equals(items.get(index).getOwner())) {
+                        currentSet.remove(items.get(index).getJSONString());
+                        items.remove(index);
+                        removals = true;
+                    }
+                }
+                updateStorage();
+                customAdapter.notifyDataSetChanged();
+                if (items.size() == 0) {
+                    emptyNotice.setVisibility(View.VISIBLE);
+                }
+                if (removals) {
+                    undoBox.setVisibility(View.VISIBLE);
+                }
+                dialog.dismiss();
+                hideUndoBoxTimer();
+            }
+        });
+
+        delete_checked.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
+                boolean removals = false;
+
+                items_backup.clear();
+                for (Item item : items) {
+                    items_backup.add(item);
+                }
+
+                int length = items.size();
+                for (int index = length - 1; index > -1; index--) {
+                    if (deviceName.equals(items.get(index).getOwner()) &&
+                            items.get(index).getChecked()) {
+                        currentSet.remove(items.get(index).getJSONString());
+                        items.remove(index);
+                        removals = true;
+                    }
+                }
+                updateStorage();
+                customAdapter.notifyDataSetChanged();
+                if (items.size() == 0) {
+                    emptyNotice.setVisibility(View.VISIBLE);
+                }
+                if (removals) {
+                    undoBox.setVisibility(View.VISIBLE);
+                }
+                dialog.dismiss();
+                hideUndoBoxTimer();
+            }
+        });
+
+        dialog.show();
+    }
+
+    public void hideUndoBoxTimer(){
+        new CountDownTimer(5000, 5000) {
+            public void onTick(long millisUntilFinished) {}
+            public void onFinish() {
+                LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
+                undoBox.setVisibility(View.INVISIBLE);
+            }
+        }.start();
     }
 }

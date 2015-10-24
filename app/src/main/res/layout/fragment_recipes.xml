@@ -1,9 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     xmlns:fab="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent"
-    tools:context=".Activities">
+    tools:context=".Recipes">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -22,7 +23,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="You do not have any activities."
+            android:text="You do not have any recipes."
             android:id="@+id/empty_notice"
             android:layout_gravity="center"
             android:textSize="14sp"
@@ -32,6 +33,6 @@
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/activities"
+        android:id="@+id/recipes"
         android:visibility="visible" />
 </RelativeLayout>

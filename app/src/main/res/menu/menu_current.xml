@@ -12,12 +12,12 @@
         app:showAsAction="ifRoom|withText">
         <menu
             android:id="@+id/sort">
+            <item android:id="@+id/sort_time"
+                android:title="Time Created"/>
             <item android:id="@+id/sort_name"
                 android:title="Name"/>
             <item android:id="@+id/sort_type"
                 android:title="Type"/>
-            <item android:id="@+id/sort_time"
-                android:title="Time Created"/>
             <item android:id="@+id/sort_quantity"
                 android:title="Quantity"/>
             <item android:id="@+id/sort_owner"

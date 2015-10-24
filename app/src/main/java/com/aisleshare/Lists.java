@@ -26,10 +26,11 @@ public class Lists extends Fragment {
     public final static String LIST_NAME = "com.ShoppingList.MESSAGE";
     public final static String SHOP_PREF = "ShoppingPreferences";
     private ListView listView;
-    private ArrayList<String> shoppingLists;
-    private Set<String> shoppingSet;
+    private ArrayList<String> lists;
+    private Set<String> listSet;
     private ArrayAdapter<String> itemAdapter;
     private Context dashboard;
+    private TextView emptyNotice;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -38,7 +39,7 @@ public class Lists extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.lists, container, false);
+        return inflater.inflate(R.layout.fragment_lists, container, false);
     }
 
     @Override
@@ -46,17 +47,17 @@ public class Lists extends Fragment {
         super.onActivityCreated(savedInstanceState);
         dashboard = getActivity();
         sp = dashboard.getSharedPreferences(SHOP_PREF, Context.MODE_PRIVATE);
-        listView = (ListView) getView().findViewById(R.id.shoppingLists);
+        listView = (ListView) getView().findViewById(R.id.lists);
         Set<String> defSet = new HashSet<>();
-        shoppingSet = sp.getStringSet("ShoppingSets", defSet);
-        shoppingLists = new ArrayList<>(shoppingSet);
+        listSet = sp.getStringSet("ShoppingSets", defSet);
+        lists = new ArrayList<>(listSet);
+        emptyNotice = (TextView) getView().findViewById(R.id.empty_notice);
 
-        if(shoppingLists.size() == 0){
-            TextView emptyNotice = (TextView) getView().findViewById(R.id.empty_notice);
+        if(lists.size() == 0){
             emptyNotice.setVisibility(View.VISIBLE);
         }
 
-        itemAdapter = new ArrayAdapter<>(dashboard,android.R.layout.simple_list_item_1, shoppingLists);
+        itemAdapter = new ArrayAdapter<>(dashboard,R.layout.row_dashboard, lists);
         listView.setAdapter(itemAdapter);
 
         FloatingActionButton addButton = (FloatingActionButton) getView().findViewById(R.id.float_button);
@@ -72,7 +73,7 @@ public class Lists extends Fragment {
             public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long id) {
 
                 Intent intent = new Intent(dashboard, CurrentList.class);
-                String name = shoppingLists.get(pos);
+                String name = lists.get(pos);
                 intent.putExtra(LIST_NAME, name);
                 startActivity(intent);
             }
@@ -83,7 +84,7 @@ public class Lists extends Fragment {
     public void addListDialog(){
         // custom dialog
         final Dialog dialog = new Dialog(dashboard);
-        dialog.setContentView(R.layout.add_list_dialog);
+        dialog.setContentView(R.layout.dialog_add_name);
         dialog.setTitle("Add a New List");
 
         final EditText listName = (EditText) dialog.findViewById(R.id.Name);
@@ -112,10 +113,9 @@ public class Lists extends Fragment {
             public void onClick(View v) {
                 if (!listName.getText().toString().isEmpty()) {
                     String name = listName.getText().toString();
-                    TextView emptyNotice = (TextView) getView().findViewById(R.id.empty_notice);
 
-                    for(int index = 0; index < shoppingLists.size(); index++){
-                        if(shoppingLists.get(index).equals(name)){
+                    for(int index = 0; index < lists.size(); index++){
+                        if(lists.get(index).equals(name)){
                             listName.setError("List already exists...");
                             return;
                         }
@@ -126,8 +126,8 @@ public class Lists extends Fragment {
                     Intent intent = new Intent(dashboard, CurrentList.class);
 
 
-                    shoppingSet.add(name);
-                    shoppingLists.add(name);
+                    listSet.add(name);
+                    lists.add(name);
                     itemAdapter.notifyDataSetChanged();
                     updateStorage();
                     emptyNotice.setVisibility(View.INVISIBLE);
@@ -170,13 +170,13 @@ public class Lists extends Fragment {
 
     public void updateStorage(){
         SharedPreferences.Editor editor = sp.edit();
-        editor.putStringSet("ShoppingSets", shoppingSet);
+        editor.putStringSet("ShoppingSets", listSet);
         editor.commit();
         editor.apply();
 
         editor.remove("ShoppingSets");
         editor.apply();
-        editor.putStringSet("ShoppingSets", shoppingSet);
+        editor.putStringSet("ShoppingSets", listSet);
         editor.apply();
     }
 }

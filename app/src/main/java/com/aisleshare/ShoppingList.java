@@ -35,10 +35,10 @@ public class ShoppingList extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.lists);
+        setContentView(R.layout.fragment_lists);
 
         sp = getSharedPreferences(SHOP_PREF, Context.MODE_PRIVATE);
-        listView = (ListView)findViewById(R.id.shoppingLists);
+        listView = (ListView)findViewById(R.id.lists);
         Set<String> defSet = new HashSet<>();
         shoppingSet = sp.getStringSet("ShoppingSets", defSet);
         shoppingLists = new ArrayList<>(shoppingSet);
@@ -75,7 +75,7 @@ public class ShoppingList extends AppCompatActivity {
     public void addListDialog(){
         // custom dialog
         final Dialog dialog = new Dialog(this);
-        dialog.setContentView(R.layout.add_list_dialog);
+        dialog.setContentView(R.layout.dialog_add_name);
         dialog.setTitle("Add a New List");
 
         final EditText listName = (EditText) dialog.findViewById(R.id.Name);
@@ -175,7 +175,7 @@ public class ShoppingList extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_shopping_list, menu);
+        getMenuInflater().inflate(R.menu.menu_dashboard, menu);
         return true;
     }
 

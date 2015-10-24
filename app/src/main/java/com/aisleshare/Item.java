@@ -8,8 +8,8 @@ public class Item {
     private String type;
     private double quantity;
     private String units;
-    private int created;
-    private boolean checked; /* 0 : checkbox disable, 1 : checkbox enable */
+    private boolean checked;
+    private long created;
 
     Item(String owner, String name){
         this.owner = owner;
@@ -17,8 +17,8 @@ public class Item {
         this.type = "";
         this.quantity = 1;
         this.units = "";
-        this.created = 0;
         this.checked = false;
+        this.created = System.currentTimeMillis()/1000;
     }
     Item(String owner, String name, String type){
         this.owner = owner;
@@ -26,8 +26,8 @@ public class Item {
         this.type = type;
         this.quantity = 1;
         this.units = "";
-        this.created = 0;
         this.checked = false;
+        this.created = System.currentTimeMillis()/1000;
     }
     Item(String owner, String name, String type, double quantity){
         this.owner = owner;
@@ -35,8 +35,8 @@ public class Item {
         this.type = type;
         this.quantity = quantity;
         this.units = "";
-        this.created = 0;
         this.checked = false;
+        this.created = System.currentTimeMillis()/1000;
     }
     Item(String owner, String name, String type, double quantity, String units){
         this.owner = owner;
@@ -44,26 +44,26 @@ public class Item {
         this.type = type;
         this.quantity = quantity;
         this.units = units;
-        this.created = 0;
         this.checked = false;
+        this.created = System.currentTimeMillis()/1000;
     }
-    Item(String owner, String name, String type, double quantity, String units, int created){
+    Item(String owner, String name, String type, double quantity, String units, boolean value){
         this.owner = owner;
         this.name = name;
         this.type = type;
         this.quantity = quantity;
         this.units = units;
-        this.created = created;
-        this.checked = false;
-    }
-    Item(String owner, String name, String type, double quantity, String units, int created, boolean value){
-        this.owner = owner;
-        this.name = name;
-        this.type = type;
-        this.quantity = quantity;
-        this.units = units;
-        this.created = created;
         this.checked = value;
+        this.created = System.currentTimeMillis()/1000;
+    }
+    Item(String owner, String name, String type, double quantity, String units, boolean value, long created){
+        this.owner = owner;
+        this.name = name;
+        this.type = type;
+        this.quantity = quantity;
+        this.units = units;
+        this.checked = value;
+        this.created = created;
     }
 
     // Accessors
@@ -82,7 +82,7 @@ public class Item {
     public String getUnits(){
         return this.units;
     }
-    public int getCreated(){
+    public long getCreated(){
         return this.created;
     }
     public boolean getChecked(){
@@ -123,9 +123,7 @@ public class Item {
     public void setUnits(String units){
         this.units = units;
     }
-    public void setChecked(boolean checked){
-        this.checked = checked;
+    public void toggleChecked(){
+        checked = !checked;
     }
-
-
 }

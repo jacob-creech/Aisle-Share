@@ -2,7 +2,6 @@ package com.aisleshare;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.provider.Settings;
@@ -20,17 +19,20 @@ public class CustomAdapter extends ArrayAdapter{
     private ArrayList<Item> items = null;
     private Context context;
     private String deviceName;
+    private int layout;
 
-    public CustomAdapter(Context context, ArrayList<Item> resource) {
-        super(context,R.layout.row,resource);
+    public CustomAdapter(Context context, ArrayList<Item> items, int layout) {
+        super(context,R.layout.row_list,items);
         this.context = context;
-        this.items = resource;
+        this.items = items;
         this.deviceName = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+        this.layout = layout;
     }
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         LayoutInflater inflater = ((Activity)context).getLayoutInflater();
-        convertView = inflater.inflate(R.layout.row, parent, false);
+        convertView = inflater.inflate(layout, parent, false);
 
         FrameLayout row = (FrameLayout) convertView.findViewById(R.id.row);
         TextView name = (TextView) convertView.findViewById(R.id.name);
@@ -44,9 +46,11 @@ public class CustomAdapter extends ArrayAdapter{
         double quantityVal = items.get(position).getQuantity();
 
         // Move Checked Items to the Bottom
-        ItemComparator compare = new ItemComparator(context);
-        ItemComparator.Checked sorter = compare.new Checked();
-        Collections.sort(items, sorter);
+        if(cb != null) {
+            ItemComparator compare = new ItemComparator(context);
+            ItemComparator.Checked sorter = compare.new Checked();
+            Collections.sort(items, sorter);
+        }
 
         // Frame
         row.setId(position);
@@ -92,15 +96,15 @@ public class CustomAdapter extends ArrayAdapter{
         }
 
         // Checked
-        if(items.get(position).getChecked()) {
-            cb.setChecked(true);
-            name.setPaintFlags(name.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+        if(cb != null) {
+            if (items.get(position).getChecked()) {
+                cb.setChecked(true);
+                name.setPaintFlags(name.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            } else {
+                cb.setChecked(false);
+            }
+            cb.setId(position);
         }
-        else {
-            cb.setChecked(false);
-        }
-        cb.setId(position);
-
 
         return convertView;
     }

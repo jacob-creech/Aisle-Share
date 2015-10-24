@@ -22,29 +22,38 @@ public class CustomListAdapter extends ArrayAdapter {
     private ArrayList<ListItem> items = null;
     private Context context;
     private String deviceName;
+    private int layout;
 
-    public CustomListAdapter(Context context, ArrayList<ListItem> resource) {
-        super(context,R.layout.row,resource);
+    public CustomListAdapter(Context context, ArrayList<ListItem> items, int layout) {
+        super(context,R.layout.row_list,items);
         this.context = context;
-        this.items = resource;
+        this.items = items;
         this.deviceName = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+        this.layout = layout;
     }
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         LayoutInflater inflater = ((Activity)context).getLayoutInflater();
-        convertView = inflater.inflate(R.layout.lists, parent, false);
+        convertView = inflater.inflate(layout, parent, false);
 
-        FrameLayout row = (FrameLayout) convertView.findViewById(R.id.list);
-        TextView name = (TextView) convertView.findViewById(R.id.name);
+        FrameLayout row = (FrameLayout) convertView.findViewById(R.id.dash);
+        TextView name = (TextView) convertView.findViewById(R.id.list_name);
+        //TextView type = (TextView) convertView.findViewById(R.id.type);
+        //TextView quantity = (TextView) convertView.findViewById(R.id.quantity);
+        //TextView units = (TextView) convertView.findViewById(R.id.units);
+        //CheckBox cb = (CheckBox) convertView.findViewById(R.id.checkBox);
 
-        /*boolean hasType = items.get(position).getType().equals("");
-        boolean hasUnits = items.get(position).getUnits().equals("");
-        double quantityVal = items.get(position).getQuantity();
+        //boolean hasType = items.get(position).getType().equals("");
+        //boolean hasUnits = items.get(position).getUnits().equals("");
+        //double quantityVal = items.get(position).getQuantity();
 
         // Move Checked Items to the Bottom
-        ItemComparator compare = new ItemComparator(context);
-        ItemComparator.Checked sorter = compare.new Checked();
-        Collections.sort(items, sorter);*/
+        /*if(cb != null) {
+            ItemComparator compare = new ItemComparator(context);
+            ItemComparator.Checked sorter = compare.new Checked();
+            Collections.sort(items, sorter);
+        }*/
 
         // Frame
         row.setId(position);
@@ -91,15 +100,15 @@ public class CustomListAdapter extends ArrayAdapter {
         }
 
         // Checked
-        if(items.get(position).getChecked()) {
-            cb.setChecked(true);
-            name.setPaintFlags(name.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-        }
-        else {
-            cb.setChecked(false);
-        }
-        cb.setId(position);*/
-
+        if(cb != null) {
+            if (items.get(position).getChecked()) {
+                cb.setChecked(true);
+                name.setPaintFlags(name.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            } else {
+                cb.setChecked(false);
+            }
+            cb.setId(position);
+        }*/
 
         return convertView;
     }

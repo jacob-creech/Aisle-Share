@@ -8,7 +8,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".ShoppingList"
+            android:name=".Dashboard"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -17,16 +17,28 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".AddListMenu"
-            android:theme="@style/AppTheme.AddMenu"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
             android:name=".CurrentList"
             android:label="@string/title_activity_current_list"
-            android:parentActivityName=".ShoppingList" >
+            android:parentActivityName=".Dashboard" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.aisleshare.ShoppingList" />
+                android:value="com.aisleshare.Dashboard" />
+        </activity>
+        <activity
+            android:name=".CurrentRecipe"
+            android:label="@string/title_activity_current_list"
+            android:parentActivityName=".Dashboard" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.aisleshare.Dashboard" />
+        </activity>
+        <activity
+            android:name=".CurrentActivity"
+            android:label="@string/title_activity_current_list"
+            android:parentActivityName=".Dashboard" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.aisleshare.Dashboard" />
         </activity>
     </application>
 

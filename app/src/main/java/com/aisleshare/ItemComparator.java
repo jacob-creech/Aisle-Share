@@ -52,7 +52,16 @@ public  class ItemComparator{
     }
     public class Created implements Comparator<Item>{
         public int compare(Item left, Item right) {
-            return left.getCreated() - right.getCreated();
+            double difference = left.getCreated() - right.getCreated();
+            if(difference > 0){
+                return 1;
+            }
+            else if(difference == 0){
+                return 0;
+            }
+            else{
+                return -1;
+            }
         }
     }
     public class Checked implements Comparator<Item>{

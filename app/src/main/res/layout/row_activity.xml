@@ -16,17 +16,6 @@
         android:paddingLeft="10dp"
         android:paddingRight="20dp">
 
-        <CheckBox
-            android:id="@+id/checkBox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:focusable="false"
-            android:layout_marginRight="10dp"
-            android:scaleX="1.25"
-            android:scaleY="1.25"
-            android:onClick="itemClick"
-            android:layout_weight=".01" />
-
         <LinearLayout
             android:id="@+id/column1"
             android:orientation="vertical"
@@ -56,7 +45,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/column2"
-            android:layout_weight=".19"
+            android:layout_weight=".2"
             android:gravity="center_vertical|right">
 
             <TextView
@@ -98,7 +87,7 @@
             android:layout_height="match_parent"
             android:id="@+id/txt_delete"
             android:gravity="center_vertical"
-            android:text="Swipe to Confirm"
+            android:text="Swipe to Delete"
             android:clickable="false"
             android:layout_weight="2"
             android:hapticFeedbackEnabled="true"

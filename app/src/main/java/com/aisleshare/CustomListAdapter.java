@@ -2,8 +2,6 @@ package com.aisleshare;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.provider.Settings;
 import android.view.LayoutInflater;
@@ -13,15 +11,19 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class CustomAdapter extends ArrayAdapter{
-    private ArrayList<Item> items = null;
+/**
+ * Created by Jason on 10/24/2015.
+ */
+public class CustomListAdapter extends ArrayAdapter {
+    private ArrayList<ListItem> items = null;
     private Context context;
     private String deviceName;
 
-    public CustomAdapter(Context context, ArrayList<Item> resource) {
+    public CustomListAdapter(Context context, ArrayList<ListItem> resource) {
         super(context,R.layout.row,resource);
         this.context = context;
         this.items = resource;
@@ -30,23 +32,19 @@ public class CustomAdapter extends ArrayAdapter{
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         LayoutInflater inflater = ((Activity)context).getLayoutInflater();
-        convertView = inflater.inflate(R.layout.row, parent, false);
+        convertView = inflater.inflate(R.layout.lists, parent, false);
 
-        FrameLayout row = (FrameLayout) convertView.findViewById(R.id.row);
+        FrameLayout row = (FrameLayout) convertView.findViewById(R.id.list);
         TextView name = (TextView) convertView.findViewById(R.id.name);
-        TextView type = (TextView) convertView.findViewById(R.id.type);
-        TextView quantity = (TextView) convertView.findViewById(R.id.quantity);
-        TextView units = (TextView) convertView.findViewById(R.id.units);
-        CheckBox cb = (CheckBox) convertView.findViewById(R.id.checkBox);
 
-        boolean hasType = items.get(position).getType().equals("");
+        /*boolean hasType = items.get(position).getType().equals("");
         boolean hasUnits = items.get(position).getUnits().equals("");
         double quantityVal = items.get(position).getQuantity();
 
         // Move Checked Items to the Bottom
         ItemComparator compare = new ItemComparator(context);
         ItemComparator.Checked sorter = compare.new Checked();
-        Collections.sort(items, sorter);
+        Collections.sort(items, sorter);*/
 
         // Frame
         row.setId(position);
@@ -60,7 +58,7 @@ public class CustomAdapter extends ArrayAdapter{
         name.setId(position);
 
         // Type
-        if (!hasType) {
+        /*if (!hasType) {
             type.setText(items.get(position).getType());
             type.setId(position);
         }
@@ -100,10 +98,9 @@ public class CustomAdapter extends ArrayAdapter{
         else {
             cb.setChecked(false);
         }
-        cb.setId(position);
+        cb.setId(position);*/
 
 
         return convertView;
     }
 }
-

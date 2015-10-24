@@ -1,5 +1,7 @@
 package com.aisleshare;
 
+import org.json.JSONObject;
+
 public class Item {
     private String owner;
     private String name;
@@ -86,6 +88,27 @@ public class Item {
     public boolean getChecked(){
         return this.checked;
     }
+    public String getJSONString() {
+        String jsonString = "";
+
+        jsonString += "{\"owner\":" + checkNull(owner);
+        jsonString += ",\"name\":" + checkNull(name);
+        jsonString += ",\"quantity\":" + this.getQuantity();
+        jsonString += ",\"units\":" + checkNull(units);
+        jsonString += ",\"type\":" + checkNull(type);
+        jsonString += ",\"timeCreated\":" + this.getCreated();
+        jsonString += ",\"checked\":" + this.getChecked() + "}";
+
+        return jsonString;
+    }
+    public String checkNull(String s){
+        if(!s.equals("")){
+            return s;
+        }
+        else{
+            return "\"\"";
+        }
+    }
 
     // Modifiers
     public void setName(String name){
@@ -103,4 +126,6 @@ public class Item {
     public void setChecked(boolean checked){
         this.checked = checked;
     }
+
+
 }

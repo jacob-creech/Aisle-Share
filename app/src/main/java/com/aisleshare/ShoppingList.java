@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -56,6 +57,16 @@ public class ShoppingList extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 addListDialog();
+            }
+        });
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long id) {
+
+                Intent intent = new Intent(ShoppingList.this, CurrentList.class);
+                String name = shoppingLists.get(pos);
+                intent.putExtra(LIST_NAME, name);
+                startActivity(intent);
             }
         });
     }
@@ -106,12 +117,11 @@ public class ShoppingList extends AppCompatActivity {
 
                     Intent intent = new Intent(ShoppingList.this, CurrentList.class);
 
-                    SharedPreferences.Editor editor = sp.edit();
+
                     shoppingSet.add(name);
                     shoppingLists.add(name);
                     itemAdapter.notifyDataSetChanged();
-                    editor.putStringSet("ShoppingSets", shoppingSet);
-                    editor.commit();
+                    updateStorage();
                     emptyNotice.setVisibility(View.INVISIBLE);
 
                     intent.putExtra(LIST_NAME, name);
@@ -124,6 +134,42 @@ public class ShoppingList extends AppCompatActivity {
         });
 
         dialog.show();
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        updateStorage();
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        updateStorage();
+    }
+
+    @Override
+    public void onBackPressed(){
+        super.onBackPressed();
+        updateStorage();
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        updateStorage();
+    }
+
+    public void updateStorage(){
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putStringSet("ShoppingSets", shoppingSet);
+        editor.commit();
+        editor.apply();
+
+        editor.remove("ShoppingSets");
+        editor.apply();
+        editor.putStringSet("ShoppingSets", shoppingSet);
+        editor.apply();
     }
 
     @Override

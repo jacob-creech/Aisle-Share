@@ -2,8 +2,10 @@ package com.aisleshare;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -29,7 +31,9 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 
 public class CurrentList extends AppCompatActivity {
@@ -43,24 +47,58 @@ public class CurrentList extends AppCompatActivity {
     private int currentOrder;
     private Map<String, MenuItem> menuItems;
     private String deviceName;
+    private Set<String> currentSet;
+    private SharedPreferences settings;
+    private String listTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_current_list);
 
+        //TODO: put block in function
+        settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        //sp = getSharedPreferences("ShoppingPreferences", Context.MODE_PRIVATE);
+        setListTitle(savedInstanceState);
+        Set<String> defSet = new HashSet<>();
+        currentSet = settings.getStringSet(listTitle, defSet);
+
+
+
         listView = (ListView)findViewById(R.id.currentItems);
         items = new ArrayList<>();
         items_backup = new ArrayList<>();
         isIncreasingOrder = true;
         currentOrder = -1;
-        customAdapter = new CustomAdapter(this, items);
-        listView.setAdapter(customAdapter);
+
         deviceName = Settings.Secure.getString(CurrentList.this.getContentResolver(), Settings.Secure.ANDROID_ID);
         menuItems = new HashMap<>();
 
-        setupTestItems();
-        setListTitle(savedInstanceState);
+        System.out.println("ONCREATE CURRENTLIST");
+
+        ArrayList<String> jsonItems = new ArrayList<>(currentSet);
+        JSONObject obj;
+        for(int i = 0; i < jsonItems.size(); i++){
+            try {
+                obj = new JSONObject(jsonItems.get(i));
+                items.add(new Item(
+                        obj.getString("owner"),
+                        obj.getString("name"),
+                        obj.getString("type"),
+                        obj.getInt("quantity"),
+                        obj.getString("units"),
+                        obj.getInt("timeCreated"),
+                        obj.getBoolean("checked")));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+        customAdapter = new CustomAdapter(this, items);
+        listView.setAdapter(customAdapter);
+
+        //setupTestItems();
         setListeners();
         setSwipeAdapter();
     }
@@ -302,6 +340,10 @@ public class CurrentList extends AppCompatActivity {
                     }
                     Item m = new Item(deviceName, name, type, quantity, units);
                     items.add(m);
+
+                    currentSet.add(m.getJSONString());
+                    updateStorage();
+
                     sortList(false, currentOrder);
                     customAdapter.notifyDataSetChanged();
                     dialog.dismiss();
@@ -331,6 +373,10 @@ public class CurrentList extends AppCompatActivity {
                     }
                     Item m = new Item(deviceName, name, type, quantity, units);
                     items.add(m);
+
+                    currentSet.add(m.getJSONString());
+                    updateStorage();
+
                     sortList(false, currentOrder);
                     customAdapter.notifyDataSetChanged();
                     dialog.dismiss();
@@ -346,26 +392,35 @@ public class CurrentList extends AppCompatActivity {
     }
 
     // Checks/UnChecks an item by clicking on any element in its row
+    //TODO: change setChecked to toggled
     public void itemClick(View v){
         Item item = items.get(v.getId());
+        currentSet.remove(item.getJSONString());
         if (item.getChecked()){
             item.setChecked(false);
         }
         else{
             item.setChecked(true);
         }
+        currentSet.add(item.getJSONString());
+        updateStorage();
+
         sortList(false, currentOrder);
         customAdapter.notifyDataSetChanged();
     }
 
     public void rowClick(int position){
         Item item = items.get(position);
+        currentSet.remove(item.getJSONString());
         if (item.getChecked()){
             item.setChecked(false);
         }
         else{
             item.setChecked(true);
         }
+        currentSet.add(item.getJSONString());
+        updateStorage();
+
         sortList(false, currentOrder);
         customAdapter.notifyDataSetChanged();
     }
@@ -383,6 +438,8 @@ public class CurrentList extends AppCompatActivity {
 
                             @Override
                             public void onDismiss(ListViewAdapter view, int position) {
+                                currentSet.remove(items.get(position).getJSONString());
+                                updateStorage();
                                 items.remove(position);
                                 customAdapter.notifyDataSetChanged();
                                 if(items.size() == 0){
@@ -433,12 +490,12 @@ public class CurrentList extends AppCompatActivity {
     }
 
     public void setListTitle(Bundle savedInstanceState){
-        String listTitle;
+        Bundle extras = getIntent().getExtras();
         if (savedInstanceState == null) {
             listTitle = getIntent().getStringExtra("com.ShoppingList.MESSAGE");
         }
         else {
-            listTitle = (String) savedInstanceState.getSerializable("com.ShoppingList.MESSAGE");
+            listTitle = extras.getString("com.ShoppingList.MESSAGE");
         }
         setTitle(listTitle);
     }
@@ -475,10 +532,12 @@ public class CurrentList extends AppCompatActivity {
                 int length = items.size();
                 for(int index = length - 1; index > -1; index--){
                     if(deviceName.equals(items.get(index).getOwner())){
+                        currentSet.remove(items.get(index).getJSONString());
                         items.remove(index);
                         removals = true;
                     }
                 }
+                updateStorage();
                 customAdapter.notifyDataSetChanged();
                 if(items.size() == 0){
                     TextView emptyNotice = (TextView) findViewById(R.id.empty_notice);
@@ -507,10 +566,12 @@ public class CurrentList extends AppCompatActivity {
                 for (int index = length - 1; index > -1; index--) {
                     if (deviceName.equals(items.get(index).getOwner()) &&
                             items.get(index).getChecked()) {
+                        currentSet.remove(items.get(index).getJSONString());
                         items.remove(index);
                         removals = true;
                     }
                 }
+                updateStorage();
                 customAdapter.notifyDataSetChanged();
                 if (items.size() == 0) {
                     TextView emptyNotice = (TextView) findViewById(R.id.empty_notice);
@@ -537,7 +598,46 @@ public class CurrentList extends AppCompatActivity {
         }.start();
     }
 
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        updateStorage();
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        updateStorage();
+    }
+
+    @Override
+    public void onBackPressed(){
+        super.onBackPressed();
+        updateStorage();
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        updateStorage();
+    }
+
+    public void updateStorage(){
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putStringSet(listTitle, currentSet);
+        editor.commit();
+        editor.apply();
+
+        editor.remove(listTitle);
+        editor.apply();
+        editor.putStringSet(listTitle, currentSet);
+        editor.apply();
+    }
+
     public void setListeners() {
+
+
+
         // Floating Action Button
         FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.float_button);
         addButton.setOnClickListener(new View.OnClickListener() {
@@ -653,11 +753,16 @@ public class CurrentList extends AppCompatActivity {
                     } else {
                         quantity = 1;
                     }
+                    currentSet.remove(item.getJSONString());
                     item.setName(name);
                     item.setType(type);
                     item.setQuantity(quantity);
                     item.setUnits(units);
                     items.set(position, item);
+
+                    currentSet.add(item.getJSONString());
+                    updateStorage();
+
                     sortList(false, currentOrder);
                     customAdapter.notifyDataSetChanged();
                     dialog.dismiss();

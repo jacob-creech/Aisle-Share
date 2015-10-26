@@ -3,7 +3,6 @@ package com.aisleshare;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -17,20 +16,23 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import com.getbase.floatingactionbutton.FloatingActionButton;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 public class Lists extends Fragment {
-    private SharedPreferences sp;
     public final static String LIST_NAME = "com.ShoppingList.MESSAGE";
-    public final static String SHOP_PREF = "ShoppingPreferences";
     private ListView listView;
     private ArrayList<String> lists;
-    private Set<String> listSet;
     private ArrayAdapter<String> itemAdapter;
     private Context dashboard;
     private TextView emptyNotice;
+    private JSONObject aisleShareData;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -46,12 +48,11 @@ public class Lists extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         dashboard = getActivity();
-        sp = dashboard.getSharedPreferences(SHOP_PREF, Context.MODE_PRIVATE);
         listView = (ListView) getView().findViewById(R.id.lists);
-        Set<String> defSet = new HashSet<>();
-        listSet = sp.getStringSet("ShoppingSets", defSet);
-        lists = new ArrayList<>(listSet);
+        lists = new ArrayList<>();
         emptyNotice = (TextView) getView().findViewById(R.id.empty_notice);
+
+        readSavedLists();
 
         if(lists.size() == 0){
             emptyNotice.setVisibility(View.VISIBLE);
@@ -61,7 +62,6 @@ public class Lists extends Fragment {
         listView.setAdapter(itemAdapter);
 
         FloatingActionButton addButton = (FloatingActionButton) getView().findViewById(R.id.float_button);
-
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -71,7 +71,6 @@ public class Lists extends Fragment {
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long id) {
-
                 Intent intent = new Intent(dashboard, CurrentList.class);
                 String name = lists.get(pos);
                 intent.putExtra(LIST_NAME, name);
@@ -114,8 +113,8 @@ public class Lists extends Fragment {
                 if (!listName.getText().toString().isEmpty()) {
                     String name = listName.getText().toString();
 
-                    for(int index = 0; index < lists.size(); index++){
-                        if(lists.get(index).equals(name)){
+                    for (int index = 0; index < lists.size(); index++) {
+                        if (lists.get(index).equals(name)) {
                             listName.setError("List already exists...");
                             return;
                         }
@@ -125,17 +124,14 @@ public class Lists extends Fragment {
 
                     Intent intent = new Intent(dashboard, CurrentList.class);
 
-
-                    listSet.add(name);
                     lists.add(name);
                     itemAdapter.notifyDataSetChanged();
-                    updateStorage();
+                    saveNewList(name);
                     emptyNotice.setVisibility(View.INVISIBLE);
 
                     intent.putExtra(LIST_NAME, name);
                     startActivity(intent);
-                }
-                else{
+                } else {
                     listName.setError("Name is empty...");
                 }
             }
@@ -144,39 +140,60 @@ public class Lists extends Fragment {
         dialog.show();
     }
 
-    @Override
-    public void onDestroy(){
-        super.onDestroy();
-        updateStorage();
+    public void readSavedLists(){
+        try {
+            File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            // Read or Initializes aisleShareData
+            // Assumes the File itself has already been Initialized
+            aisleShareData = new JSONObject(loadJSONFromAsset(file));
+            JSONArray listNames = aisleShareData.optJSONObject("Lists").names();
+            if(listNames != null) {
+                for (int i = 0; i < listNames.length(); i++) {
+                    try {
+                        lists.add(listNames.get(i).toString());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
-    @Override
-    public void onStop(){
-        super.onStop();
-        updateStorage();
+    public String loadJSONFromAsset(File f) {
+        String json;
+        try {
+            FileInputStream fis = new FileInputStream(f);
+            int bytes = fis.available();
+            byte[] buffer = new byte[bytes];
+            fis.read(buffer, 0, bytes);
+            fis.close();
+            json = new String(buffer, "UTF-8");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+        return json;
     }
 
-    /*@Override
-    public void onBackPressed(){
-        super.onBackPressed();
-        updateStorage();
-    }*/
+    public void saveNewList(String listTitle){
+        try {
+            // Need to update other fragments before saving
+            File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            aisleShareData = new JSONObject(loadJSONFromAsset(file));
 
-    @Override
-    public void onPause(){
-        super.onPause();
-        updateStorage();
-    }
+            aisleShareData.optJSONObject("Lists").accumulate(listTitle, new JSONObject());
+            aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).accumulate("items", new JSONArray());
+            aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).put("sort", 2);
+            aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).put("direction", true);
 
-    public void updateStorage(){
-        SharedPreferences.Editor editor = sp.edit();
-        editor.putStringSet("ShoppingSets", listSet);
-        editor.commit();
-        editor.apply();
-
-        editor.remove("ShoppingSets");
-        editor.apply();
-        editor.putStringSet("ShoppingSets", listSet);
-        editor.apply();
+            FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            fos.write(aisleShareData.toString().getBytes());
+            fos.close();
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
     }
 }

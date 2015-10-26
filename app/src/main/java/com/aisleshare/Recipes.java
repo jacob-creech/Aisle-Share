@@ -17,21 +17,29 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import com.getbase.floatingactionbutton.FloatingActionButton;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 public class Recipes extends Fragment {
-    private SharedPreferences sp;
-    // // TODO: update RECIPE_NAME with a com.Recipes.MESSAGE variable
+    // TODO: update RECIPE_NAME with a com.Recipes.MESSAGE variable
     public final static String RECIPE_NAME = "com.ShoppingList.MESSAGE";
     public final static String RECIPE_PREF = "RecipePreferences";
     private ListView listView;
     private ArrayList<String> recipes;
-    private Set<String> recipeSet;
     private ArrayAdapter<String> itemAdapter;
     private Context dashboard;
     private TextView emptyNotice;
+    private JSONObject aisleShareData;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -39,8 +47,7 @@ public class Recipes extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_recipes, container, false);
     }
 
@@ -48,12 +55,11 @@ public class Recipes extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         dashboard = getActivity();
-        sp = dashboard.getSharedPreferences(RECIPE_PREF, Context.MODE_PRIVATE);
         listView = (ListView) getView().findViewById(R.id.recipes);
-        Set<String> defSet = new HashSet<>();
-        recipeSet = sp.getStringSet("RecipeSets", defSet);
-        recipes = new ArrayList<>(recipeSet);
+        recipes = new ArrayList<>();
         emptyNotice = (TextView) getView().findViewById(R.id.empty_notice);
+
+        readSavedRecipes();
 
         if(recipes.size() == 0){
             emptyNotice.setVisibility(View.VISIBLE);
@@ -63,7 +69,6 @@ public class Recipes extends Fragment {
         listView.setAdapter(itemAdapter);
 
         FloatingActionButton addButton = (FloatingActionButton) getView().findViewById(R.id.float_button);
-
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -115,8 +120,8 @@ public class Recipes extends Fragment {
                 if (!recipeName.getText().toString().isEmpty()) {
                     String name = recipeName.getText().toString();
 
-                    for(int index = 0; index < recipes.size(); index++){
-                        if(recipes.get(index).equals(name)){
+                    for (int index = 0; index < recipes.size(); index++) {
+                        if (recipes.get(index).equals(name)) {
                             recipeName.setError("Recipe already exists...");
                             return;
                         }
@@ -126,16 +131,14 @@ public class Recipes extends Fragment {
 
                     Intent intent = new Intent(dashboard, CurrentRecipe.class);
 
-                    recipeSet.add(name);
                     recipes.add(name);
                     itemAdapter.notifyDataSetChanged();
-                    updateStorage();
+                    saveNewRecipe(name);
                     emptyNotice.setVisibility(View.INVISIBLE);
 
                     intent.putExtra(RECIPE_NAME, name);
                     startActivity(intent);
-                }
-                else{
+                } else {
                     recipeName.setError("Name is empty...");
                 }
             }
@@ -144,39 +147,60 @@ public class Recipes extends Fragment {
         dialog.show();
     }
 
-    @Override
-    public void onDestroy(){
-        super.onDestroy();
-        updateStorage();
+    public void readSavedRecipes(){
+        try {
+            File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            // Read or Initializes aisleShareData
+            // Assumes the File itself has already been Initialized
+            aisleShareData = new JSONObject(loadJSONFromAsset(file));
+            JSONArray recipeNames = aisleShareData.optJSONObject("Recipes").names();
+            if(recipeNames != null) {
+                for (int i = 0; i < recipeNames.length(); i++) {
+                    try {
+                        recipes.add(recipeNames.get(i).toString());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
-    @Override
-    public void onStop(){
-        super.onStop();
-        updateStorage();
+    public String loadJSONFromAsset(File f) {
+        String json;
+        try {
+            FileInputStream fis = new FileInputStream(f);
+            int bytes = fis.available();
+            byte[] buffer = new byte[bytes];
+            fis.read(buffer, 0, bytes);
+            fis.close();
+            json = new String(buffer, "UTF-8");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+        return json;
     }
 
-    /*@Override
-    public void onBackPressed(){
-        super.onBackPressed();
-        updateStorage();
-    }*/
+    public void saveNewRecipe(String recipeTitle){
+        try {
+            // Need to update other fragments before saving
+            File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            aisleShareData = new JSONObject(loadJSONFromAsset(file));
 
-    @Override
-    public void onPause(){
-        super.onPause();
-        updateStorage();
-    }
+            aisleShareData.optJSONObject("Recipes").accumulate(recipeTitle, new JSONObject());
+            aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("items", new JSONArray());
+            aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).put("sort", 2);
+            aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).put("direction", true);
 
-    public void updateStorage(){
-        SharedPreferences.Editor editor = sp.edit();
-        editor.putStringSet("RecipeSets", recipeSet);
-        editor.commit();
-        editor.apply();
-
-        editor.remove("RecipeSets");
-        editor.apply();
-        editor.putStringSet("RecipeSets", recipeSet);
-        editor.apply();
+            FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            fos.write(aisleShareData.toString().getBytes());
+            fos.close();
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -17,6 +16,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -26,8 +26,15 @@ import android.widget.Toast;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.hudomju.swipe.SwipeToDismissTouchListener;
 import com.hudomju.swipe.adapter.ListViewAdapter;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -47,22 +54,14 @@ public class CurrentActivity extends AppCompatActivity {
     private int currentOrder;
     private Map<String, MenuItem> menuItems;
     private String deviceName;
-    private Set<String> currentSet;
-    private SharedPreferences settings;
     private String activityTitle;
     private TextView emptyNotice;
+    private JSONObject aisleShareData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_current_activity);
-
-        //TODO: put block in function
-        settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        //sp = getSharedPreferences("ShoppingPreferences", Context.MODE_PRIVATE);
-        setActivityTitle(savedInstanceState);
-        Set<String> defSet = new HashSet<>();
-        currentSet = settings.getStringSet(activityTitle, defSet);
 
         listView = (ListView)findViewById(R.id.currentItems);
         items = new ArrayList<>();
@@ -73,23 +72,10 @@ public class CurrentActivity extends AppCompatActivity {
         deviceName = Settings.Secure.getString(CurrentActivity.this.getContentResolver(), Settings.Secure.ANDROID_ID);
         menuItems = new HashMap<>();
 
-        ArrayList<String> jsonItems = new ArrayList<>(currentSet);
-        JSONObject obj;
-        for(int i = 0; i < jsonItems.size(); i++){
-            try {
-                obj = new JSONObject(jsonItems.get(i));
-                items.add(new Item(
-                        obj.getString("owner"),
-                        obj.getString("name"),
-                        obj.getString("type"),
-                        obj.getInt("quantity"),
-                        obj.getString("units"),
-                        obj.getBoolean("checked"),
-                        obj.getLong("timeCreated")));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
+        setActivityTitle(savedInstanceState);
+        initializeStorage();
+        setListeners();
+        setSwipeAdapter();
 
         if(items.isEmpty()){
             emptyNotice.setVisibility(View.VISIBLE);
@@ -98,14 +84,13 @@ public class CurrentActivity extends AppCompatActivity {
         customAdapter = new CustomAdapter(this, items, R.layout.row_activity);
         listView.setAdapter(customAdapter);
 
-        setListeners();
-        setSwipeAdapter();
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_current, menu);
+        getMenuInflater().inflate(R.menu.menu_current_activity, menu);
         menuItems.put("share", menu.findItem(R.id.share));
+        menuItems.put("add_to_list", menu.findItem(R.id.add_to_list));
         menuItems.put("sort", menu.findItem(R.id.sort_root));
         menuItems.put("name", menu.findItem(R.id.sort_name));
         menuItems.put("type", menu.findItem(R.id.sort_type));
@@ -124,6 +109,7 @@ public class CurrentActivity extends AppCompatActivity {
 
         sortList(false, currentOrder);
         menuItems.get("time").setChecked(true);
+        customAdapter.notifyDataSetChanged();
         return true;
     }
 
@@ -170,8 +156,12 @@ public class CurrentActivity extends AppCompatActivity {
                 break;
             case R.id.sort:
                 return super.onOptionsItemSelected(option);
+            case R.id.add_to_list:
+                addToListDialog();
+                break;
         }
 
+        saveData();
         customAdapter.notifyDataSetChanged();
         return super.onOptionsItemSelected(option);
     }
@@ -182,42 +172,6 @@ public class CurrentActivity extends AppCompatActivity {
         menuItems.get("time").setChecked(false);
         menuItems.get("quantity").setChecked(false);
         menuItems.get("owner").setChecked(false);
-    }
-
-    @Override
-    public void onDestroy(){
-        super.onDestroy();
-        updateStorage();
-    }
-
-    @Override
-    public void onStop(){
-        super.onStop();
-        updateStorage();
-    }
-
-    @Override
-    public void onBackPressed(){
-        super.onBackPressed();
-        updateStorage();
-    }
-
-    @Override
-    public void onPause(){
-        super.onPause();
-        updateStorage();
-    }
-
-    public void updateStorage(){
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putStringSet(activityTitle, currentSet);
-        editor.commit();
-        editor.apply();
-
-        editor.remove(activityTitle);
-        editor.apply();
-        editor.putStringSet(activityTitle, currentSet);
-        editor.apply();
     }
 
     public void setListeners() {
@@ -280,9 +234,8 @@ public class CurrentActivity extends AppCompatActivity {
 
                             @Override
                             public void onDismiss(ListViewAdapter view, int position) {
-                                currentSet.remove(items.get(position).getJSONString());
-                                updateStorage();
                                 items.remove(position);
+                                saveData();
                                 customAdapter.notifyDataSetChanged();
                                 if(items.size() == 0){
                                     emptyNotice.setVisibility(View.VISIBLE);
@@ -390,14 +343,18 @@ public class CurrentActivity extends AppCompatActivity {
         // Notify user about duplicate item
         itemName.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
             @Override
             public void afterTextChanged(Editable s) {
                 String name = itemName.getText().toString();
-                for(int index = 0; index < items.size(); index++){
-                    if(name.toLowerCase().equals(items.get(index).getName().toLowerCase())){
+                for (int index = 0; index < items.size(); index++) {
+                    if (name.toLowerCase().equals(items.get(index).getName().toLowerCase())) {
                         Context context = getApplicationContext();
                         CharSequence text = "Is this a Duplicate?";
                         int duration = Toast.LENGTH_LONG;
@@ -414,7 +371,7 @@ public class CurrentActivity extends AppCompatActivity {
         minus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!itemQuantity.getText().toString().isEmpty()){
+                if (!itemQuantity.getText().toString().isEmpty()) {
                     double value = Double.parseDouble(itemQuantity.getText().toString());
                     if (value > 1) {
                         itemQuantity.setText(String.format("%s", (int) Math.ceil(value - 1)));
@@ -459,8 +416,7 @@ public class CurrentActivity extends AppCompatActivity {
                     Item m = new Item(deviceName, name, type, quantity, units);
                     items.add(m);
 
-                    currentSet.add(m.getJSONString());
-                    updateStorage();
+                    saveData();
 
                     sortList(false, currentOrder);
                     customAdapter.notifyDataSetChanged();
@@ -491,8 +447,7 @@ public class CurrentActivity extends AppCompatActivity {
                     Item m = new Item(deviceName, name, type, quantity, units);
                     items.add(m);
 
-                    currentSet.add(m.getJSONString());
-                    updateStorage();
+                    saveData();
 
                     sortList(false, currentOrder);
                     customAdapter.notifyDataSetChanged();
@@ -588,15 +543,13 @@ public class CurrentActivity extends AppCompatActivity {
                     } else {
                         quantity = 1;
                     }
-                    currentSet.remove(item.getJSONString());
                     item.setName(name);
                     item.setType(type);
                     item.setQuantity(quantity);
                     item.setUnits(units);
                     items.set(position, item);
 
-                    currentSet.add(item.getJSONString());
-                    updateStorage();
+                    saveData();
 
                     sortList(false, currentOrder);
                     customAdapter.notifyDataSetChanged();
@@ -604,6 +557,60 @@ public class CurrentActivity extends AppCompatActivity {
                 } else {
                     itemName.setError("Name is empty...");
                 }
+            }
+        });
+
+        dialog.show();
+    }
+
+    // Popup for adding an Item
+    public void addToListDialog() {
+        // custom dialog
+        final Dialog dialog = new Dialog(CurrentActivity.this);
+        dialog.setContentView(R.layout.dialog_add_to_list);
+        dialog.setTitle("Select a List");
+
+        final ListView lv = (ListView) dialog.findViewById(R.id.lists);
+        final Button cancel = (Button) dialog.findViewById(R.id.cancel);
+
+        final ArrayList<String> lists = new ArrayList<>();
+        JSONArray names = aisleShareData.optJSONObject("Lists").names();
+        if(names != null) {
+            for (int i = 0; i < names.length(); i++) {
+                try {
+                    lists.add(names.get(i).toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        else{
+            return;
+        }
+
+        ArrayAdapter<String> itemAdapter = new ArrayAdapter<>(CurrentActivity.this,android.R.layout.simple_list_item_1, lists);
+        lv.setAdapter(itemAdapter);
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // TODO: add activity or dialog to arbitrarily select/edit items to add
+                String listTitle = lists.get(position);
+                for(Item i : items) {
+                    aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).optJSONArray("items").put(i.getJSONString());
+                }
+                saveData();
+                dialog.dismiss();
+
+                Toast toast = Toast.makeText(CurrentActivity.this, "Items Saved to List", Toast.LENGTH_LONG);
+                toast.show();
+            }
+        });
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
             }
         });
 
@@ -642,12 +649,11 @@ public class CurrentActivity extends AppCompatActivity {
                 int length = items.size();
                 for (int index = length - 1; index > -1; index--) {
                     if (deviceName.equals(items.get(index).getOwner())) {
-                        currentSet.remove(items.get(index).getJSONString());
                         items.remove(index);
                         removals = true;
                     }
                 }
-                updateStorage();
+                saveData();
                 customAdapter.notifyDataSetChanged();
                 if (items.size() == 0) {
                     emptyNotice.setVisibility(View.VISIBLE);
@@ -675,12 +681,11 @@ public class CurrentActivity extends AppCompatActivity {
                 for (int index = length - 1; index > -1; index--) {
                     if (deviceName.equals(items.get(index).getOwner()) &&
                             items.get(index).getChecked()) {
-                        currentSet.remove(items.get(index).getJSONString());
                         items.remove(index);
                         removals = true;
                     }
                 }
-                updateStorage();
+                saveData();
                 customAdapter.notifyDataSetChanged();
                 if (items.size() == 0) {
                     emptyNotice.setVisibility(View.VISIBLE);
@@ -704,5 +709,70 @@ public class CurrentActivity extends AppCompatActivity {
                 undoBox.setVisibility(View.INVISIBLE);
             }
         }.start();
+    }
+
+    public void initializeStorage(){
+        try {
+            File file = new File(getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            // Read or Initializes aisleShareData
+            // Assumes the File itself has already been Initialized
+            aisleShareData = new JSONObject(loadJSONFromAsset(file));
+
+            currentOrder = aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).getInt("sort");
+            isIncreasingOrder = aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).getBoolean("direction");
+            JSONArray read_items = aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).getJSONArray("items");
+            for(int index = 0; index < read_items.length(); index++){
+                try {
+                    JSONObject obj = new JSONObject(read_items.get(index).toString());
+                    items.add(new Item(
+                            obj.getString("owner"),
+                            obj.getString("name"),
+                            obj.getString("type"),
+                            obj.getInt("quantity"),
+                            obj.getString("units"),
+                            obj.getBoolean("checked"),
+                            obj.getLong("timeCreated")));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String loadJSONFromAsset(File f) {
+        String json;
+        try {
+            FileInputStream fis = new FileInputStream(f);
+            int bytes = fis.available();
+            byte[] buffer = new byte[bytes];
+            fis.read(buffer, 0, bytes);
+            fis.close();
+            json = new String(buffer, "UTF-8");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+        return json;
+    }
+
+    public void saveData(){
+        try {
+            aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).remove("items");
+            aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).accumulate("items", new JSONArray());
+            for(Item i : items){
+                aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).optJSONArray("items").put(i.getJSONString());
+            }
+            aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).put("sort", currentOrder);
+            aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).put("direction", isIncreasingOrder);
+
+            FileOutputStream fos = new FileOutputStream(getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            fos.write(aisleShareData.toString().getBytes());
+            fos.close();
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
     }
 }

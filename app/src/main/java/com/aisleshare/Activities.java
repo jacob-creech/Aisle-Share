@@ -19,21 +19,28 @@ import android.widget.TextView;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 public class Activities extends Fragment {
-    private SharedPreferences sp;
     // // TODO: update ACTIVITY_NAME with a com.Activities.MESSAGE variable
     public final static String ACTIVITY_NAME = "com.ShoppingList.MESSAGE";
     public final static String ACTIVITY_PREF = "ActivityPreferences";
     private ListView listView;
     private ArrayList<String> activities;
-    private Set<String> activitySet;
     private ArrayAdapter<String> itemAdapter;
     private Context dashboard;
     private TextView emptyNotice;
+    private JSONObject aisleShareData;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,12 +57,11 @@ public class Activities extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         dashboard = getActivity();
-        sp = dashboard.getSharedPreferences(ACTIVITY_PREF, Context.MODE_PRIVATE);
         listView = (ListView) getView().findViewById(R.id.activities);
-        Set<String> defSet = new HashSet<>();
-        activitySet = sp.getStringSet("ActivitySets", defSet);
-        activities = new ArrayList<>(activitySet);
+        activities = new ArrayList<>();
         emptyNotice = (TextView) getView().findViewById(R.id.empty_notice);
+
+        readSavedActivities();
 
         if(activities.size() == 0){
             emptyNotice.setVisibility(View.VISIBLE);
@@ -65,7 +71,6 @@ public class Activities extends Fragment {
         listView.setAdapter(itemAdapter);
 
         FloatingActionButton addButton = (FloatingActionButton) getView().findViewById(R.id.float_button);
-
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -117,8 +122,8 @@ public class Activities extends Fragment {
                 if (!activityName.getText().toString().isEmpty()) {
                     String name = activityName.getText().toString();
 
-                    for(int index = 0; index < activities.size(); index++){
-                        if(activities.get(index).equals(name)){
+                    for (int index = 0; index < activities.size(); index++) {
+                        if (activities.get(index).equals(name)) {
                             activityName.setError("Activity already exists...");
                             return;
                         }
@@ -128,16 +133,14 @@ public class Activities extends Fragment {
 
                     Intent intent = new Intent(dashboard, CurrentActivity.class);
 
-                    activitySet.add(name);
                     activities.add(name);
                     itemAdapter.notifyDataSetChanged();
-                    updateStorage();
+                    saveNewActivity(name);
                     emptyNotice.setVisibility(View.INVISIBLE);
 
                     intent.putExtra(ACTIVITY_NAME, name);
                     startActivity(intent);
-                }
-                else{
+                } else {
                     activityName.setError("Name is empty...");
                 }
             }
@@ -146,39 +149,60 @@ public class Activities extends Fragment {
         dialog.show();
     }
 
-    @Override
-    public void onDestroy(){
-        super.onDestroy();
-        updateStorage();
+    public void readSavedActivities(){
+        try {
+            File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            // Read or Initializes aisleShareData
+            // Assumes the File itself has already been Initialized
+            aisleShareData = new JSONObject(loadJSONFromAsset(file));
+            JSONArray listNames = aisleShareData.optJSONObject("Activities").names();
+            if(listNames != null) {
+                for (int i = 0; i < listNames.length(); i++) {
+                    try {
+                        activities.add(listNames.get(i).toString());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
-    @Override
-    public void onStop(){
-        super.onStop();
-        updateStorage();
+    public String loadJSONFromAsset(File f) {
+        String json;
+        try {
+            FileInputStream fis = new FileInputStream(f);
+            int bytes = fis.available();
+            byte[] buffer = new byte[bytes];
+            fis.read(buffer, 0, bytes);
+            fis.close();
+            json = new String(buffer, "UTF-8");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+        return json;
     }
 
-    /*@Override
-    public void onBackPressed(){
-        super.onBackPressed();
-        updateStorage();
-    }*/
+    public void saveNewActivity(String activityTitle){
+        try {
+            // Need to update other fragments before saving
+            File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            aisleShareData = new JSONObject(loadJSONFromAsset(file));
 
-    @Override
-    public void onPause(){
-        super.onPause();
-        updateStorage();
-    }
+            aisleShareData.optJSONObject("Activities").accumulate(activityTitle, new JSONObject());
+            aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).accumulate("items", new JSONArray());
+            aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).put("sort", 2);
+            aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).put("direction", true);
 
-    public void updateStorage(){
-        SharedPreferences.Editor editor = sp.edit();
-        editor.putStringSet("ActivitySets", activitySet);
-        editor.commit();
-        editor.apply();
-
-        editor.remove("ActivitySets");
-        editor.apply();
-        editor.putStringSet("ActivitySets", activitySet);
-        editor.apply();
+            FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            fos.write(aisleShareData.toString().getBytes());
+            fos.close();
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
     }
 }

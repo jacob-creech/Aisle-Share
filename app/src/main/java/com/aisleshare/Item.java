@@ -103,7 +103,7 @@ public class Item {
     }
     public String checkNull(String s){
         if(!s.equals("")){
-            return s;
+            return "\"" + s + "\"";
         }
         else{
             return "\"\"";

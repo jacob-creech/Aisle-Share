@@ -6,18 +6,29 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 public class Dashboard  extends AppCompatActivity {
     private TabsAdapter adapter;
     private ViewPager pager;
+    private JSONObject aisleShareData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
 
+        initializeStorage();
         adapter = new TabsAdapter(getSupportFragmentManager());
         pager = (ViewPager) findViewById(R.id.pager);
-        pager.setAdapter(adapter);
+            pager.setAdapter(adapter);
     }
 
     @Override
@@ -39,5 +50,30 @@ public class Dashboard  extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void initializeStorage(){
+        try {
+            File file = new File(getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            if (!file.exists()) {
+                aisleShareData = new JSONObject();
+                aisleShareData.accumulate("Lists", new JSONObject());
+                aisleShareData.accumulate("Recipes", new JSONObject());
+                aisleShareData.accumulate("Activities", new JSONObject());
+                saveData();
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void saveData(){
+        try {
+            FileOutputStream fos = new FileOutputStream(getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            fos.write(aisleShareData.toString().getBytes());
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

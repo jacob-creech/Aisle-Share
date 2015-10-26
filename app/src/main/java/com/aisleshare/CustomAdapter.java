@@ -22,7 +22,7 @@ public class CustomAdapter extends ArrayAdapter{
     private int layout;
 
     public CustomAdapter(Context context, ArrayList<Item> items, int layout) {
-        super(context,R.layout.row_list,items);
+        super(context,layout,items);
         this.context = context;
         this.items = items;
         this.deviceName = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -55,7 +55,8 @@ public class CustomAdapter extends ArrayAdapter{
         // Frame
         row.setId(position);
         if(!items.get(position).getOwner().equals(deviceName)){
-            row.setBackgroundColor(Color.parseColor("#d7d7d7"));
+            //modifies item background color
+            //row.setBackgroundColor(Color.parseColor("#d7d7d7"));
         }
 
         // Name

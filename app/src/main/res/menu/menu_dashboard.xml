@@ -3,4 +3,27 @@
     xmlns:tools="http://schemas.android.com/tools" tools:context=".ShoppingList">
     <item android:id="@+id/action_settings" android:title="@string/action_settings"
         android:orderInCategory="100" app:showAsAction="never" />
+    <item
+        android:title="Sort"
+        android:id="@+id/sort_root"
+        app:showAsAction="ifRoom|withText">
+        <menu
+            android:id="@+id/sort">
+            <item android:id="@+id/sort_name"
+                android:title="Name"/>
+            <item android:id="@+id/sort_time"
+                android:title="Time Created"/>
+            <item android:id="@+id/sort_owner"
+                android:title="Owner"/>
+            <item android:id="@+id/unsorted"
+                android:title="Turn Off Sort"/>
+            <!--   <item android:id="@+id/sort_custom"
+                android:title="Custom Sort"/>   -->
+        </menu>
+    </item>
+    <item
+        android:title="Delete"
+        android:id="@+id/delete_items"
+        app:showAsAction="ifRoom"
+        android:icon="@mipmap/trash"/>
 </menu>

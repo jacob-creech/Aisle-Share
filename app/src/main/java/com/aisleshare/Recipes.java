@@ -110,8 +110,13 @@ public class Recipes extends Fragment {
                 if (!recipeName.getText().toString().isEmpty()) {
                     String name = recipeName.getText().toString();
 
+                    if(name.equals("@sort")){
+                        recipeName.setError("Sorry, that name is reserved...");
+                        return;
+                    }
+
                     for (int index = 0; index < recipes.size(); index++) {
-                        if (recipes.get(index).equals(name)) {
+                        if (recipes.get(index).equals(name) || name.equals("@order")) {
                             recipeName.setError("Recipe already exists...");
                             return;
                         }
@@ -185,6 +190,11 @@ public class Recipes extends Fragment {
                         dialog.dismiss();
                     }
 
+                    if(name.equals("@sort") || name.equals("@order")){
+                        recipeName.setError("Sorry, that name is reserved...");
+                        return;
+                    }
+
                     for (int index = 0; index < recipes.size(); index++) {
                         if (recipes.get(index).equals(name) && index != position) {
                             recipeName.setError("Recipe already exists...");
@@ -232,6 +242,7 @@ public class Recipes extends Fragment {
             if(recipeNames != null) {
                 for (int i = 0; i < recipeNames.length(); i++) {
                     try {
+                        // todo initialize with owner and timeCreated
                         recipes.add(recipeNames.get(i).toString());
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -270,6 +281,7 @@ public class Recipes extends Fragment {
             aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("items", new JSONArray());
             aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).put("sort", 2);
             aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).put("direction", true);
+            // todo save out owner and timeCreated info
 
             FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
             fos.write(aisleShareData.toString().getBytes());

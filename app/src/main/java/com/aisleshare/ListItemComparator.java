@@ -35,7 +35,16 @@ public class ListItemComparator {
     }
     public class Created implements Comparator<ListItem>{
         public int compare(ListItem left, ListItem right) {
-            return left.getCreated() - right.getCreated();
+            long difference = left.getCreated() - right.getCreated();
+            if(difference > 0){
+                return 1;
+            }
+            else if(difference == 0){
+                return 0;
+            }
+            else{
+                return -1;
+            }
         }
     }
 }

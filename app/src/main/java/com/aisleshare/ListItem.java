@@ -1,19 +1,16 @@
 package com.aisleshare;
 
-/**
- * Created by Jason on 10/23/2015.
- */
 public class ListItem {
     private String owner;
     private String name;
-    private int created;
+    private long created;
 
     ListItem(String owner, String name){
         this.owner = owner;
         this.name = name;
-        this.created = 0;
+        this.created = System.currentTimeMillis()/1000;
     }
-    ListItem(String owner, String name, int created){
+    ListItem(String owner, String name, long created){
         this.owner = owner;
         this.name = name;
         this.created = created;
@@ -21,7 +18,7 @@ public class ListItem {
 
     public String getOwner(){ return this.owner; }
     public String getName(){ return this.name; }
-    public int getCreated(){ return this.created; }
+    public long getCreated(){ return this.created; }
 
     public void setName(String name){
         this.name = name;

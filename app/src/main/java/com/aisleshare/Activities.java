@@ -112,6 +112,11 @@ public class Activities extends Fragment {
                 if (!activityName.getText().toString().isEmpty()) {
                     String name = activityName.getText().toString();
 
+                    if(name.equals("@sort") || name.equals("@order")){
+                        activityName.setError("Sorry, that name is reserved...");
+                        return;
+                    }
+
                     for (int index = 0; index < activities.size(); index++) {
                         if (activities.get(index).equals(name)) {
                             activityName.setError("Activity already exists...");
@@ -187,6 +192,11 @@ public class Activities extends Fragment {
                         dialog.dismiss();
                     }
 
+                    if(name.equals("@sort") || name.equals("@order")){
+                        activityName.setError("Sorry, that name is reserved...");
+                        return;
+                    }
+
                     for (int index = 0; index < activities.size(); index++) {
                         if (activities.get(index).equals(name) && index != position) {
                             activityName.setError("Activity already exists...");
@@ -234,6 +244,7 @@ public class Activities extends Fragment {
             if(listNames != null) {
                 for (int i = 0; i < listNames.length(); i++) {
                     try {
+                        // todo initialize with owner and timeCreated
                         activities.add(listNames.get(i).toString());
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -272,6 +283,7 @@ public class Activities extends Fragment {
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).accumulate("items", new JSONArray());
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).put("sort", 2);
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).put("direction", true);
+            // todo save out owner and timeCreated info
 
             FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
             fos.write(aisleShareData.toString().getBytes());

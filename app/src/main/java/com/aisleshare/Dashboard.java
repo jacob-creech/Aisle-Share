@@ -61,6 +61,13 @@ public class Dashboard  extends AppCompatActivity {
                 aisleShareData.accumulate("Lists", new JSONObject());
                 aisleShareData.accumulate("Recipes", new JSONObject());
                 aisleShareData.accumulate("Activities", new JSONObject());
+                aisleShareData.optJSONObject("Lists").accumulate("@sort", 1);
+                aisleShareData.optJSONObject("Lists").accumulate("@order", true);
+                aisleShareData.optJSONObject("Recipes").accumulate("@sort", 1);
+                aisleShareData.optJSONObject("Recipes").accumulate("@order", true);
+                aisleShareData.optJSONObject("Activities").accumulate("@sort", 1);
+                aisleShareData.optJSONObject("Activities").accumulate("@order", true);
+
                 FileOutputStream fos = new FileOutputStream(getFilesDir().getPath() + "/Aisle_Share_Data.json");
                 fos.write(aisleShareData.toString().getBytes());
                 fos.close();

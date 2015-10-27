@@ -29,6 +29,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -67,7 +68,7 @@ public class Lists extends Fragment {
         listView = (ListView) getView().findViewById(R.id.lists);
         lists = new ArrayList<>();
         isIncreasingOrder = true;
-        currentOrder = -1;
+        currentOrder = 1;
         menuLists = new HashMap<>();
         emptyNotice = (TextView) getView().findViewById(R.id.empty_notice);
         deviceName = Settings.Secure.getString(dashboard.getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -166,6 +167,11 @@ public class Lists extends Fragment {
                 if (!listName.getText().toString().isEmpty()) {
                     String name = listName.getText().toString();
 
+                    if(name.equals("@sort") || name.equals("@order")){
+                        listName.setError("Sorry, that name is reserved...");
+                        return;
+                    }
+
                     for (int index = 0; index < lists.size(); index++) {
                         if (lists.get(index).equals(name)) {
                             listName.setError("List already exists...");
@@ -173,13 +179,13 @@ public class Lists extends Fragment {
                         }
                     }
 
-                    ListItem list = new ListItem(deviceName, name); //need to add time at some point
+                    ListItem list = new ListItem(deviceName, name);
                     lists.add(list);
                     sortList(false, currentOrder);
                     dialog.dismiss();
                     Intent intent = new Intent(dashboard, CurrentList.class);
                     itemAdapter.notifyDataSetChanged();
-                    saveNewList(name);
+                    saveNewList(name, list.getCreated());
                     emptyNotice.setVisibility(View.INVISIBLE);
                     intent.putExtra(LIST_NAME, name);
                     startActivity(intent);
@@ -239,6 +245,11 @@ public class Lists extends Fragment {
                         dialog.dismiss();
                     }
 
+                    if(name.equals("@sort") || name.equals("@order")){
+                        listName.setError("Sorry, that name is reserved...");
+                        return;
+                    }
+
                     for (int index = 0; index < lists.size(); index++) {
                         if (lists.get(index).getName().equals(name) && index != position) {
                             listName.setError("List already exists...");
@@ -285,7 +296,14 @@ public class Lists extends Fragment {
             if(listNames != null) {
                 for (int i = 0; i < listNames.length(); i++) {
                     try {
-                        lists.add(new ListItem(deviceName,listNames.get(i).toString()));
+                        JSONObject entry = aisleShareData.optJSONObject("Lists").optJSONObject(listNames.get(i).toString());
+                        if(entry != null) {
+                            String owner = entry.optString("owner");
+                            long created = entry.optLong("time");
+                            lists.add(new ListItem(owner, listNames.get(i).toString(), created));
+                        }
+                        currentOrder = aisleShareData.optJSONObject("Lists").optInt("@sort");
+                        isIncreasingOrder = aisleShareData.optJSONObject("Lists").optBoolean("@order");
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -313,7 +331,24 @@ public class Lists extends Fragment {
         return json;
     }
 
-    public void saveNewList(String listTitle){
+    public void saveSortInfo(){
+        try {
+            // Need to update other fragments before saving
+            File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            aisleShareData = new JSONObject(loadJSONFromAsset(file));
+
+            aisleShareData.optJSONObject("Lists").put("@sort", currentOrder);
+            aisleShareData.optJSONObject("Lists").put("@order", isIncreasingOrder);
+
+            FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            fos.write(aisleShareData.toString().getBytes());
+            fos.close();
+        } catch (JSONException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void saveNewList(String listTitle, long timeCreated){
         try {
             // Need to update other fragments before saving
             File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
@@ -323,6 +358,8 @@ public class Lists extends Fragment {
             aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).accumulate("items", new JSONArray());
             aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).put("sort", 2);
             aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).put("direction", true);
+            aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).put("time", timeCreated);
+            aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).put("owner", deviceName);
 
             FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
             fos.write(aisleShareData.toString().getBytes());
@@ -362,6 +399,20 @@ public class Lists extends Fragment {
         menuLists.get("time").setCheckable(true);
         menuLists.get("owner").setCheckable(true);
         menuLists.get("unsorted").setVisible(false);
+
+        sortList(false, currentOrder);
+        switch (currentOrder){
+            case 0:
+                menuLists.get("name").setChecked(true);
+                break;
+            case 1:
+                menuLists.get("time").setChecked(true);
+                break;
+            case 2:
+                menuLists.get("owner").setChecked(true);
+                break;
+        }
+        itemAdapter.notifyDataSetChanged();
         super.onCreateOptionsMenu(menu, inflater);
 
     }
@@ -379,20 +430,24 @@ public class Lists extends Fragment {
                 sortList(true, 0);
                 clearMenuCheckables();
                 option.setChecked(true);
+                saveSortInfo();
                 break;
             case R.id.sort_time:
                 sortList(true, 1);
                 clearMenuCheckables();
                 option.setChecked(true);
+                saveSortInfo();
                 break;
             case R.id.sort_owner:
                 sortList(true, 2);
                 clearMenuCheckables();
                 option.setChecked(true);
+                saveSortInfo();
                 break;
             case R.id.unsorted:
                 sortList(false, -1);
                 clearMenuCheckables();
+                saveSortInfo();
                 break;
             case R.id.delete_items:
                 deleteItems();

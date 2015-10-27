@@ -578,7 +578,9 @@ public class CurrentActivity extends AppCompatActivity {
         if(names != null) {
             for (int i = 0; i < names.length(); i++) {
                 try {
-                    lists.add(names.get(i).toString());
+                    if(!names.get(i).toString().equals("@sort") && !names.get(i).toString().equals("@order")) {
+                        lists.add(names.get(i).toString());
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

@@ -417,10 +417,9 @@ public class CurrentRecipe extends AppCompatActivity {
                     String type = itemType.getText().toString();
                     double quantity;
                     String units = itemUnits.getText().toString();
-                    if(!itemQuantity.getText().toString().isEmpty()) {
+                    if (!itemQuantity.getText().toString().isEmpty()) {
                         quantity = Double.parseDouble(itemQuantity.getText().toString());
-                    }
-                    else{
+                    } else {
                         quantity = 1;
                     }
                     Item m = new Item(deviceName, name, type, quantity, units);
@@ -436,8 +435,7 @@ public class CurrentRecipe extends AppCompatActivity {
                     itemQuantity.setText("1");
                     itemUnits.setText("");
                     itemName.requestFocus();
-                }
-                else{
+                } else {
                     itemName.setError("Name is empty...");
                 }
             }
@@ -591,7 +589,9 @@ public class CurrentRecipe extends AppCompatActivity {
         if(names != null) {
             for (int i = 0; i < names.length(); i++) {
                 try {
-                    lists.add(names.get(i).toString());
+                    if(!names.get(i).toString().equals("@sort") && !names.get(i).toString().equals("@order")) {
+                        lists.add(names.get(i).toString());
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

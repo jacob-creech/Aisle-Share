@@ -240,12 +240,14 @@ public class Activities extends Fragment {
             // Read or Initializes aisleShareData
             // Assumes the File itself has already been Initialized
             aisleShareData = new JSONObject(loadJSONFromAsset(file));
-            JSONArray listNames = aisleShareData.optJSONObject("Activities").names();
-            if(listNames != null) {
-                for (int i = 0; i < listNames.length(); i++) {
+            JSONArray activityNames = aisleShareData.optJSONObject("Activities").names();
+            if(activityNames != null) {
+                for (int i = 0; i < activityNames.length(); i++) {
                     try {
                         // todo initialize with owner and timeCreated
-                        activities.add(listNames.get(i).toString());
+                        if(!activityNames.get(i).toString().equals("@sort") && !activityNames.get(i).toString().equals("@order")) {
+                            activities.add(activityNames.get(i).toString());
+                        }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }

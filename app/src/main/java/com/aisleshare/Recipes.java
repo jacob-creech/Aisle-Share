@@ -243,7 +243,9 @@ public class Recipes extends Fragment {
                 for (int i = 0; i < recipeNames.length(); i++) {
                     try {
                         // todo initialize with owner and timeCreated
-                        recipes.add(recipeNames.get(i).toString());
+                        if(!recipeNames.get(i).toString().equals("@sort") && !recipeNames.get(i).toString().equals("@order")) {
+                            recipes.add(recipeNames.get(i).toString());
+                        }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }

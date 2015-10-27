@@ -7,6 +7,12 @@
     android:layout_height="match_parent"
     tools:context=".ShoppingList">
 
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/lists"
+        android:visibility="visible" />
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -30,10 +36,4 @@
             android:textSize="14sp"
             android:visibility="invisible" />
     </FrameLayout>
-
-    <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/lists"
-        android:visibility="visible" />
 </RelativeLayout>

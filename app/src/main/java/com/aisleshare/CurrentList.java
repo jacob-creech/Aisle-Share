@@ -340,9 +340,12 @@ public class CurrentList extends AppCompatActivity {
                     saveData();
                     sortList(false, currentOrder);
                     customAdapter.notifyDataSetChanged();
-                    dialog.dismiss();
                     emptyNotice.setVisibility(View.INVISIBLE);
-                    addItemDialog();
+                    itemName.setText("");
+                    itemType.setText("");
+                    itemQuantity.setText("1");
+                    itemUnits.setText("");
+                    itemName.requestFocus();
                 }
                 else{
                     itemName.setError("Name is empty...");
@@ -535,6 +538,7 @@ public class CurrentList extends AppCompatActivity {
             public void onFinish() {
                 LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
                 undoBox.setVisibility(View.INVISIBLE);
+                items_backup.clear();
             }
         }.start();
     }

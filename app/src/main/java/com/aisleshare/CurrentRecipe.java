@@ -35,7 +35,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 
@@ -431,9 +430,12 @@ public class CurrentRecipe extends AppCompatActivity {
 
                     sortList(false, currentOrder);
                     customAdapter.notifyDataSetChanged();
-                    dialog.dismiss();
                     emptyNotice.setVisibility(View.INVISIBLE);
-                    addItemDialog();
+                    itemName.setText("");
+                    itemType.setText("");
+                    itemQuantity.setText("1");
+                    itemUnits.setText("");
+                    itemName.requestFocus();
                 }
                 else{
                     itemName.setError("Name is empty...");
@@ -578,7 +580,7 @@ public class CurrentRecipe extends AppCompatActivity {
     public void addToListDialog() {
         // custom dialog
         final Dialog dialog = new Dialog(CurrentRecipe.this);
-        dialog.setContentView(R.layout.dialog_add_to_list);
+        dialog.setContentView(R.layout.dialog_select_list);
         dialog.setTitle("Select a List");
 
         final ListView lv = (ListView) dialog.findViewById(R.id.lists);
@@ -718,6 +720,7 @@ public class CurrentRecipe extends AppCompatActivity {
             public void onFinish() {
                 LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
                 undoBox.setVisibility(View.INVISIBLE);
+                items_backup.clear();
             }
         }.start();
     }

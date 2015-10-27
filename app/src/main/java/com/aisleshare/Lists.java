@@ -1,7 +1,9 @@
 package com.aisleshare;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -14,10 +16,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,6 +48,7 @@ public class Lists extends Fragment {
     private int currentOrder;
     private String deviceName;
     private JSONObject aisleShareData;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,22 +81,7 @@ public class Lists extends Fragment {
         itemAdapter = new CustomListAdapter(dashboard, lists, R.layout.row_dashboard);
         listView.setAdapter(itemAdapter);
 
-        FloatingActionButton addButton = (FloatingActionButton) getView().findViewById(R.id.float_button);
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addListDialog();
-            }
-        });
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long id) {
-                Intent intent = new Intent(dashboard, CurrentList.class);
-                String name = lists.get(pos).getName();
-                intent.putExtra(LIST_NAME, name);
-                startActivity(intent);
-            }
-        });
+        setListeners();
     }
 
     public void sortList(boolean reverseOrder, int order) {
@@ -201,6 +192,89 @@ public class Lists extends Fragment {
         dialog.show();
     }
 
+    // Popup for editing a List
+    public void editListDialog(final int position){
+        if(!deviceName.equals(lists.get(position).getOwner())) {
+            Toast toast = Toast.makeText(dashboard, "You are not the owner...", Toast.LENGTH_LONG);
+            toast.show();
+            return;
+        }
+
+        // custom dialog
+        final Dialog dialog = new Dialog(dashboard);
+        dialog.setContentView(R.layout.dialog_add_name);
+        dialog.setTitle("Edit List Name");
+
+        final EditText listName = (EditText) dialog.findViewById(R.id.Name);
+        final Button cancel = (Button) dialog.findViewById(R.id.Cancel);
+        final Button done = (Button) dialog.findViewById(R.id.Done);
+        final String orig_name = lists.get(position).getName();
+
+        listName.setText(orig_name);
+
+        // Open keyboard automatically
+        listName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+                }
+            }
+        });
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        done.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!listName.getText().toString().isEmpty()) {
+                    String name = listName.getText().toString();
+
+                    if(name.equals(orig_name)){
+                        dialog.dismiss();
+                    }
+
+                    for (int index = 0; index < lists.size(); index++) {
+                        if (lists.get(index).getName().equals(name) && index != position) {
+                            listName.setError("List already exists...");
+                            return;
+                        }
+                    }
+
+                    lists.get(position).setName(name);
+                    sortList(false, currentOrder);
+                    dialog.dismiss();
+                    itemAdapter.notifyDataSetChanged();
+
+                    try {
+                        // Need to update other fragments before saving
+                        File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
+                        aisleShareData = new JSONObject(loadJSONFromAsset(file));
+
+                        JSONObject listData = aisleShareData.optJSONObject("Lists").optJSONObject(orig_name);
+                        aisleShareData.optJSONObject("Lists").remove(orig_name);
+                        aisleShareData.optJSONObject("Lists").put(name, listData);
+
+                        FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
+                        fos.write(aisleShareData.toString().getBytes());
+                        fos.close();
+                    } catch (IOException | JSONException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    listName.setError("Name is empty...");
+                }
+            }
+        });
+
+        dialog.show();
+    }
+
     public void readSavedLists(){
         try {
             File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
@@ -258,6 +332,22 @@ public class Lists extends Fragment {
         }
     }
 
+    public void removeList(String listTitle){
+        try {
+            // Need to update other fragments before saving
+            File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            aisleShareData = new JSONObject(loadJSONFromAsset(file));
+
+            aisleShareData.optJSONObject("Lists").remove(listTitle);
+
+            FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            fos.write(aisleShareData.toString().getBytes());
+            fos.close();
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -305,7 +395,7 @@ public class Lists extends Fragment {
                 clearMenuCheckables();
                 break;
             case R.id.delete_items:
-                //deleteItems();
+                deleteItems();
                 break;
             case R.id.sort:
                 return super.onOptionsItemSelected(option);
@@ -320,16 +410,63 @@ public class Lists extends Fragment {
         menuLists.get("owner").setChecked(false);
     }
 
-    /*public void deleteItems(){
+    public AlertDialog confirmDeletion(final String listName, final int position)
+    {
+        return new AlertDialog.Builder(dashboard)
+            .setTitle("Confirm Deletion")
+            .setMessage("Are you sure? This cannot be undone.")
+            .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    emptyNotice = (TextView) getView().findViewById(R.id.empty_notice);
+
+                    removeList(listName);
+                    lists.remove(position);
+                    itemAdapter.notifyDataSetChanged();
+                    dialog.dismiss();
+                    Toast toast = Toast.makeText(dashboard, "List Deleted", Toast.LENGTH_LONG);
+                    toast.show();
+                    if (lists.size() == 0) {
+                        emptyNotice.setVisibility(View.VISIBLE);
+                    }
+                }
+            })
+            .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            })
+            .create();
+    }
+
+    public void deleteItems(){
         // custom dialog
-        final Dialog dialog = new Dialog(editme.this); //has a problem, not caring atm
-        dialog.setContentView(R.layout.delete_items_dialog);
-        dialog.setTitle("What Should We Delete?");
+        final Dialog dialog = new Dialog(dashboard); //has a problem, not caring atm
+        dialog.setContentView(R.layout.dialog_select_list);
 
+        final ListView lv = (ListView) dialog.findViewById(R.id.lists);
         final Button cancel = (Button) dialog.findViewById(R.id.cancel);
-        final Button delete_all = (Button) dialog.findViewById(R.id.delete_all);
-        final Button delete_checked = (Button) dialog.findViewById(R.id.delete_checked);
 
+        final ArrayList<String> listNames = new ArrayList<>();
+        if(lists.size() != 0) {
+            dialog.setTitle("What Should We Delete?");
+            for (ListItem i : lists) {
+                listNames.add(i.getName());
+            }
+        }
+        else{
+            dialog.setTitle("No Lists to Delete.");
+        }
+
+        ArrayAdapter<String> itemAdapter = new ArrayAdapter<>(dashboard,android.R.layout.simple_list_item_1, listNames);
+        lv.setAdapter(itemAdapter);
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                confirmDeletion(listNames.get(position), position).show();
+                dialog.dismiss();
+            }
+        });
 
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -338,78 +475,34 @@ public class Lists extends Fragment {
             }
         });
 
-        delete_all.setOnClickListener(new View.OnClickListener() {
+        dialog.show();
+    }
+
+    public void setListeners() {
+        // Floating Action Button
+        FloatingActionButton addButton = (FloatingActionButton) getView().findViewById(R.id.float_button);
+        addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
-                boolean removals = false;
-
-                items_backup.clear();
-                for (ListItem item : items) {
-                    items_backup.add(item);
-                }
-
-                int length = items.size();
-                for (int index = length - 1; index > -1; index--) {
-                    if (deviceName.equals(items.get(index).getOwner())) {
-                        items.remove(index);
-                        removals = true;
-                    }
-                }
-                itemAdapter.notifyDataSetChanged();
-                if (items.size() == 0) {
-                    TextView emptyNotice = (TextView) findViewById(R.id.empty_notice);
-                    emptyNotice.setVisibility(View.VISIBLE);
-                }
-                if (removals) {
-                    undoBox.setVisibility(View.VISIBLE);
-                }
-                dialog.dismiss();
-                hideUndoBoxTimer();
+                addListDialog();
             }
-        });*/
+        });
 
-    /*delete_checked.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
-            boolean removals = false;
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long id) {
+                Intent intent = new Intent(dashboard, CurrentList.class);
+                String name = lists.get(pos).getName();
+                intent.putExtra(LIST_NAME, name);
+                startActivity(intent);
+            }
+        });
 
-            items_backup.clear();
-            for (Item item : items) {
-                items_backup.add(item);
+        //Long Click for editing
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
+                editListDialog(pos);
+                return true;
             }
-
-            int length = items.size();
-            for (int index = length - 1; index > -1; index--) {
-                if (deviceName.equals(items.get(index).getOwner()) &&
-                        items.get(index).getChecked()) {
-                    items.remove(index);
-                    removals = true;
-                }
-            }
-            itemAdapter.notifyDataSetChanged();
-            if (items.size() == 0) {
-                TextView emptyNotice = (TextView) findViewById(R.id.empty_notice);
-                emptyNotice.setVisibility(View.VISIBLE);
-            }
-            if (removals) {
-                undoBox.setVisibility(View.VISIBLE);
-            }
-            dialog.dismiss();
-            hideUndoBoxTimer();
-        }
-    });
-
-    dialog.show();
-}
-    public void hideUndoBoxTimer(){
-        new CountDownTimer(10000, 10000) {
-            public void onTick(long millisUntilFinished) {}
-            public void onFinish() {
-                LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
-                undoBox.setVisibility(View.INVISIBLE);
-            }
-        }.start();
-    }*/
+        });
+    }
 }

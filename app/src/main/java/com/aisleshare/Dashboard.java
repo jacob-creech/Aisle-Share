@@ -12,6 +12,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -28,7 +29,7 @@ public class Dashboard  extends AppCompatActivity {
         initializeStorage();
         adapter = new TabsAdapter(getSupportFragmentManager());
         pager = (ViewPager) findViewById(R.id.pager);
-            pager.setAdapter(adapter);
+        pager.setAdapter(adapter);
     }
 
     @Override
@@ -60,19 +61,11 @@ public class Dashboard  extends AppCompatActivity {
                 aisleShareData.accumulate("Lists", new JSONObject());
                 aisleShareData.accumulate("Recipes", new JSONObject());
                 aisleShareData.accumulate("Activities", new JSONObject());
-                saveData();
+                FileOutputStream fos = new FileOutputStream(getFilesDir().getPath() + "/Aisle_Share_Data.json");
+                fos.write(aisleShareData.toString().getBytes());
+                fos.close();
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void saveData(){
-        try {
-            FileOutputStream fos = new FileOutputStream(getFilesDir().getPath() + "/Aisle_Share_Data.json");
-            fos.write(aisleShareData.toString().getBytes());
-            fos.close();
-        } catch (IOException e) {
+        } catch (JSONException | IOException e) {
             e.printStackTrace();
         }
     }

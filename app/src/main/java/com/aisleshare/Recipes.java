@@ -110,13 +110,8 @@ public class Recipes extends Fragment {
                 if (!recipeName.getText().toString().isEmpty()) {
                     String name = recipeName.getText().toString();
 
-                    if(name.equals("@sort")){
-                        recipeName.setError("Sorry, that name is reserved...");
-                        return;
-                    }
-
                     for (int index = 0; index < recipes.size(); index++) {
-                        if (recipes.get(index).equals(name) || name.equals("@direction")) {
+                        if (recipes.get(index).equals(name)) {
                             recipeName.setError("Recipe already exists...");
                             return;
                         }
@@ -188,11 +183,6 @@ public class Recipes extends Fragment {
                         dialog.dismiss();
                     }
 
-                    if(name.equals("@sort") || name.equals("@direction")){
-                        recipeName.setError("Sorry, that name is reserved...");
-                        return;
-                    }
-
                     for (int index = 0; index < recipes.size(); index++) {
                         if (recipes.get(index).equals(name) && index != position) {
                             recipeName.setError("Recipe already exists...");
@@ -241,9 +231,7 @@ public class Recipes extends Fragment {
                 for (int i = 0; i < recipeNames.length(); i++) {
                     try {
                         // todo initialize with owner and timeCreated
-                        if(!recipeNames.get(i).toString().equals("@sort") && !recipeNames.get(i).toString().equals("@direction")) {
-                            recipes.add(recipeNames.get(i).toString());
-                        }
+                        recipes.add(recipeNames.get(i).toString());
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }

@@ -77,6 +77,13 @@ public class CurrentList extends AppCompatActivity {
 
         customAdapter = new CustomAdapter(this, items, R.layout.row_list);
         listView.setAdapter(customAdapter);
+
+        try {
+            aisleShareData.put("ListOpened", listTitle);
+            saveData();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     // Sorted based on the order index parameter
@@ -222,12 +229,32 @@ public class CurrentList extends AppCompatActivity {
                 deleteItems();
                 break;
             case R.id.sort:
-                return super.onOptionsItemSelected(option);
+                return true;
+            case android.R.id.home:
+                try {
+                    aisleShareData.put("ListOpened", "");
+                    saveData();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                finish();
+                break;
         }
 
         saveData();
         customAdapter.notifyDataSetChanged();
-        return super.onOptionsItemSelected(option);
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        try {
+            aisleShareData.put("ListOpened", "");
+            saveData();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        super.onBackPressed();
     }
 
     public void clearMenuCheckables(){

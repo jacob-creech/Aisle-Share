@@ -152,15 +152,18 @@ public class CurrentActivity extends AppCompatActivity {
                 deleteItemsDialog();
                 break;
             case R.id.sort:
-                return super.onOptionsItemSelected(option);
+                return true;
             case R.id.add_to_list:
                 addToListDialog();
+                break;
+            case android.R.id.home:
+                finish();
                 break;
         }
 
         saveData();
         customAdapter.notifyDataSetChanged();
-        return super.onOptionsItemSelected(option);
+        return true;
     }
 
     public void clearMenuCheckables(){
@@ -371,10 +374,9 @@ public class CurrentActivity extends AppCompatActivity {
                 if (!itemQuantity.getText().toString().isEmpty()) {
                     double value = Double.parseDouble(itemQuantity.getText().toString());
                     if (value > 1) {
-                        if(value % 1 == 0){
+                        if (value % 1 == 0) {
                             itemQuantity.setText(String.format("%s", (int) Math.round(value - 1)));
-                        }
-                        else {
+                        } else {
                             itemQuantity.setText(String.format("%s", value - 1));
                         }
                     }
@@ -532,10 +534,9 @@ public class CurrentActivity extends AppCompatActivity {
                 if (!itemQuantity.getText().toString().isEmpty()) {
                     double value = Double.parseDouble(itemQuantity.getText().toString());
                     if (value < 99999) {
-                        if(value % 1 == 0){
+                        if (value % 1 == 0) {
                             itemQuantity.setText(String.format("%s", (int) Math.round(value + 1)));
-                        }
-                        else {
+                        } else {
                             itemQuantity.setText(String.format("%s", value + 1));
                         }
                     }
@@ -598,9 +599,7 @@ public class CurrentActivity extends AppCompatActivity {
         if(names != null) {
             for (int i = 0; i < names.length(); i++) {
                 try {
-                    if(!names.get(i).toString().equals("@sort") && !names.get(i).toString().equals("@direction")) {
-                        lists.add(names.get(i).toString());
-                    }
+                    lists.add(names.get(i).toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -610,13 +609,13 @@ public class CurrentActivity extends AppCompatActivity {
             return;
         }
 
-        ArrayAdapter<String> itemAdapter = new ArrayAdapter<>(CurrentActivity.this,android.R.layout.simple_list_item_1, lists);
+        ArrayAdapter<String> itemAdapter = new ArrayAdapter<>(CurrentActivity.this, android.R.layout.simple_list_item_1, lists);
         lv.setAdapter(itemAdapter);
 
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(items.size() == 0){
+                if (items.size() == 0) {
                     return;
                 }
 
@@ -637,7 +636,7 @@ public class CurrentActivity extends AppCompatActivity {
                 dialog.dismiss();
 
                 Intent intent = new Intent(CurrentActivity.this, Transfer.class);
-                intent.putExtra(LIST_NAME, "Select/Edit Items to Add");
+                intent.putExtra(LIST_NAME, "Select which Items to Add");
                 startActivity(intent);
             }
         });

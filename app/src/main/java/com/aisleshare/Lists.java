@@ -166,11 +166,6 @@ public class Lists extends Fragment {
                 if (!listName.getText().toString().isEmpty()) {
                     String name = listName.getText().toString();
 
-                    if(name.equals("@sort") || name.equals("@direction")){
-                        listName.setError("Sorry, that name is reserved...");
-                        return;
-                    }
-
                     for (int index = 0; index < lists.size(); index++) {
                         if (lists.get(index).equals(name)) {
                             listName.setError("List already exists...");
@@ -245,11 +240,6 @@ public class Lists extends Fragment {
                         dialog.dismiss();
                     }
 
-                    if(name.equals("@sort") || name.equals("@direction")){
-                        listName.setError("Sorry, that name is reserved...");
-                        return;
-                    }
-
                     for (int index = 0; index < lists.size(); index++) {
                         if (lists.get(index).getName().equals(name) && index != position) {
                             listName.setError("List already exists...");
@@ -302,8 +292,8 @@ public class Lists extends Fragment {
                             long created = entry.optLong("time");
                             lists.add(new ListItem(owner, listNames.get(i).toString(), created));
                         }
-                        currentOrder = aisleShareData.optJSONObject("Lists").optInt("@sort");
-                        isIncreasingOrder = aisleShareData.optJSONObject("Lists").optBoolean("@direction");
+                        currentOrder = aisleShareData.optInt("ListsOrder");
+                        isIncreasingOrder = aisleShareData.optBoolean("ListsDirection");
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -337,8 +327,8 @@ public class Lists extends Fragment {
             File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
             aisleShareData = new JSONObject(loadJSONFromAsset(file));
 
-            aisleShareData.optJSONObject("Lists").put("@sort", currentOrder);
-            aisleShareData.optJSONObject("Lists").put("@direction", isIncreasingOrder);
+            aisleShareData.put("ListsSort", currentOrder);
+            aisleShareData.put("ListsDirection", isIncreasingOrder);
 
             FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
             fos.write(aisleShareData.toString().getBytes());

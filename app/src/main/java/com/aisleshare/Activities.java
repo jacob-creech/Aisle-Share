@@ -112,11 +112,6 @@ public class Activities extends Fragment {
                 if (!activityName.getText().toString().isEmpty()) {
                     String name = activityName.getText().toString();
 
-                    if(name.equals("@sort") || name.equals("@direction")){
-                        activityName.setError("Sorry, that name is reserved...");
-                        return;
-                    }
-
                     for (int index = 0; index < activities.size(); index++) {
                         if (activities.get(index).equals(name)) {
                             activityName.setError("Activity already exists...");
@@ -190,11 +185,6 @@ public class Activities extends Fragment {
                         dialog.dismiss();
                     }
 
-                    if(name.equals("@sort") || name.equals("@direction")){
-                        activityName.setError("Sorry, that name is reserved...");
-                        return;
-                    }
-
                     for (int index = 0; index < activities.size(); index++) {
                         if (activities.get(index).equals(name) && index != position) {
                             activityName.setError("Activity already exists...");
@@ -243,9 +233,7 @@ public class Activities extends Fragment {
                 for (int i = 0; i < activityNames.length(); i++) {
                     try {
                         // todo initialize with owner and timeCreated
-                        if(!activityNames.get(i).toString().equals("@sort") && !activityNames.get(i).toString().equals("@direction")) {
-                            activities.add(activityNames.get(i).toString());
-                        }
+                       activities.add(activityNames.get(i).toString());
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }

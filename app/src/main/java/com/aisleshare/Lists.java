@@ -29,7 +29,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -167,7 +166,7 @@ public class Lists extends Fragment {
                 if (!listName.getText().toString().isEmpty()) {
                     String name = listName.getText().toString();
 
-                    if(name.equals("@sort") || name.equals("@order")){
+                    if(name.equals("@sort") || name.equals("@direction")){
                         listName.setError("Sorry, that name is reserved...");
                         return;
                     }
@@ -183,10 +182,11 @@ public class Lists extends Fragment {
                     lists.add(list);
                     sortList(false, currentOrder);
                     dialog.dismiss();
-                    Intent intent = new Intent(dashboard, CurrentList.class);
                     itemAdapter.notifyDataSetChanged();
                     saveNewList(name, list.getCreated());
                     emptyNotice.setVisibility(View.INVISIBLE);
+
+                    Intent intent = new Intent(dashboard, CurrentList.class);
                     intent.putExtra(LIST_NAME, name);
                     startActivity(intent);
                 } else {
@@ -245,7 +245,7 @@ public class Lists extends Fragment {
                         dialog.dismiss();
                     }
 
-                    if(name.equals("@sort") || name.equals("@order")){
+                    if(name.equals("@sort") || name.equals("@direction")){
                         listName.setError("Sorry, that name is reserved...");
                         return;
                     }
@@ -303,7 +303,7 @@ public class Lists extends Fragment {
                             lists.add(new ListItem(owner, listNames.get(i).toString(), created));
                         }
                         currentOrder = aisleShareData.optJSONObject("Lists").optInt("@sort");
-                        isIncreasingOrder = aisleShareData.optJSONObject("Lists").optBoolean("@order");
+                        isIncreasingOrder = aisleShareData.optJSONObject("Lists").optBoolean("@direction");
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -338,7 +338,7 @@ public class Lists extends Fragment {
             aisleShareData = new JSONObject(loadJSONFromAsset(file));
 
             aisleShareData.optJSONObject("Lists").put("@sort", currentOrder);
-            aisleShareData.optJSONObject("Lists").put("@order", isIncreasingOrder);
+            aisleShareData.optJSONObject("Lists").put("@direction", isIncreasingOrder);
 
             FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
             fos.write(aisleShareData.toString().getBytes());

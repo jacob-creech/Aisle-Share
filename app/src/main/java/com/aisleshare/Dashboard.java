@@ -59,14 +59,22 @@ public class Dashboard  extends AppCompatActivity {
             if (!file.exists()) {
                 aisleShareData = new JSONObject();
                 aisleShareData.accumulate("Lists", new JSONObject());
-                aisleShareData.accumulate("Recipes", new JSONObject());
-                aisleShareData.accumulate("Activities", new JSONObject());
                 aisleShareData.optJSONObject("Lists").accumulate("@sort", 1);
-                aisleShareData.optJSONObject("Lists").accumulate("@order", true);
+                aisleShareData.optJSONObject("Lists").accumulate("@direction", true);
+
+                aisleShareData.accumulate("Recipes", new JSONObject());
                 aisleShareData.optJSONObject("Recipes").accumulate("@sort", 1);
-                aisleShareData.optJSONObject("Recipes").accumulate("@order", true);
+                aisleShareData.optJSONObject("Recipes").accumulate("@direction", true);
+
+                aisleShareData.accumulate("Activities", new JSONObject());
                 aisleShareData.optJSONObject("Activities").accumulate("@sort", 1);
-                aisleShareData.optJSONObject("Activities").accumulate("@order", true);
+                aisleShareData.optJSONObject("Activities").accumulate("@direction", true);
+
+                aisleShareData.accumulate("Transfers", new JSONObject());
+                aisleShareData.optJSONObject("Transfers").accumulate("sort", 1);
+                aisleShareData.optJSONObject("Transfers").accumulate("direction", true);
+                aisleShareData.optJSONObject("Transfers").accumulate("name", "");
+                aisleShareData.optJSONObject("Transfers").accumulate("items", new JSONArray());
 
                 FileOutputStream fos = new FileOutputStream(getFilesDir().getPath() + "/Aisle_Share_Data.json");
                 fos.write(aisleShareData.toString().getBytes());

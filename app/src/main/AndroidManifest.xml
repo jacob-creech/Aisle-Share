@@ -40,6 +40,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.aisleshare.Dashboard" />
         </activity>
+        <activity
+            android:name=".Transfer"
+            />
     </application>
 
 </manifest>

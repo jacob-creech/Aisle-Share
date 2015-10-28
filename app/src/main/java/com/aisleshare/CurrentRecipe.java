@@ -2,6 +2,7 @@ package com.aisleshare;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.provider.Settings;
@@ -41,6 +42,7 @@ import java.util.Map;
 public class CurrentRecipe extends AppCompatActivity {
 
     // Class Variables
+    public final static String LIST_NAME = "com.ShoppingList.MESSAGE";
     private ListView listView;
     private ArrayList<Item> items;
     private ArrayList<Item> items_backup;
@@ -384,7 +386,12 @@ public class CurrentRecipe extends AppCompatActivity {
                 if (!itemQuantity.getText().toString().isEmpty()) {
                     double value = Double.parseDouble(itemQuantity.getText().toString());
                     if (value > 1) {
-                        itemQuantity.setText(String.format("%s", (int) Math.ceil(value - 1)));
+                        if(value % 1 == 0){
+                            itemQuantity.setText(String.format("%s", (int) Math.round(value - 1)));
+                        }
+                        else {
+                            itemQuantity.setText(String.format("%s", value - 1));
+                        }
                     }
                 }
             }
@@ -396,7 +403,12 @@ public class CurrentRecipe extends AppCompatActivity {
                 if(!itemQuantity.getText().toString().isEmpty()) {
                     double value = Double.parseDouble(itemQuantity.getText().toString());
                     if (value < 99999) {
-                        itemQuantity.setText(String.format("%s", (int) Math.floor(value + 1)));
+                        if(value % 1 == 0){
+                            itemQuantity.setText(String.format("%s", (int) Math.round(value + 1)));
+                        }
+                        else {
+                            itemQuantity.setText(String.format("%s", value + 1));
+                        }
                     }
                 }
             }
@@ -516,7 +528,12 @@ public class CurrentRecipe extends AppCompatActivity {
                 if (!itemQuantity.getText().toString().isEmpty()) {
                     double value = Double.parseDouble(itemQuantity.getText().toString());
                     if (value > 1) {
-                        itemQuantity.setText(String.format("%s", (int) Math.ceil(value - 1)));
+                        if(value % 1 == 0){
+                            itemQuantity.setText(String.format("%s", (int) Math.round(value - 1)));
+                        }
+                        else {
+                            itemQuantity.setText(String.format("%s", value - 1));
+                        }
                     }
                 }
             }
@@ -528,7 +545,12 @@ public class CurrentRecipe extends AppCompatActivity {
                 if (!itemQuantity.getText().toString().isEmpty()) {
                     double value = Double.parseDouble(itemQuantity.getText().toString());
                     if (value < 99999) {
-                        itemQuantity.setText(String.format("%s", (int) Math.floor(value + 1)));
+                        if(value % 1 == 0){
+                            itemQuantity.setText(String.format("%s", (int) Math.round(value + 1)));
+                        }
+                        else {
+                            itemQuantity.setText(String.format("%s", value + 1));
+                        }
                     }
                 }
             }
@@ -589,7 +611,7 @@ public class CurrentRecipe extends AppCompatActivity {
         if(names != null) {
             for (int i = 0; i < names.length(); i++) {
                 try {
-                    if(!names.get(i).toString().equals("@sort") && !names.get(i).toString().equals("@order")) {
+                    if(!names.get(i).toString().equals("@sort") && !names.get(i).toString().equals("@direction")) {
                         lists.add(names.get(i).toString());
                     }
                 } catch (JSONException e) {
@@ -607,16 +629,29 @@ public class CurrentRecipe extends AppCompatActivity {
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // TODO: add activity or dialog to arbitrarily select/edit items to add
+                if(items.size() == 0){
+                    return;
+                }
+
                 String listTitle = lists.get(position);
-                for (Item i : items) {
-                    aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).optJSONArray("items").put(i.getJSONString());
+                try {
+                    aisleShareData.optJSONObject("Transfers").put("sort", currentOrder);
+                    aisleShareData.optJSONObject("Transfers").put("order", isIncreasingOrder);
+                    aisleShareData.optJSONObject("Transfers").put("name", listTitle);
+                    aisleShareData.optJSONObject("Transfers").remove("items");
+                    aisleShareData.optJSONObject("Transfers").accumulate("items", new JSONArray());
+                    for (Item i : items) {
+                        aisleShareData.optJSONObject("Transfers").optJSONArray("items").put(i.getJSONString());
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
                 saveData();
                 dialog.dismiss();
 
-                Toast toast = Toast.makeText(CurrentRecipe.this, "Items Saved to List", Toast.LENGTH_LONG);
-                toast.show();
+                Intent intent = new Intent(CurrentRecipe.this, Transfer.class);
+                intent.putExtra(LIST_NAME, "Select which Items to Add");
+                startActivity(intent);
             }
         });
 
@@ -742,7 +777,7 @@ public class CurrentRecipe extends AppCompatActivity {
                             obj.getString("owner"),
                             obj.getString("name"),
                             obj.getString("type"),
-                            obj.getInt("quantity"),
+                            obj.getDouble("quantity"),
                             obj.getString("units"),
                             obj.getBoolean("checked"),
                             obj.getLong("timeCreated")));

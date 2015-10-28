@@ -126,4 +126,7 @@ public class Item {
     public void toggleChecked(){
         checked = !checked;
     }
+    public void setChecked(boolean value){
+        checked = value;
+    }
 }

@@ -116,21 +116,19 @@ public class Recipes extends Fragment {
                     }
 
                     for (int index = 0; index < recipes.size(); index++) {
-                        if (recipes.get(index).equals(name) || name.equals("@order")) {
+                        if (recipes.get(index).equals(name) || name.equals("@direction")) {
                             recipeName.setError("Recipe already exists...");
                             return;
                         }
                     }
 
                     dialog.dismiss();
-
-                    Intent intent = new Intent(dashboard, CurrentRecipe.class);
-
                     recipes.add(name);
                     itemAdapter.notifyDataSetChanged();
                     saveNewRecipe(name);
                     emptyNotice.setVisibility(View.INVISIBLE);
 
+                    Intent intent = new Intent(dashboard, CurrentRecipe.class);
                     intent.putExtra(RECIPE_NAME, name);
                     startActivity(intent);
                 } else {
@@ -190,7 +188,7 @@ public class Recipes extends Fragment {
                         dialog.dismiss();
                     }
 
-                    if(name.equals("@sort") || name.equals("@order")){
+                    if(name.equals("@sort") || name.equals("@direction")){
                         recipeName.setError("Sorry, that name is reserved...");
                         return;
                     }
@@ -243,7 +241,7 @@ public class Recipes extends Fragment {
                 for (int i = 0; i < recipeNames.length(); i++) {
                     try {
                         // todo initialize with owner and timeCreated
-                        if(!recipeNames.get(i).toString().equals("@sort") && !recipeNames.get(i).toString().equals("@order")) {
+                        if(!recipeNames.get(i).toString().equals("@sort") && !recipeNames.get(i).toString().equals("@direction")) {
                             recipes.add(recipeNames.get(i).toString());
                         }
                     } catch (JSONException e) {

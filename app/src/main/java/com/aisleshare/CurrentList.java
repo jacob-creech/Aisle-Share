@@ -295,7 +295,12 @@ public class CurrentList extends AppCompatActivity {
                 if(!itemQuantity.getText().toString().isEmpty()){
                     double value = Double.parseDouble(itemQuantity.getText().toString());
                     if (value > 1) {
-                        itemQuantity.setText(String.format("%s", (int) Math.ceil(value - 1)));
+                        if(value % 1 == 0){
+                            itemQuantity.setText(String.format("%s", (int) Math.round(value - 1)));
+                        }
+                        else {
+                            itemQuantity.setText(String.format("%s", value - 1));
+                        }
                     }
                 }
             }
@@ -307,7 +312,12 @@ public class CurrentList extends AppCompatActivity {
                 if(!itemQuantity.getText().toString().isEmpty()) {
                     double value = Double.parseDouble(itemQuantity.getText().toString());
                     if (value < 99999) {
-                        itemQuantity.setText(String.format("%s", (int) Math.floor(value + 1)));
+                        if(value % 1 == 0){
+                            itemQuantity.setText(String.format("%s", (int) Math.round(value + 1)));
+                        }
+                        else {
+                            itemQuantity.setText(String.format("%s", value + 1));
+                        }
                     }
                 }
             }
@@ -559,7 +569,7 @@ public class CurrentList extends AppCompatActivity {
                             obj.getString("owner"),
                             obj.getString("name"),
                             obj.getString("type"),
-                            obj.getInt("quantity"),
+                            obj.getDouble("quantity"),
                             obj.getString("units"),
                             obj.getBoolean("checked"),
                             obj.getLong("timeCreated")));
@@ -684,7 +694,12 @@ public class CurrentList extends AppCompatActivity {
                 if (!itemQuantity.getText().toString().isEmpty()) {
                     double value = Double.parseDouble(itemQuantity.getText().toString());
                     if (value > 1) {
-                        itemQuantity.setText(String.format("%s", (int) Math.ceil(value - 1)));
+                        if(value % 1 == 0){
+                            itemQuantity.setText(String.format("%s", (int) Math.round(value - 1)));
+                        }
+                        else {
+                            itemQuantity.setText(String.format("%s", value - 1));
+                        }
                     }
                 }
             }
@@ -696,7 +711,12 @@ public class CurrentList extends AppCompatActivity {
                 if (!itemQuantity.getText().toString().isEmpty()) {
                     double value = Double.parseDouble(itemQuantity.getText().toString());
                     if (value < 99999) {
-                        itemQuantity.setText(String.format("%s", (int) Math.floor(value + 1)));
+                        if(value % 1 == 0){
+                            itemQuantity.setText(String.format("%s", (int) Math.round(value + 1)));
+                        }
+                        else {
+                            itemQuantity.setText(String.format("%s", value + 1));
+                        }
                     }
                 }
             }

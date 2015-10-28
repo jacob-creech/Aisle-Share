@@ -112,7 +112,7 @@ public class Activities extends Fragment {
                 if (!activityName.getText().toString().isEmpty()) {
                     String name = activityName.getText().toString();
 
-                    if(name.equals("@sort") || name.equals("@order")){
+                    if(name.equals("@sort") || name.equals("@direction")){
                         activityName.setError("Sorry, that name is reserved...");
                         return;
                     }
@@ -125,14 +125,12 @@ public class Activities extends Fragment {
                     }
 
                     dialog.dismiss();
-
-                    Intent intent = new Intent(dashboard, CurrentActivity.class);
-
                     activities.add(name);
                     itemAdapter.notifyDataSetChanged();
                     saveNewActivity(name);
                     emptyNotice.setVisibility(View.INVISIBLE);
 
+                    Intent intent = new Intent(dashboard, CurrentActivity.class);
                     intent.putExtra(ACTIVITY_NAME, name);
                     startActivity(intent);
                 } else {
@@ -192,7 +190,7 @@ public class Activities extends Fragment {
                         dialog.dismiss();
                     }
 
-                    if(name.equals("@sort") || name.equals("@order")){
+                    if(name.equals("@sort") || name.equals("@direction")){
                         activityName.setError("Sorry, that name is reserved...");
                         return;
                     }
@@ -245,7 +243,7 @@ public class Activities extends Fragment {
                 for (int i = 0; i < activityNames.length(); i++) {
                     try {
                         // todo initialize with owner and timeCreated
-                        if(!activityNames.get(i).toString().equals("@sort") && !activityNames.get(i).toString().equals("@order")) {
+                        if(!activityNames.get(i).toString().equals("@sort") && !activityNames.get(i).toString().equals("@direction")) {
                             activities.add(activityNames.get(i).toString());
                         }
                     } catch (JSONException e) {

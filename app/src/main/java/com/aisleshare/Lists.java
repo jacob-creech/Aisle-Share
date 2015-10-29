@@ -52,6 +52,7 @@ public class Lists extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -130,6 +131,7 @@ public class Lists extends Fragment {
             Collections.reverse(lists);
             menuLists.get("sort").setIcon(R.mipmap.dec_sort);
         }
+        saveSortData();
     }
 
     // Popup for adding a List
@@ -359,6 +361,23 @@ public class Lists extends Fragment {
         }
     }
 
+    public void saveSortData(){
+        try {
+            // Need to update other fragments before saving
+            File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            aisleShareData = new JSONObject(loadJSONFromAsset(file));
+
+            aisleShareData.put("ListsOrder", currentOrder);
+            aisleShareData.put("ListsDirection", isIncreasingOrder);
+
+            FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            fos.write(aisleShareData.toString().getBytes());
+            fos.close();
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void removeList(String listTitle){
         try {
             // Need to update other fragments before saving
@@ -383,7 +402,7 @@ public class Lists extends Fragment {
         menuLists.put("time", menu.findItem(R.id.sort_time));
         menuLists.put("owner", menu.findItem(R.id.sort_owner));
         menuLists.put("unsorted", menu.findItem(R.id.unsorted));
-        menuLists.put("delete", menu.findItem(R.id.delete_items));
+        menuLists.put("delete", menu.findItem(R.id.delete));
 
         menuLists.get("name").setCheckable(true);
         menuLists.get("time").setCheckable(true);
@@ -439,7 +458,7 @@ public class Lists extends Fragment {
                 clearMenuCheckables();
                 saveSortInfo();
                 break;
-            case R.id.delete_items:
+            case R.id.delete:
                 deleteItems();
                 break;
             case R.id.sort:

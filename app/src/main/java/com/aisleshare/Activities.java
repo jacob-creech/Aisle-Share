@@ -32,6 +32,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Activities extends Fragment {
@@ -49,6 +50,7 @@ public class Activities extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -63,6 +65,7 @@ public class Activities extends Fragment {
         dashboard = getActivity();
         listView = (ListView) getView().findViewById(R.id.activities);
         activities = new ArrayList<>();
+        menuActivities = new HashMap<>();
         emptyNotice = (TextView) getView().findViewById(R.id.empty_notice);
         deviceName = Settings.Secure.getString(dashboard.getContentResolver(), Settings.Secure.ANDROID_ID);
 
@@ -305,7 +308,7 @@ public class Activities extends Fragment {
         menuActivities.put("time", menu.findItem(R.id.sort_time));
         menuActivities.put("owner", menu.findItem(R.id.sort_owner));
         menuActivities.put("unsorted", menu.findItem(R.id.unsorted));
-        menuActivities.put("delete", menu.findItem(R.id.delete_items));
+        menuActivities.put("delete", menu.findItem(R.id.delete));
 
         menuActivities.get("name").setCheckable(true);
         menuActivities.get("time").setCheckable(true);
@@ -343,7 +346,7 @@ public class Activities extends Fragment {
                 //sortActivity(false, -1);
                 //clearMenuCheckables();
                 break;
-            case R.id.delete_items:
+            case R.id.delete:
                 deleteItems();
                 break;
             case R.id.sort:

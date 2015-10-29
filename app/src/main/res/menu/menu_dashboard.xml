@@ -1,8 +1,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" tools:context=".ShoppingList">
-    <item android:id="@+id/action_settings" android:title="@string/action_settings"
-        android:orderInCategory="100" app:showAsAction="never" />
     <item
         android:title="Sort"
         android:id="@+id/sort_root"
@@ -23,7 +21,7 @@
     </item>
     <item
         android:title="Delete"
-        android:id="@+id/delete_items"
+        android:id="@+id/delete"
         app:showAsAction="ifRoom"
         android:icon="@mipmap/trash"/>
 </menu>

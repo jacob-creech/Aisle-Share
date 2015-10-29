@@ -8,11 +8,11 @@
         <menu
             android:id="@+id/sort">
             <item android:id="@+id/sort_name"
-                android:title="Name"/>
+                android:title="Sort By Name"/>
             <item android:id="@+id/sort_time"
-                android:title="Time Created"/>
+                android:title="Sort By Time Created"/>
             <item android:id="@+id/sort_owner"
-                android:title="Owner"/>
+                android:title="Sort By Owner"/>
             <item android:id="@+id/unsorted"
                 android:title="Turn Off Sort"/>
             <!--   <item android:id="@+id/sort_custom"

@@ -24,8 +24,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.hudomju.swipe.SwipeToDismissTouchListener;
-import com.hudomju.swipe.adapter.ListViewAdapter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,6 +35,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import de.timroes.swipetodismiss.SwipeDismissList;
 
 
 public class CurrentActivity extends AppCompatActivity {
@@ -72,7 +72,7 @@ public class CurrentActivity extends AppCompatActivity {
         setActivityTitle(savedInstanceState);
         initializeStorage();
         setListeners();
-        setSwipeAdapter();
+        setSwipeToDelete();
 
         if(items.isEmpty()){
             emptyNotice.setVisibility(View.VISIBLE);
@@ -81,6 +81,30 @@ public class CurrentActivity extends AppCompatActivity {
         customAdapter = new CustomAdapter(this, items, R.layout.row_activity);
         listView.setAdapter(customAdapter);
 
+    }
+
+    public void setSwipeToDelete() {
+        SwipeDismissList.OnDismissCallback callback = new SwipeDismissList.OnDismissCallback() {
+            @Override
+            public SwipeDismissList.Undoable onDismiss(AbsListView listView, final int position) {
+                final Item i = items.get(position);
+                if(deviceName.equals(i.getOwner())) {
+                    items.remove(position);
+                    customAdapter.notifyDataSetChanged();
+                    saveData();
+                    return new SwipeDismissList.Undoable() {
+                        public void undo() {
+                            items.add(position, i);
+                            customAdapter.notifyDataSetChanged();
+                            saveData();
+                        }
+                    };
+                }
+                return null;
+            }
+        };
+        SwipeDismissList.UndoMode mode = SwipeDismissList.UndoMode.SINGLE_UNDO;
+        new SwipeDismissList(listView, callback, mode);
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -219,39 +243,6 @@ public class CurrentActivity extends AppCompatActivity {
             activityTitle = extras.getString("com.ShoppingList.MESSAGE");
         }
         setTitle(activityTitle);
-    }
-
-    public void setSwipeAdapter(){
-        // TODO: Fix issue with swiping multiple items concurrently
-        final SwipeToDismissTouchListener<ListViewAdapter> touchListener =
-                new SwipeToDismissTouchListener<>(
-                        new ListViewAdapter(listView),
-                        new SwipeToDismissTouchListener.DismissCallbacks<ListViewAdapter>() {
-                            @Override
-                            public boolean canDismiss(int position) {
-                                return deviceName.equals(items.get(position).getOwner());
-                            }
-
-                            @Override
-                            public void onDismiss(ListViewAdapter view, int position) {
-                                items.remove(position);
-                                saveData();
-                                customAdapter.notifyDataSetChanged();
-                                if(items.size() == 0){
-                                    emptyNotice.setVisibility(View.VISIBLE);
-                                }
-                            }
-                        });
-        listView.setOnTouchListener(touchListener);
-        listView.setOnScrollListener((AbsListView.OnScrollListener) touchListener.makeScrollListener());
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (touchListener.existPendingDismisses()) {
-                    touchListener.undoPendingDismiss();
-                }
-            }
-        });
     }
 
     // Sorted based on the order index parameter

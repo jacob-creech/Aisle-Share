@@ -6,6 +6,7 @@
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/android-floating-action-button-master/library/library.iml" filepath="$PROJECT_DIR$/android-floating-action-button-master/library/library.iml" />
       <module fileurl="file://$PROJECT_DIR$/android-floating-action-button-master/sample/plusButton.iml" filepath="$PROJECT_DIR$/android-floating-action-button-master/sample/plusButton.iml" />
+      <module fileurl="file://$PROJECT_DIR$/swipeToDismissUndoList/swipeToDismissUndoList.iml" filepath="$PROJECT_DIR$/swipeToDismissUndoList/swipeToDismissUndoList.iml" />
     </modules>
   </component>
 </project>

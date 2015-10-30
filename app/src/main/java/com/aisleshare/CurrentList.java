@@ -22,8 +22,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.hudomju.swipe.SwipeToDismissTouchListener;
-import com.hudomju.swipe.adapter.ListViewAdapter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
+import de.timroes.swipetodismiss.SwipeDismissList;
 
 public class CurrentList extends AppCompatActivity {
 
@@ -69,7 +67,7 @@ public class CurrentList extends AppCompatActivity {
         setListTitle(savedInstanceState);
         readSavedItems();
         setListeners();
-        setSwipeAdapter();
+        setSwipeToDelete();
 
         if(items.isEmpty()){
             emptyNotice.setVisibility(View.VISIBLE);
@@ -84,6 +82,34 @@ public class CurrentList extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public void setSwipeToDelete() {
+        SwipeDismissList.OnDismissCallback callback = new SwipeDismissList.OnDismissCallback() {
+            @Override
+            public SwipeDismissList.Undoable onDismiss(AbsListView listView, final int position) {
+                final Item i = items.get(position);
+                if(deviceName.equals(i.getOwner())) {
+                    items.remove(position);
+                    customAdapter.notifyDataSetChanged();
+                    saveData();
+                    return new SwipeDismissList.Undoable() {
+                        public void undo() {
+                            items.add(position, i);
+                            customAdapter.notifyDataSetChanged();
+                            saveData();
+                        }
+                    };
+                }
+                else{
+                    Toast toast = Toast.makeText(CurrentList.this, "Item not owned...", Toast.LENGTH_LONG);
+                    toast.show();
+                }
+                return null;
+            }
+        };
+        SwipeDismissList.UndoMode mode = SwipeDismissList.UndoMode.SINGLE_UNDO;
+        new SwipeDismissList(listView, callback, mode);
     }
 
     // Sorted based on the order index parameter
@@ -438,41 +464,6 @@ public class CurrentList extends AppCompatActivity {
         customAdapter.notifyDataSetChanged();
     }
 
-    public void setSwipeAdapter(){
-        // TODO: Fix issue with swiping multiple items concurrently
-        final SwipeToDismissTouchListener<ListViewAdapter> touchListener =
-                new SwipeToDismissTouchListener<>(
-                        new ListViewAdapter(listView),
-                        new SwipeToDismissTouchListener.DismissCallbacks<ListViewAdapter>() {
-                            @Override
-                            public boolean canDismiss(int position) {
-                                return deviceName.equals(items.get(position).getOwner());
-                            }
-
-                            @Override
-                            public void onDismiss(ListViewAdapter view, int position) {
-                                items.remove(position);
-                                saveData();
-                                customAdapter.notifyDataSetChanged();
-                                if(items.size() == 0){
-                                    emptyNotice.setVisibility(View.VISIBLE);
-                                }
-                            }
-                        });
-        listView.setOnTouchListener(touchListener);
-        listView.setOnScrollListener((AbsListView.OnScrollListener) touchListener.makeScrollListener());
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (touchListener.existPendingDismisses()) {
-                    touchListener.undoPendingDismiss();
-                } else {
-                    rowClick(position);
-                }
-            }
-        });
-    }
-
     public void setListTitle(Bundle savedInstanceState){
         Bundle extras = getIntent().getExtras();
         if (savedInstanceState == null) {
@@ -653,7 +644,15 @@ public class CurrentList extends AppCompatActivity {
             }
         });
 
-        //Long Click for editing
+        // checking/unchecking
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                itemClick(view);
+            }
+        });
+
+        // Long Click for editing
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
                 editItemDialog(pos);

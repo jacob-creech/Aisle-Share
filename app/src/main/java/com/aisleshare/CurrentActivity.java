@@ -360,7 +360,6 @@ public class CurrentActivity extends AppCompatActivity {
                         int duration = Toast.LENGTH_LONG;
 
                         Toast toast = Toast.makeText(context, text, duration);
-                        toast.setGravity(Gravity.TOP, 0, 30);
                         toast.show();
                     }
                 }
@@ -586,6 +585,12 @@ public class CurrentActivity extends AppCompatActivity {
 
     // Popup for adding an Item
     public void addToListDialog() {
+        if (items.size() == 0) {
+            Toast toast = Toast.makeText(CurrentActivity.this, "No items to add...", Toast.LENGTH_LONG);
+            toast.show();
+            return;
+        }
+
         // custom dialog
         final Dialog dialog = new Dialog(CurrentActivity.this);
         dialog.setContentView(R.layout.dialog_select_list);
@@ -615,9 +620,6 @@ public class CurrentActivity extends AppCompatActivity {
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (items.size() == 0) {
-                    return;
-                }
 
                 String listTitle = lists.get(position);
                 try {

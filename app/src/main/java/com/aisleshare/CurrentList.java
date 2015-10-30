@@ -308,7 +308,6 @@ public class CurrentList extends AppCompatActivity {
                         int duration = Toast.LENGTH_LONG;
 
                         Toast toast = Toast.makeText(context, text, duration);
-                        toast.setGravity(Gravity.TOP, 0, 30);
                         toast.show();
                     }
                 }

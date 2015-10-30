@@ -6,7 +6,8 @@
     android:layout_height="fill_parent"
     android:gravity="center_vertical"
     android:padding="10dp"
-    android:id="@+id/row">
+    android:id="@+id/row"
+    android:onClick="itemClick">
 
     <CheckBox
         android:id="@+id/checkBox"
@@ -26,14 +27,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:layout_weight=".8">
+        android:layout_weight=".8"
+        android:onClick="itemClick">
         <TextView
             android:id="@+id/name"
             android:text="Name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="22sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:onClick="itemClick" />
         <TextView
             android:id="@+id/type"
             android:text="Type"
@@ -41,7 +44,8 @@
             android:layout_height="wrap_content"
             android:textSize="14sp"
             android:textColor="#6b6b6b"
-            android:textStyle="italic" />
+            android:textStyle="italic"
+            android:onClick="itemClick" />
     </LinearLayout>
 
     <Button

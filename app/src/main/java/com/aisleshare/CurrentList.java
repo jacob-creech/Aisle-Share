@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,6 +20,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.getbase.floatingactionbutton.FloatingActionButton;
@@ -48,6 +50,7 @@ public class CurrentList extends AppCompatActivity {
     private String deviceName;
     private String listTitle;
     private TextView emptyNotice;
+    private PopupWindow undoPopup;
     private JSONObject aisleShareData;
 
     @Override
@@ -92,11 +95,15 @@ public class CurrentList extends AppCompatActivity {
                 if(deviceName.equals(i.getOwner())) {
                     items.remove(position);
                     customAdapter.notifyDataSetChanged();
+                    if(items.size() == 0) {
+                        emptyNotice.setVisibility(View.VISIBLE);
+                    }
                     saveData();
                     return new SwipeDismissList.Undoable() {
                         public void undo() {
                             items.add(position, i);
                             customAdapter.notifyDataSetChanged();
+                            emptyNotice.setVisibility(View.INVISIBLE);
                             saveData();
                         }
                     };
@@ -108,7 +115,7 @@ public class CurrentList extends AppCompatActivity {
                 return null;
             }
         };
-        SwipeDismissList.UndoMode mode = SwipeDismissList.UndoMode.SINGLE_UNDO;
+        SwipeDismissList.UndoMode mode = SwipeDismissList.UndoMode.MULTI_UNDO;
         new SwipeDismissList(listView, callback, mode);
     }
 
@@ -264,7 +271,7 @@ public class CurrentList extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 finish();
-                break;
+                return true;
         }
 
         saveData();
@@ -348,10 +355,10 @@ public class CurrentList extends AppCompatActivity {
                     double value = Double.parseDouble(itemQuantity.getText().toString());
                     if (value > 1) {
                         if(value % 1 == 0){
-                            itemQuantity.setText(String.format("%s", (int) Math.round(value - 1)));
+                            itemQuantity.setText(String.format("%s", (int) (value - 1)));
                         }
                         else {
-                            itemQuantity.setText(String.format("%s", value - 1));
+                            itemQuantity.setText(String.format("%s", (int) Math.ceil(value - 1)));
                         }
                     }
                 }
@@ -365,10 +372,10 @@ public class CurrentList extends AppCompatActivity {
                     double value = Double.parseDouble(itemQuantity.getText().toString());
                     if (value < 99999) {
                         if(value % 1 == 0){
-                            itemQuantity.setText(String.format("%s", (int) Math.round(value + 1)));
+                            itemQuantity.setText(String.format("%s", (int) (value + 1)));
                         }
                         else {
-                            itemQuantity.setText(String.format("%s", value + 1));
+                            itemQuantity.setText(String.format("%s", (int) Math.floor(value + 1)));
                         }
                     }
                 }
@@ -496,7 +503,6 @@ public class CurrentList extends AppCompatActivity {
         delete_all.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
                 boolean removals = false;
 
                 items_backup.clear();
@@ -517,17 +523,15 @@ public class CurrentList extends AppCompatActivity {
                     emptyNotice.setVisibility(View.VISIBLE);
                 }
                 if(removals){
-                    undoBox.setVisibility(View.VISIBLE);
+                    undoBox();
                 }
                 dialog.dismiss();
-                hideUndoBoxTimer();
             }
         });
 
         delete_checked.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
                 boolean removals = false;
 
                 items_backup.clear();
@@ -549,22 +553,67 @@ public class CurrentList extends AppCompatActivity {
                     emptyNotice.setVisibility(View.VISIBLE);
                 }
                 if (removals) {
-                    undoBox.setVisibility(View.VISIBLE);
+                    undoBox();
                 }
                 dialog.dismiss();
-                hideUndoBoxTimer();
             }
         });
 
         dialog.show();
     }
 
+    public void undoBox(){
+        // -- Load undo popup --
+        LayoutInflater inflater = (LayoutInflater) listView.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View view = inflater.inflate(de.timroes.swipetodismiss.R.layout.undo_popup, null);
+        Button undoButton = (Button)view.findViewById(de.timroes.swipetodismiss.R.id.undo);
+        undoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                items.clear();
+                for (Item item : items_backup) {
+                    items.add(item);
+                }
+                saveData();
+                customAdapter.notifyDataSetChanged();
+                emptyNotice.setVisibility(View.INVISIBLE);
+                undoPopup.dismiss();
+            }
+        });
+        undoButton.setText("UNDO");
+        TextView undoText = (TextView)view.findViewById(de.timroes.swipetodismiss.R.id.text);
+        undoText.setText("Items deleted");
+        float density = listView.getResources().getDisplayMetrics().density;
+
+        if(undoPopup != null && undoPopup.isShowing()) {
+            undoPopup.dismiss();
+        }
+        undoPopup = new PopupWindow(view);
+        undoPopup.setAnimationStyle(de.timroes.swipetodismiss.R.style.fade_animation);
+        // Get scren width in dp and set width respectively
+        int xdensity = (int)(listView.getContext().getResources().getDisplayMetrics().widthPixels / density);
+        if(xdensity < 300) {
+            undoPopup.setWidth((int)(density * 280));
+        } else if(xdensity < 350) {
+            undoPopup.setWidth((int)(density * 300));
+        } else if(xdensity < 500) {
+            undoPopup.setWidth((int)(density * 330));
+        } else {
+            undoPopup.setWidth((int)(density * 450));
+        }
+        undoPopup.setHeight((int) (density * 56));
+
+        undoPopup.showAtLocation(listView, Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM, 0, (int) (density * 15));
+        hideUndoBoxTimer();
+    }
+
     public void hideUndoBoxTimer(){
         new CountDownTimer(5000, 5000) {
             public void onTick(long millisUntilFinished) {}
             public void onFinish() {
-                LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
-                undoBox.setVisibility(View.INVISIBLE);
+                if(undoPopup.isShowing()) {
+                    undoPopup.dismiss();
+                }
                 items_backup.clear();
             }
         }.start();
@@ -659,22 +708,6 @@ public class CurrentList extends AppCompatActivity {
                 return true;
             }
         });
-
-        // Undo Listener
-        Button undo = (Button) findViewById(R.id.undo);
-        undo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LinearLayout undoBox = (LinearLayout) findViewById(R.id.undo_box);
-                items.clear();
-                for (Item item : items_backup) {
-                    items.add(item);
-                }
-                customAdapter.notifyDataSetChanged();
-                undoBox.setVisibility(View.INVISIBLE);
-                emptyNotice.setVisibility(View.INVISIBLE);
-            }
-        });
     }
 
     public void editItemDialog(final int position){
@@ -706,7 +739,7 @@ public class CurrentList extends AppCompatActivity {
         itemName.setText(item.getName());
         itemType.setText(item.getType());
         if(item.getQuantity() % 1 == 0){
-            itemQuantity.setText(Integer.toString((int) Math.round(item.getQuantity())));
+            itemQuantity.setText(Integer.toString((int) (item.getQuantity())));
         }
         else {
             itemQuantity.setText(Double.toString(item.getQuantity()));
@@ -720,10 +753,10 @@ public class CurrentList extends AppCompatActivity {
                     double value = Double.parseDouble(itemQuantity.getText().toString());
                     if (value > 1) {
                         if(value % 1 == 0){
-                            itemQuantity.setText(String.format("%s", (int) Math.round(value - 1)));
+                            itemQuantity.setText(String.format("%s", (int) (value - 1)));
                         }
                         else {
-                            itemQuantity.setText(String.format("%s", value - 1));
+                            itemQuantity.setText(String.format("%s", (int) Math.ceil(value - 1)));
                         }
                     }
                 }
@@ -737,10 +770,10 @@ public class CurrentList extends AppCompatActivity {
                     double value = Double.parseDouble(itemQuantity.getText().toString());
                     if (value < 99999) {
                         if(value % 1 == 0){
-                            itemQuantity.setText(String.format("%s", (int) Math.round(value + 1)));
+                            itemQuantity.setText(String.format("%s", (int) (value + 1)));
                         }
                         else {
-                            itemQuantity.setText(String.format("%s", value + 1));
+                            itemQuantity.setText(String.format("%s", (int) Math.floor(value + 1)));
                         }
                     }
                 }

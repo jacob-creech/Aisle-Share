@@ -154,7 +154,7 @@ public final class SwipeDismissList implements View.OnTouchListener {
 	}
 
 	/**
-	 * The callback interface used by {@link SwipeDismissListViewTouchListener}
+	 * The callback interface used by { SwipeDismissListViewTouchListener}
 	 * to inform its client about a successful dismissal of one or more list
 	 * item positions.
 	 */
@@ -172,7 +172,7 @@ public final class SwipeDismissList implements View.OnTouchListener {
 
 	/**
 	 * An implementation of this abstract class must be returned by the 
-	 * {@link OnDismissCallback#onDismiss(android.widget.ListView, int)} method,
+	 * {OnDismissCallback#onDismiss(android.widget.ListView, int)} method,
 	 * if the user should be able to undo that dismiss. If the action will be undone
 	 * by the user {@link #undo()} will be called. That method should undo the previous
 	 * deletion of the item and add it back to the adapter. Read the README file for
@@ -369,10 +369,10 @@ public final class SwipeDismissList implements View.OnTouchListener {
 	 * {@link ListView#setOnScrollListener(android.widget.AbsListView.OnScrollListener)}.
 	 * If a scroll listener is already assigned, the caller should still pass
 	 * scroll changes through to this listener. This will ensure that this
-	 * {@link SwipeDismissListViewTouchListener} is paused during list view
+	 * {SwipeDismissListViewTouchListener} is paused during list view
 	 * scrolling.</p>
 	 *
-	 * @see {@link SwipeDismissListViewTouchListener}
+	 * @see {SwipeDismissListViewTouchListener}
 	 */
 	private AbsListView.OnScrollListener makeScrollListener() {
 		return new AbsListView.OnScrollListener() {

@@ -36,32 +36,6 @@
             android:textSize="14sp"
             android:visibility="invisible" />
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|left"
-            android:background="#bc3e47fd"
-            android:gravity="center_vertical"
-            android:visibility="invisible"
-            android:id="@+id/undo_box">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Items Deleted"
-                android:id="@+id/textView2"
-                android:textSize="22sp"
-                android:textColor="#ffffff"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp" />
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="UNDO"
-                android:id="@+id/undo" />
-        </LinearLayout>
     </FrameLayout>
 
 </RelativeLayout>

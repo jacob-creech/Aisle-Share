@@ -1,5 +1,7 @@
 package com.aisleshare;
 
+import android.app.Dialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -7,6 +9,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -121,6 +124,106 @@ public class Transfer extends AppCompatActivity {
         customAdapter.notifyDataSetChanged();
     }
 
+    public void editItemDialog(final int position){
+        final Item item = items.get(position);
+
+        // custom dialog
+        final Dialog dialog = new Dialog(Transfer.this);
+        dialog.setContentView(R.layout.dialog_edit_item);
+        dialog.setTitle("Edit Item");
+
+        final EditText itemName = (EditText) dialog.findViewById(R.id.Name);
+        final EditText itemType = (EditText) dialog.findViewById(R.id.Type);
+        final Button minus = (Button) dialog.findViewById(R.id.Minus);
+        final EditText itemQuantity = (EditText) dialog.findViewById(R.id.Quantity);
+        final EditText itemUnits = (EditText) dialog.findViewById(R.id.units);
+        final Button plus = (Button) dialog.findViewById(R.id.Plus);
+        final Button cancel = (Button) dialog.findViewById(R.id.Cancel);
+        final Button done = (Button) dialog.findViewById(R.id.Done);
+
+        itemName.setText(item.getName());
+        itemType.setText(item.getType());
+        if(item.getQuantity() % 1 == 0){
+            itemQuantity.setText(Integer.toString((int) Math.round(item.getQuantity())));
+        }
+        else {
+            itemQuantity.setText(Double.toString(item.getQuantity()));
+        }
+        itemUnits.setText(item.getUnits());
+
+        minus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!itemQuantity.getText().toString().isEmpty()) {
+                    double value = Double.parseDouble(itemQuantity.getText().toString());
+                    if (value > 1) {
+                        if(value % 1 == 0){
+                            itemQuantity.setText(String.format("%s", (int)(value - 1)));
+                        }
+                        else {
+                            itemQuantity.setText(String.format("%s", (int) Math.ceil(value - 1)));
+                        }
+                    }
+                }
+            }
+        });
+
+        plus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!itemQuantity.getText().toString().isEmpty()) {
+                    double value = Double.parseDouble(itemQuantity.getText().toString());
+                    if (value < 99999) {
+                        if(value % 1 == 0){
+                            itemQuantity.setText(String.format("%s", (int)(value + 1)));
+                        }
+                        else {
+                            itemQuantity.setText(String.format("%s", (int) Math.floor(value + 1)));
+                        }
+                    }
+                }
+            }
+        });
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        done.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!itemName.getText().toString().isEmpty()) {
+                    String name = itemName.getText().toString();
+                    String type = itemType.getText().toString();
+                    double quantity;
+                    String units = itemUnits.getText().toString();
+                    if (!itemQuantity.getText().toString().isEmpty()) {
+                        quantity = Double.parseDouble(itemQuantity.getText().toString());
+                    } else {
+                        quantity = 1;
+                    }
+
+                    item.setName(name);
+                    item.setType(type);
+                    item.setQuantity(quantity);
+                    item.setUnits(units);
+                    items.set(position, item);
+
+                    sortList(false, currentOrder);
+                    customAdapter.notifyDataSetChanged();
+                    dialog.dismiss();
+                } else {
+                    itemName.setError("Name is empty...");
+                }
+            }
+        });
+
+        dialog.show();
+    }
+
     public void setTitle(Bundle savedInstanceState){
         String title;
         Bundle extras = getIntent().getExtras();
@@ -185,6 +288,13 @@ public class Transfer extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 itemClick(view);
+            }
+        });
+
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
+                editItemDialog(pos);
+                return true;
             }
         });
 
@@ -258,7 +368,7 @@ public class Transfer extends AppCompatActivity {
     public void minusClick(View v){
         double quantity = items.get(v.getId()).getQuantity();
         if (quantity > 1) {
-            items.get(v.getId()).setQuantity(quantity - 1);
+            items.get(v.getId()).setQuantity((int) Math.ceil(quantity - 1));
         }
         customAdapter.notifyDataSetChanged();
     }
@@ -266,7 +376,7 @@ public class Transfer extends AppCompatActivity {
     public void plusClick(View v){
         double quantity = items.get(v.getId()).getQuantity();
         if (quantity < 99999) {
-            items.get(v.getId()).setQuantity(quantity + 1);
+            items.get(v.getId()).setQuantity((int) Math.floor(quantity + 1));
         }
         customAdapter.notifyDataSetChanged();
     }

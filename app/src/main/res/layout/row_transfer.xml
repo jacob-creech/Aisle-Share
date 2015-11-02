@@ -7,7 +7,8 @@
     android:gravity="center_vertical"
     android:padding="10dp"
     android:id="@+id/row"
-    android:onClick="itemClick">
+    android:onClick="itemClick"
+    android:longClickable="true">
 
     <CheckBox
         android:id="@+id/checkBox"
@@ -28,7 +29,8 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:layout_weight=".8"
-        android:onClick="itemClick">
+        android:onClick="itemClick"
+        android:longClickable="true">
         <TextView
             android:id="@+id/name"
             android:text="Name"
@@ -36,7 +38,8 @@
             android:layout_height="wrap_content"
             android:textSize="22sp"
             android:textStyle="bold"
-            android:onClick="itemClick" />
+            android:onClick="itemClick"
+            android:longClickable="true" />
         <TextView
             android:id="@+id/type"
             android:text="Type"
@@ -45,7 +48,8 @@
             android:textSize="14sp"
             android:textColor="#6b6b6b"
             android:textStyle="italic"
-            android:onClick="itemClick" />
+            android:onClick="itemClick"
+            android:longClickable="true" />
     </LinearLayout>
 
     <Button
@@ -69,7 +73,8 @@
         android:id="@+id/column2"
         android:gravity="center_vertical"
         android:paddingRight="10dp"
-        android:paddingLeft="10dp">
+        android:paddingLeft="10dp"
+        android:longClickable="true">
 
         <TextView
             android:layout_width="wrap_content"
@@ -81,7 +86,8 @@
             android:singleLine="true"
             android:maxLength="5"
             android:gravity="center_horizontal"
-            android:layout_gravity="center_horizontal" />
+            android:layout_gravity="center_horizontal"
+            android:longClickable="true" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -93,7 +99,8 @@
             android:singleLine="false"
             android:maxLength="10"
             android:gravity="center_horizontal"
-            android:layout_gravity="center_horizontal" />
+            android:layout_gravity="center_horizontal"
+            android:longClickable="true" />
     </LinearLayout>
     <Button
         android:id="@+id/Plus"

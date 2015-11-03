@@ -63,10 +63,12 @@ public class Lists extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        setHasOptionsMenu(true);
+        //setHasOptionsMenu(true);
         dashboard = getActivity();
         listView = (ListView) getView().findViewById(R.id.lists);
         lists = new ArrayList<>();
+        isIncreasingOrder = true;
+        currentOrder = 1;
         menuLists = new HashMap<>();
         emptyNotice = (TextView) getView().findViewById(R.id.empty_notice);
         deviceName = Settings.Secure.getString(dashboard.getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -98,7 +100,6 @@ public class Lists extends Fragment {
         if(currentOrder == -1){
             menuLists.get("sort").setIcon(0);
             menuLists.get("unsorted").setVisible(false);
-            saveSortData();
             return;
         }
         else{
@@ -283,8 +284,6 @@ public class Lists extends Fragment {
             // Read or Initializes aisleShareData
             // Assumes the File itself has already been Initialized
             aisleShareData = new JSONObject(loadJSONFromAsset(file));
-            currentOrder = aisleShareData.optInt("ListsOrder");
-            isIncreasingOrder = aisleShareData.optBoolean("ListsDirection");
             JSONArray listNames = aisleShareData.optJSONObject("Lists").names();
             if(listNames != null) {
                 for (int i = 0; i < listNames.length(); i++) {
@@ -295,6 +294,8 @@ public class Lists extends Fragment {
                             long created = entry.optLong("time");
                             lists.add(new ListItem(owner, listNames.get(i).toString(), created));
                         }
+                        currentOrder = aisleShareData.optInt("ListsOrder");
+                        isIncreasingOrder = aisleShareData.optBoolean("ListsDirection");
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -438,20 +439,24 @@ public class Lists extends Fragment {
                 sortList(true, 0);
                 clearMenuCheckables();
                 option.setChecked(true);
+                saveSortInfo();
                 break;
             case R.id.sort_time:
                 sortList(true, 1);
                 clearMenuCheckables();
                 option.setChecked(true);
+                saveSortInfo();
                 break;
             case R.id.sort_owner:
                 sortList(true, 2);
                 clearMenuCheckables();
                 option.setChecked(true);
+                saveSortInfo();
                 break;
             case R.id.unsorted:
                 sortList(false, -1);
                 clearMenuCheckables();
+                saveSortInfo();
                 break;
             case R.id.delete:
                 deleteItems();

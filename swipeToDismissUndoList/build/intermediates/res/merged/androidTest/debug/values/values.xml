@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- From: file:/C:/Users/David/Documents/GitHub/Aisle-Share/swipeToDismissUndoList/build/intermediates/bundles/debug/res/values/values.xml -->
+    <!-- From: file:/C:/Users/Jason/Documents/GitHub/Aisle-Share/swipeToDismissUndoList/build/intermediates/bundles/debug/res/values/values.xml -->
     <eat-comment/>
     <color name="btn_focused">#ff0099cc</color>
     <color name="btn_normal">#00000000</color>

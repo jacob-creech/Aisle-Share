@@ -26,7 +26,6 @@ import android.widget.Toast;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import org.json.JSONArray;
 import org.json.JSONException;
-import java.util.Collections;
 import org.json.JSONObject;
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,11 +39,9 @@ public class Activities extends Fragment {
     // // TODO: update ACTIVITY_NAME with a com.Activities.MESSAGE variable
     public final static String ACTIVITY_NAME = "com.ShoppingList.MESSAGE";
     private ListView listView;
-    private ArrayList<ListItem> activities;
+    private ArrayList<String> activities;
     private Map<String, MenuItem> menuActivities;
-    private CustomListAdapter itemAdapter;
-    private boolean isIncreasingOrder;
-    private int currentOrder;
+    private ArrayAdapter<String> itemAdapter;
     private Context dashboard;
     private TextView emptyNotice;
     private String deviceName;
@@ -65,75 +62,23 @@ public class Activities extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        //setHasOptionsMenu(true);
         dashboard = getActivity();
         listView = (ListView) getView().findViewById(R.id.activities);
         activities = new ArrayList<>();
         menuActivities = new HashMap<>();
-        isIncreasingOrder = true;
-        currentOrder = 1;
         emptyNotice = (TextView) getView().findViewById(R.id.empty_notice);
         deviceName = Settings.Secure.getString(dashboard.getContentResolver(), Settings.Secure.ANDROID_ID);
 
         readSavedActivities();
 
-        if(activities.size() == 0) {
+        if(activities.size() == 0){
             emptyNotice.setVisibility(View.VISIBLE);
         }
 
-        itemAdapter = new CustomListAdapter(dashboard, activities, R.layout.row_dashboard);
+        itemAdapter = new ArrayAdapter<>(dashboard,R.layout.row_dashboard, activities);
         listView.setAdapter(itemAdapter);
 
         setListeners();
-    }
-
-    public void sortActivity(boolean reverseOrder, int order) {
-        if(reverseOrder) {
-            isIncreasingOrder = !isIncreasingOrder;
-        }
-        if(order != currentOrder){
-            currentOrder = order;
-            isIncreasingOrder = true;
-        }
-
-        ListItemComparator compare = new ListItemComparator(dashboard);
-
-        // Unsorted
-        if(currentOrder == -1){
-            menuActivities.get("sort").setIcon(0);
-            menuActivities.get("unsorted").setVisible(false);
-            return;
-        }
-        else{
-            menuActivities.get("unsorted").setVisible(true);
-        }
-
-        switch (currentOrder){
-            // Name
-            case 0:{
-                ListItemComparator.Name sorter = compare.new Name();
-                Collections.sort(activities, sorter);
-                break;}
-            // Time Created
-            case 1:{
-                ListItemComparator.Created sorter = compare.new Created();
-                Collections.sort(activities, sorter);
-                break;}
-            // Owner
-            case 2:{
-                ListItemComparator.Owner sorter = compare.new Owner();
-                Collections.sort(activities, sorter);
-                break;}
-        }
-
-        if(isIncreasingOrder) {
-            menuActivities.get("sort").setIcon(R.mipmap.inc_sort);
-        }
-        else{
-            Collections.reverse(activities);
-            menuActivities.get("sort").setIcon(R.mipmap.dec_sort);
-        }
-        saveSortData();
     }
 
     // Popup for adding an Activity
@@ -176,12 +121,11 @@ public class Activities extends Fragment {
                             return;
                         }
                     }
-                    ListItem activity = new ListItem(deviceName, name);
+
                     dialog.dismiss();
-                    activities.add(activity);
-                    sortActivity(false, currentOrder);
+                    activities.add(name);
                     itemAdapter.notifyDataSetChanged();
-                    saveNewActivity(name, activity.getCreated());
+                    saveNewActivity(name);
                     emptyNotice.setVisibility(View.INVISIBLE);
 
                     Intent intent = new Intent(dashboard, CurrentActivity.class);
@@ -198,11 +142,12 @@ public class Activities extends Fragment {
 
     // Popup for editing a Activity
     public void editActivityDialog(final int position){
-        if(!deviceName.equals(activities.get(position).getOwner())) {
+        // todo uncomment owner check once implemented
+        /*if(!deviceName.equals(activities.get(position).getOwner())) {
             Toast toast = Toast.makeText(dashboard, "You are not the owner...", Toast.LENGTH_LONG);
             toast.show();
             return;
-        }
+        }*/
 
         // custom dialog
         final Dialog dialog = new Dialog(dashboard);
@@ -212,7 +157,7 @@ public class Activities extends Fragment {
         final EditText activityName = (EditText) dialog.findViewById(R.id.Name);
         final Button cancel = (Button) dialog.findViewById(R.id.Cancel);
         final Button done = (Button) dialog.findViewById(R.id.Done);
-        final String orig_name = activities.get(position).getName();
+        final String orig_name = activities.get(position);
 
         activityName.setText(orig_name);
 
@@ -244,14 +189,15 @@ public class Activities extends Fragment {
                     }
 
                     for (int index = 0; index < activities.size(); index++) {
-                        if (activities.get(index).getName().equals(name) && index != position) {
+                        if (activities.get(index).equals(name) && index != position) {
                             activityName.setError("Activity already exists...");
                             return;
                         }
                     }
 
-                    activities.get(position).setName(name);
-                    sortActivity(false, currentOrder);
+                    activities.set(position, name);
+                    // TODO: uncomment once implemented
+                    //sortActivity(false, currentOrder);
                     dialog.dismiss();
                     itemAdapter.notifyDataSetChanged();
 
@@ -289,14 +235,8 @@ public class Activities extends Fragment {
             if(activityNames != null) {
                 for (int i = 0; i < activityNames.length(); i++) {
                     try {
-                        JSONObject entry = aisleShareData.optJSONObject("Lists").optJSONObject(activityNames.get(i).toString());
-                        if(entry != null) {
-                            String owner = entry.optString("owner");
-                            long created = entry.optLong("time");
-                            activities.add(new ListItem(owner, activityNames.get(i).toString(), created));
-                        }
-                        currentOrder = aisleShareData.optInt("ActivitiesOrder");
-                        isIncreasingOrder = aisleShareData.optBoolean("ActivitiesDirection");
+                        // todo initialize with owner and timeCreated
+                       activities.add(activityNames.get(i).toString());
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -324,24 +264,7 @@ public class Activities extends Fragment {
         return json;
     }
 
-    public void saveSortInfo(){
-        try {
-            // Need to update other fragments before saving
-            File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
-            aisleShareData = new JSONObject(loadJSONFromAsset(file));
-
-            aisleShareData.put("ActivitiesSort", currentOrder);
-            aisleShareData.put("ActivitiesDirection", isIncreasingOrder);
-
-            FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
-            fos.write(aisleShareData.toString().getBytes());
-            fos.close();
-        } catch (JSONException | IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void saveNewActivity(String activityTitle, long timeCreated){
+    public void saveNewActivity(String activityTitle){
         try {
             // Need to update other fragments before saving
             File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
@@ -351,25 +274,7 @@ public class Activities extends Fragment {
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).accumulate("items", new JSONArray());
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).put("sort", 2);
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).put("direction", true);
-            aisleShareData.optJSONObject("Lists").optJSONObject(activityTitle).put("time", timeCreated);
-            aisleShareData.optJSONObject("Lists").optJSONObject(activityTitle).put("owner", deviceName);
-
-            FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
-            fos.write(aisleShareData.toString().getBytes());
-            fos.close();
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void saveSortData(){
-        try {
-            // Need to update other fragments before saving
-            File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
-            aisleShareData = new JSONObject(loadJSONFromAsset(file));
-
-            aisleShareData.put("ActivitiesOrder", currentOrder);
-            aisleShareData.put("ActivitiesDirection", isIncreasingOrder);
+            // todo save out owner and timeCreated info
 
             FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
             fos.write(aisleShareData.toString().getBytes());
@@ -423,27 +328,23 @@ public class Activities extends Fragment {
         //noinspection SimplifiableIfStatement
         switch(id) {
             case R.id.sort_name:
-                sortActivity(true, 0);
-                clearMenuCheckables();
-                option.setChecked(true);
-                saveSortInfo();
+                //sortActivity(true, 0);
+                //clearMenuCheckables();
+                //option.setChecked(true);
                 break;
             case R.id.sort_time:
-                sortActivity(true, 1);
-                clearMenuCheckables();
-                option.setChecked(true);
-                saveSortInfo();
+                //sortActivity(true, 1);
+                //clearMenuCheckables();
+                //option.setChecked(true);
                 break;
             case R.id.sort_owner:
-                sortActivity(true, 2);
-                clearMenuCheckables();
-                option.setChecked(true);
-                saveSortInfo();
+                //sortActivity(true, 2);
+                //clearMenuCheckables();
+                //option.setChecked(true);
                 break;
             case R.id.unsorted:
-                sortActivity(false, -1);
-                clearMenuCheckables();
-                saveSortInfo();
+                //sortActivity(false, -1);
+                //clearMenuCheckables();
                 break;
             case R.id.delete:
                 deleteItems();
@@ -501,8 +402,8 @@ public class Activities extends Fragment {
         final ArrayList<String> activityNames = new ArrayList<>();
         if(activities.size() != 0) {
             dialog.setTitle("What Should We Delete?");
-            for (ListItem i : activities) {
-                activityNames.add(i.getName());
+            for (String i : activities) {
+                activityNames.add(i);
             }
         }
         else{
@@ -543,7 +444,7 @@ public class Activities extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long id) {
                 Intent intent = new Intent(dashboard, CurrentActivity.class);
-                String name = activities.get(pos).getName();
+                String name = activities.get(pos);
                 intent.putExtra(ACTIVITY_NAME, name);
                 startActivity(intent);
             }

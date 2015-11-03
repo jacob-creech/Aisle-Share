@@ -31,7 +31,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,13 +38,11 @@ public class Recipes extends Fragment {
     // TODO: update RECIPE_NAME with a com.Recipes.MESSAGE variable
     public final static String RECIPE_NAME = "com.ShoppingList.MESSAGE";
     private ListView listView;
-    private ArrayList<ListItem> recipes;
+    private ArrayList<String> recipes;
     private Map<String, MenuItem> menuRecipes;
-    private CustomListAdapter itemAdapter;
+    private ArrayAdapter<String> itemAdapter;
     private Context dashboard;
     private TextView emptyNotice;
-    private boolean isIncreasingOrder;
-    private int currentOrder;
     private String deviceName;
     private JSONObject aisleShareData;
 
@@ -63,12 +60,9 @@ public class Recipes extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        //setHasOptionsMenu(true);
         dashboard = getActivity();
         listView = (ListView) getView().findViewById(R.id.recipes);
         recipes = new ArrayList<>();
-        isIncreasingOrder = true;
-        currentOrder = 1;
         menuRecipes = new HashMap<>();
         emptyNotice = (TextView) getView().findViewById(R.id.empty_notice);
         deviceName = Settings.Secure.getString(dashboard.getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -79,59 +73,10 @@ public class Recipes extends Fragment {
             emptyNotice.setVisibility(View.VISIBLE);
         }
 
-        itemAdapter = new CustomListAdapter(dashboard, recipes, R.layout.row_dashboard);
+        itemAdapter = new ArrayAdapter<>(dashboard,R.layout.row_dashboard, recipes);
         listView.setAdapter(itemAdapter);
 
         setListeners();
-    }
-
-    public void sortRecipe(boolean reverseOrder, int order) {
-        if(reverseOrder) {
-            isIncreasingOrder = !isIncreasingOrder;
-        }
-        if(order != currentOrder){
-            currentOrder = order;
-            isIncreasingOrder = true;
-        }
-
-        ListItemComparator compare = new ListItemComparator(dashboard);
-
-        // Unsorted
-        if(currentOrder == -1){
-            menuRecipes.get("sort").setIcon(0);
-            menuRecipes.get("unsorted").setVisible(false);
-            return;
-        }
-        else{
-            menuRecipes.get("unsorted").setVisible(true);
-        }
-
-        switch (currentOrder){
-            // Name
-            case 0:{
-                ListItemComparator.Name sorter = compare.new Name();
-                Collections.sort(recipes, sorter);
-                break;}
-            // Time Created
-            case 1:{
-                ListItemComparator.Created sorter = compare.new Created();
-                Collections.sort(recipes, sorter);
-                break;}
-            // Owner
-            case 2:{
-                ListItemComparator.Owner sorter = compare.new Owner();
-                Collections.sort(recipes, sorter);
-                break;}
-        }
-
-        if(isIncreasingOrder) {
-            menuRecipes.get("sort").setIcon(R.mipmap.inc_sort);
-        }
-        else{
-            Collections.reverse(recipes);
-            menuRecipes.get("sort").setIcon(R.mipmap.dec_sort);
-        }
-        saveSortData();
     }
 
     // Popup for adding a Recipe
@@ -174,12 +119,11 @@ public class Recipes extends Fragment {
                             return;
                         }
                     }
-                    ListItem recipe = new ListItem(deviceName, name);
+
                     dialog.dismiss();
-                    recipes.add(recipe);
-                    sortRecipe(false, currentOrder);
+                    recipes.add(name);
                     itemAdapter.notifyDataSetChanged();
-                    saveNewRecipe(name, recipe.getCreated());
+                    saveNewRecipe(name);
                     emptyNotice.setVisibility(View.INVISIBLE);
 
                     Intent intent = new Intent(dashboard, CurrentRecipe.class);
@@ -196,11 +140,12 @@ public class Recipes extends Fragment {
 
     // Popup for editing a Recipe
     public void editRecipeDialog(final int position){
-        if(!deviceName.equals(recipes.get(position).getOwner())) {
+        // todo uncomment owner check once implemented
+        /*if(!deviceName.equals(recipes.get(position).getOwner())) {
             Toast toast = Toast.makeText(dashboard, "You are not the owner...", Toast.LENGTH_LONG);
             toast.show();
             return;
-        }
+        }*/
 
         // custom dialog
         final Dialog dialog = new Dialog(dashboard);
@@ -210,7 +155,7 @@ public class Recipes extends Fragment {
         final EditText recipeName = (EditText) dialog.findViewById(R.id.Name);
         final Button cancel = (Button) dialog.findViewById(R.id.Cancel);
         final Button done = (Button) dialog.findViewById(R.id.Done);
-        final String orig_name = recipes.get(position).getName();
+        final String orig_name = recipes.get(position);
 
         recipeName.setText(orig_name);
 
@@ -242,14 +187,15 @@ public class Recipes extends Fragment {
                     }
 
                     for (int index = 0; index < recipes.size(); index++) {
-                        if (recipes.get(index).getName().equals(name) && index != position) {
+                        if (recipes.get(index).equals(name) && index != position) {
                             recipeName.setError("Recipe already exists...");
                             return;
                         }
                     }
 
-                    recipes.get(position).setName(name);
-                    sortRecipe(false, currentOrder);
+                    recipes.set(position, name);
+                    // TODO: uncomment once implemented
+                    //sortRecipe(false, currentOrder);
                     dialog.dismiss();
                     itemAdapter.notifyDataSetChanged();
 
@@ -287,14 +233,8 @@ public class Recipes extends Fragment {
             if(recipeNames != null) {
                 for (int i = 0; i < recipeNames.length(); i++) {
                     try {
-                        JSONObject entry = aisleShareData.optJSONObject("Lists").optJSONObject(recipeNames.get(i).toString());
-                        if(entry != null) {
-                            String owner = entry.optString("owner");
-                            long created = entry.optLong("time");
-                            recipes.add(new ListItem(owner, recipeNames.get(i).toString(), created));
-                        }
-                        currentOrder = aisleShareData.optInt("RecipesOrder");
-                        isIncreasingOrder = aisleShareData.optBoolean("RecipesDirection");
+                        // todo initialize with owner and timeCreated
+                        recipes.add(recipeNames.get(i).toString());
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -322,24 +262,7 @@ public class Recipes extends Fragment {
         return json;
     }
 
-    public void saveSortInfo(){
-        try {
-            // Need to update other fragments before saving
-            File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
-            aisleShareData = new JSONObject(loadJSONFromAsset(file));
-
-            aisleShareData.put("RecipesSort", currentOrder);
-            aisleShareData.put("RecipesDirection", isIncreasingOrder);
-
-            FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
-            fos.write(aisleShareData.toString().getBytes());
-            fos.close();
-        } catch (JSONException | IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void saveNewRecipe(String recipeTitle, long timeCreated){
+    public void saveNewRecipe(String recipeTitle){
         try {
             // Need to update other fragments before saving
             File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
@@ -349,25 +272,7 @@ public class Recipes extends Fragment {
             aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("items", new JSONArray());
             aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).put("sort", 2);
             aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).put("direction", true);
-            aisleShareData.optJSONObject("Lists").optJSONObject(recipeTitle).put("time", timeCreated);
-            aisleShareData.optJSONObject("Lists").optJSONObject(recipeTitle).put("owner", deviceName);
-
-            FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
-            fos.write(aisleShareData.toString().getBytes());
-            fos.close();
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void saveSortData(){
-        try {
-            // Need to update other fragments before saving
-            File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
-            aisleShareData = new JSONObject(loadJSONFromAsset(file));
-
-            aisleShareData.put("RecipesOrder", currentOrder);
-            aisleShareData.put("RecipesDirection", isIncreasingOrder);
+            // todo save out owner and timeCreated info
 
             FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
             fos.write(aisleShareData.toString().getBytes());
@@ -421,27 +326,23 @@ public class Recipes extends Fragment {
         //noinspection SimplifiableIfStatement
         switch(id) {
             case R.id.sort_name:
-                sortRecipe(true, 0);
-                clearMenuCheckables();
-                option.setChecked(true);
-                saveSortInfo();
+                //sortRecipe(true, 0);
+                //clearMenuCheckables();
+                //option.setChecked(true);
                 break;
             case R.id.sort_time:
-                sortRecipe(true, 1);
-                clearMenuCheckables();
-                option.setChecked(true);
-                saveSortInfo();
+                //sortRecipe(true, 1);
+                //clearMenuCheckables();
+                //option.setChecked(true);
                 break;
             case R.id.sort_owner:
-                sortRecipe(true, 2);
-                clearMenuCheckables();
-                option.setChecked(true);
-                saveSortInfo();
+                //sortRecipe(true, 2);
+                //clearMenuCheckables();
+                //option.setChecked(true);
                 break;
             case R.id.unsorted:
-                sortRecipe(false, -1);
-                clearMenuCheckables();
-                saveSortInfo();
+                //sortRecipe(false, -1);
+                //clearMenuCheckables();
                 break;
             case R.id.delete:
                 deleteItems();
@@ -499,8 +400,8 @@ public class Recipes extends Fragment {
         final ArrayList<String> recipeNames = new ArrayList<>();
         if(recipes.size() != 0) {
             dialog.setTitle("What Should We Delete?");
-            for (ListItem i : recipes) {
-                recipeNames.add(i.getName());
+            for (String i : recipes) {
+                recipeNames.add(i);
             }
         }
         else{
@@ -541,7 +442,7 @@ public class Recipes extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long id) {
                 Intent intent = new Intent(dashboard, CurrentRecipe.class);
-                String name = recipes.get(pos).getName();
+                String name = recipes.get(pos);
                 intent.putExtra(RECIPE_NAME, name);
                 startActivity(intent);
             }

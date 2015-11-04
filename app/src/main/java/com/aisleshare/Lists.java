@@ -22,7 +22,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -67,8 +66,6 @@ public class Lists extends Fragment {
         dashboard = getActivity();
         listView = (ListView) getView().findViewById(R.id.lists);
         lists = new ArrayList<>();
-        isIncreasingOrder = true;
-        currentOrder = 1;
         menuLists = new HashMap<>();
         emptyNotice = (TextView) getView().findViewById(R.id.empty_notice);
         deviceName = Settings.Secure.getString(dashboard.getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -100,6 +97,7 @@ public class Lists extends Fragment {
         if(currentOrder == -1){
             menuLists.get("sort").setIcon(0);
             menuLists.get("unsorted").setVisible(false);
+            saveSortInfo();
             return;
         }
         else{
@@ -131,7 +129,7 @@ public class Lists extends Fragment {
             Collections.reverse(lists);
             menuLists.get("sort").setIcon(R.mipmap.dec_sort);
         }
-        saveSortData();
+        saveSortInfo();
     }
 
     // Popup for adding a List
@@ -169,7 +167,7 @@ public class Lists extends Fragment {
                     String name = listName.getText().toString();
 
                     for (int index = 0; index < lists.size(); index++) {
-                        if (lists.get(index).equals(name)) {
+                        if (lists.get(index).getName().equals(name)) {
                             listName.setError("List already exists...");
                             return;
                         }
@@ -285,6 +283,8 @@ public class Lists extends Fragment {
             // Assumes the File itself has already been Initialized
             aisleShareData = new JSONObject(loadJSONFromAsset(file));
             JSONArray listNames = aisleShareData.optJSONObject("Lists").names();
+            currentOrder = aisleShareData.optInt("ListsSort");
+            isIncreasingOrder = aisleShareData.optBoolean("ListsDirection");
             if(listNames != null) {
                 for (int i = 0; i < listNames.length(); i++) {
                     try {
@@ -294,8 +294,6 @@ public class Lists extends Fragment {
                             long created = entry.optLong("time");
                             lists.add(new ListItem(owner, listNames.get(i).toString(), created));
                         }
-                        currentOrder = aisleShareData.optInt("ListsOrder");
-                        isIncreasingOrder = aisleShareData.optBoolean("ListsDirection");
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -348,27 +346,10 @@ public class Lists extends Fragment {
 
             aisleShareData.optJSONObject("Lists").accumulate(listTitle, new JSONObject());
             aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).accumulate("items", new JSONArray());
-            aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).put("sort", 2);
-            aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).put("direction", true);
-            aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).put("time", timeCreated);
-            aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).put("owner", deviceName);
-
-            FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
-            fos.write(aisleShareData.toString().getBytes());
-            fos.close();
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void saveSortData(){
-        try {
-            // Need to update other fragments before saving
-            File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
-            aisleShareData = new JSONObject(loadJSONFromAsset(file));
-
-            aisleShareData.put("ListsOrder", currentOrder);
-            aisleShareData.put("ListsDirection", isIncreasingOrder);
+            aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).accumulate("sort", -1);
+            aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).accumulate("direction", true);
+            aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).accumulate("time", timeCreated);
+            aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).accumulate("owner", deviceName);
 
             FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
             fos.write(aisleShareData.toString().getBytes());
@@ -439,24 +420,20 @@ public class Lists extends Fragment {
                 sortList(true, 0);
                 clearMenuCheckables();
                 option.setChecked(true);
-                saveSortInfo();
                 break;
             case R.id.sort_time:
                 sortList(true, 1);
                 clearMenuCheckables();
                 option.setChecked(true);
-                saveSortInfo();
                 break;
             case R.id.sort_owner:
                 sortList(true, 2);
                 clearMenuCheckables();
                 option.setChecked(true);
-                saveSortInfo();
                 break;
             case R.id.unsorted:
                 sortList(false, -1);
                 clearMenuCheckables();
-                saveSortInfo();
                 break;
             case R.id.delete:
                 deleteItems();

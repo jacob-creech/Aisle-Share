@@ -102,6 +102,7 @@ public class Activities extends Fragment {
         if(currentOrder == -1){
             menuActivities.get("sort").setIcon(0);
             menuActivities.get("unsorted").setVisible(false);
+            saveSortInfo();
             return;
         }
         else{
@@ -133,7 +134,7 @@ public class Activities extends Fragment {
             Collections.reverse(activities);
             menuActivities.get("sort").setIcon(R.mipmap.dec_sort);
         }
-        saveSortData();
+        saveSortInfo();
     }
 
     // Popup for adding an Activity
@@ -171,7 +172,7 @@ public class Activities extends Fragment {
                     String name = activityName.getText().toString();
 
                     for (int index = 0; index < activities.size(); index++) {
-                        if (activities.get(index).equals(name)) {
+                        if (activities.get(index).getName().equals(name)) {
                             activityName.setError("Activity already exists...");
                             return;
                         }
@@ -239,7 +240,7 @@ public class Activities extends Fragment {
                 if (!activityName.getText().toString().isEmpty()) {
                     String name = activityName.getText().toString();
 
-                    if(name.equals(orig_name)){
+                    if (name.equals(orig_name)) {
                         dialog.dismiss();
                     }
 
@@ -286,17 +287,17 @@ public class Activities extends Fragment {
             // Assumes the File itself has already been Initialized
             aisleShareData = new JSONObject(loadJSONFromAsset(file));
             JSONArray activityNames = aisleShareData.optJSONObject("Activities").names();
+            currentOrder = aisleShareData.optInt("ActivitiesSort");
+            isIncreasingOrder = aisleShareData.optBoolean("ActivitiesDirection");
             if(activityNames != null) {
                 for (int i = 0; i < activityNames.length(); i++) {
                     try {
-                        JSONObject entry = aisleShareData.optJSONObject("Lists").optJSONObject(activityNames.get(i).toString());
+                        JSONObject entry = aisleShareData.optJSONObject("Activities").optJSONObject(activityNames.get(i).toString());
                         if(entry != null) {
                             String owner = entry.optString("owner");
                             long created = entry.optLong("time");
                             activities.add(new ListItem(owner, activityNames.get(i).toString(), created));
                         }
-                        currentOrder = aisleShareData.optInt("ActivitiesOrder");
-                        isIncreasingOrder = aisleShareData.optBoolean("ActivitiesDirection");
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -349,27 +350,10 @@ public class Activities extends Fragment {
 
             aisleShareData.optJSONObject("Activities").accumulate(activityTitle, new JSONObject());
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).accumulate("items", new JSONArray());
-            aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).put("sort", 2);
-            aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).put("direction", true);
-            aisleShareData.optJSONObject("Lists").optJSONObject(activityTitle).put("time", timeCreated);
-            aisleShareData.optJSONObject("Lists").optJSONObject(activityTitle).put("owner", deviceName);
-
-            FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
-            fos.write(aisleShareData.toString().getBytes());
-            fos.close();
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void saveSortData(){
-        try {
-            // Need to update other fragments before saving
-            File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
-            aisleShareData = new JSONObject(loadJSONFromAsset(file));
-
-            aisleShareData.put("ActivitiesOrder", currentOrder);
-            aisleShareData.put("ActivitiesDirection", isIncreasingOrder);
+            aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).accumulate("sort", -1);
+            aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).accumulate("direction", true);
+            aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).accumulate("time", timeCreated);
+            aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).accumulate("owner", deviceName);
 
             FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
             fos.write(aisleShareData.toString().getBytes());
@@ -409,6 +393,20 @@ public class Activities extends Fragment {
         menuActivities.get("time").setCheckable(true);
         menuActivities.get("owner").setCheckable(true);
         menuActivities.get("unsorted").setVisible(false);
+
+        sortActivity(false, currentOrder);
+        switch (currentOrder){
+            case 0:
+                menuActivities.get("name").setChecked(true);
+                break;
+            case 1:
+                menuActivities.get("time").setChecked(true);
+                break;
+            case 2:
+                menuActivities.get("owner").setChecked(true);
+                break;
+        }
+        itemAdapter.notifyDataSetChanged();
         super.onCreateOptionsMenu(menu, inflater);
 
     }
@@ -426,24 +424,20 @@ public class Activities extends Fragment {
                 sortActivity(true, 0);
                 clearMenuCheckables();
                 option.setChecked(true);
-                saveSortInfo();
                 break;
             case R.id.sort_time:
                 sortActivity(true, 1);
                 clearMenuCheckables();
                 option.setChecked(true);
-                saveSortInfo();
                 break;
             case R.id.sort_owner:
                 sortActivity(true, 2);
                 clearMenuCheckables();
                 option.setChecked(true);
-                saveSortInfo();
                 break;
             case R.id.unsorted:
                 sortActivity(false, -1);
                 clearMenuCheckables();
-                saveSortInfo();
                 break;
             case R.id.delete:
                 deleteItems();

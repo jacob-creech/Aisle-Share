@@ -67,8 +67,6 @@ public class Recipes extends Fragment {
         dashboard = getActivity();
         listView = (ListView) getView().findViewById(R.id.recipes);
         recipes = new ArrayList<>();
-        isIncreasingOrder = true;
-        currentOrder = 1;
         menuRecipes = new HashMap<>();
         emptyNotice = (TextView) getView().findViewById(R.id.empty_notice);
         deviceName = Settings.Secure.getString(dashboard.getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -100,6 +98,7 @@ public class Recipes extends Fragment {
         if(currentOrder == -1){
             menuRecipes.get("sort").setIcon(0);
             menuRecipes.get("unsorted").setVisible(false);
+            saveSortInfo();
             return;
         }
         else{
@@ -131,7 +130,7 @@ public class Recipes extends Fragment {
             Collections.reverse(recipes);
             menuRecipes.get("sort").setIcon(R.mipmap.dec_sort);
         }
-        saveSortData();
+        saveSortInfo();
     }
 
     // Popup for adding a Recipe
@@ -169,7 +168,7 @@ public class Recipes extends Fragment {
                     String name = recipeName.getText().toString();
 
                     for (int index = 0; index < recipes.size(); index++) {
-                        if (recipes.get(index).equals(name)) {
+                        if (recipes.get(index).getName().equals(name)) {
                             recipeName.setError("Recipe already exists...");
                             return;
                         }
@@ -237,7 +236,7 @@ public class Recipes extends Fragment {
                 if (!recipeName.getText().toString().isEmpty()) {
                     String name = recipeName.getText().toString();
 
-                    if(name.equals(orig_name)){
+                    if (name.equals(orig_name)) {
                         dialog.dismiss();
                     }
 
@@ -284,17 +283,17 @@ public class Recipes extends Fragment {
             // Assumes the File itself has already been Initialized
             aisleShareData = new JSONObject(loadJSONFromAsset(file));
             JSONArray recipeNames = aisleShareData.optJSONObject("Recipes").names();
+            currentOrder = aisleShareData.optInt("RecipesSort");
+            isIncreasingOrder = aisleShareData.optBoolean("RecipesDirection");
             if(recipeNames != null) {
                 for (int i = 0; i < recipeNames.length(); i++) {
                     try {
-                        JSONObject entry = aisleShareData.optJSONObject("Lists").optJSONObject(recipeNames.get(i).toString());
+                        JSONObject entry = aisleShareData.optJSONObject("Recipes").optJSONObject(recipeNames.get(i).toString());
                         if(entry != null) {
                             String owner = entry.optString("owner");
                             long created = entry.optLong("time");
                             recipes.add(new ListItem(owner, recipeNames.get(i).toString(), created));
                         }
-                        currentOrder = aisleShareData.optInt("RecipesOrder");
-                        isIncreasingOrder = aisleShareData.optBoolean("RecipesDirection");
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -347,27 +346,10 @@ public class Recipes extends Fragment {
 
             aisleShareData.optJSONObject("Recipes").accumulate(recipeTitle, new JSONObject());
             aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("items", new JSONArray());
-            aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).put("sort", 2);
-            aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).put("direction", true);
-            aisleShareData.optJSONObject("Lists").optJSONObject(recipeTitle).put("time", timeCreated);
-            aisleShareData.optJSONObject("Lists").optJSONObject(recipeTitle).put("owner", deviceName);
-
-            FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
-            fos.write(aisleShareData.toString().getBytes());
-            fos.close();
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void saveSortData(){
-        try {
-            // Need to update other fragments before saving
-            File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
-            aisleShareData = new JSONObject(loadJSONFromAsset(file));
-
-            aisleShareData.put("RecipesOrder", currentOrder);
-            aisleShareData.put("RecipesDirection", isIncreasingOrder);
+            aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("sort", -1);
+            aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("direction", true);
+            aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("time", timeCreated);
+            aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("owner", deviceName);
 
             FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
             fos.write(aisleShareData.toString().getBytes());
@@ -407,6 +389,20 @@ public class Recipes extends Fragment {
         menuRecipes.get("time").setCheckable(true);
         menuRecipes.get("owner").setCheckable(true);
         menuRecipes.get("unsorted").setVisible(false);
+
+        sortRecipe(false, currentOrder);
+        switch (currentOrder){
+            case 0:
+                menuRecipes.get("name").setChecked(true);
+                break;
+            case 1:
+                menuRecipes.get("time").setChecked(true);
+                break;
+            case 2:
+                menuRecipes.get("owner").setChecked(true);
+                break;
+        }
+        itemAdapter.notifyDataSetChanged();
         super.onCreateOptionsMenu(menu, inflater);
 
     }
@@ -424,24 +420,20 @@ public class Recipes extends Fragment {
                 sortRecipe(true, 0);
                 clearMenuCheckables();
                 option.setChecked(true);
-                saveSortInfo();
                 break;
             case R.id.sort_time:
                 sortRecipe(true, 1);
                 clearMenuCheckables();
                 option.setChecked(true);
-                saveSortInfo();
                 break;
             case R.id.sort_owner:
                 sortRecipe(true, 2);
                 clearMenuCheckables();
                 option.setChecked(true);
-                saveSortInfo();
                 break;
             case R.id.unsorted:
                 sortRecipe(false, -1);
                 clearMenuCheckables();
-                saveSortInfo();
                 break;
             case R.id.delete:
                 deleteItems();

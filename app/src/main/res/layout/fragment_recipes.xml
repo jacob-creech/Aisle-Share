@@ -6,47 +6,40 @@
     android:layout_height="match_parent"
     tools:context=".Recipes">
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <ImageView
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-            android:id="@+id/list_image"
-            android:src="@mipmap/recipe"
-            android:layout_centerInParent="true"
-            android:alpha=".25"
-            android:layout_gravity="center" />
-    </FrameLayout>
+    <ImageView
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:id="@+id/list_image"
+        android:src="@mipmap/recipe"
+        android:layout_centerInParent="true"
+        android:alpha=".25"
+        android:layout_gravity="center" />
 
     <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         android:id="@+id/recipes"
         android:visibility="visible" />
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="You do not have any recipes."
+        android:id="@+id/empty_notice"
+        android:textSize="14sp"
+        android:visibility="invisible"
+        android:layout_below="@+id/list_image"
+        android:layout_centerHorizontal="true"  />
 
-        <com.getbase.floatingactionbutton.AddFloatingActionButton
-            android:id="@+id/float_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            fab:fab_plusIconColor="#FFFFFF"
-            fab:fab_colorNormal="#23ff14"
-            fab:fab_colorPressed="#18d50f"
-            android:layout_gravity="right|bottom"
-            android:alpha=".75" />
+    <com.getbase.floatingactionbutton.AddFloatingActionButton
+        android:id="@+id/float_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        fab:fab_plusIconColor="#FFFFFF"
+        fab:fab_colorNormal="#23ff14"
+        fab:fab_colorPressed="#18d50f"
+        android:alpha=".75"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="You do not have any recipes."
-            android:id="@+id/empty_notice"
-            android:layout_gravity="center"
-            android:textSize="14sp"
-            android:visibility="invisible" />
-    </FrameLayout>
 </RelativeLayout>

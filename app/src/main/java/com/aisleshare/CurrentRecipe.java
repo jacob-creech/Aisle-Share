@@ -20,7 +20,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
@@ -83,6 +82,13 @@ public class CurrentRecipe extends AppCompatActivity {
 
         customAdapter = new CustomAdapter(this, items, R.layout.row_recipe);
         listView.setAdapter(customAdapter);
+
+        try {
+            aisleShareData.put("RecipeOpened", recipeTitle);
+            saveData();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setSwipeToDelete() {
@@ -203,6 +209,12 @@ public class CurrentRecipe extends AppCompatActivity {
                 addToListDialog();
                 break;
             case android.R.id.home:
+                try {
+                    aisleShareData.put("RecipeOpened", "");
+                    saveData();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 finish();
                 return true;
         }
@@ -210,6 +222,17 @@ public class CurrentRecipe extends AppCompatActivity {
         saveData();
         customAdapter.notifyDataSetChanged();
         return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        try {
+            aisleShareData.put("RecipeOpened", "");
+            saveData();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        super.onBackPressed();
     }
 
     public void clearMenuCheckables(){

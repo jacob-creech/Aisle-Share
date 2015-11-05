@@ -20,7 +20,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
@@ -83,6 +82,13 @@ public class CurrentActivity extends AppCompatActivity {
 
         customAdapter = new CustomAdapter(this, items, R.layout.row_activity);
         listView.setAdapter(customAdapter);
+
+        try {
+            aisleShareData.put("ActivityOpened", activityTitle);
+            saveData();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -188,6 +194,12 @@ public class CurrentActivity extends AppCompatActivity {
                 addToListDialog();
                 break;
             case android.R.id.home:
+                try {
+                    aisleShareData.put("ActivityOpened", "");
+                    saveData();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 finish();
                 return true;
         }
@@ -195,6 +207,17 @@ public class CurrentActivity extends AppCompatActivity {
         saveData();
         customAdapter.notifyDataSetChanged();
         return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        try {
+            aisleShareData.put("ActivityOpened", "");
+            saveData();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        super.onBackPressed();
     }
 
     public void clearMenuCheckables(){

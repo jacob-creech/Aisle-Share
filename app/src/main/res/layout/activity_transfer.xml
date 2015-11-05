@@ -34,11 +34,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:id="@+id/LinearLayout">
+        android:id="@+id/LinearLayout"
+        android:padding="10dp">
         <CheckBox
             android:id="@+id/select_all_cb"
             android:layout_width="wrap_content"
@@ -50,7 +47,7 @@
         <TextView
             android:id="@+id/select_all"
             android:text="Select All"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="22sp"
             android:textStyle="bold" />

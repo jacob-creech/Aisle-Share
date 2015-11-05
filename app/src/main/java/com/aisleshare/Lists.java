@@ -95,13 +95,8 @@ public class Lists extends Fragment {
 
         // Unsorted
         if(currentOrder == -1){
-            menuLists.get("sort").setIcon(0);
-            menuLists.get("unsorted").setVisible(false);
             saveSortInfo();
             return;
-        }
-        else{
-            menuLists.get("unsorted").setVisible(true);
         }
 
         switch (currentOrder){
@@ -122,14 +117,26 @@ public class Lists extends Fragment {
                 break;}
         }
 
-        if(isIncreasingOrder) {
-            menuLists.get("sort").setIcon(R.mipmap.inc_sort);
-        }
-        else{
+        if(!isIncreasingOrder) {
             Collections.reverse(lists);
-            menuLists.get("sort").setIcon(R.mipmap.dec_sort);
         }
         saveSortInfo();
+    }
+
+    public void setSortIcons(){
+        if(currentOrder == -1){
+            menuLists.get("sort").setIcon(0);
+            menuLists.get("unsorted").setVisible(false);
+        }
+        else {
+            menuLists.get("unsorted").setVisible(true);
+            if(isIncreasingOrder) {
+                menuLists.get("sort").setIcon(R.mipmap.inc_sort);
+            }
+            else{
+                menuLists.get("sort").setIcon(R.mipmap.dec_sort);
+            }
+        }
     }
 
     // Popup for adding a List
@@ -299,7 +306,7 @@ public class Lists extends Fragment {
                     }
                 }
             }
-
+            sortList(false, currentOrder);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -390,7 +397,7 @@ public class Lists extends Fragment {
         menuLists.get("owner").setCheckable(true);
         menuLists.get("unsorted").setVisible(false);
 
-        sortList(false, currentOrder);
+        setSortIcons();
         switch (currentOrder){
             case 0:
                 menuLists.get("name").setChecked(true);
@@ -402,9 +409,7 @@ public class Lists extends Fragment {
                 menuLists.get("owner").setChecked(true);
                 break;
         }
-        itemAdapter.notifyDataSetChanged();
         super.onCreateOptionsMenu(menu, inflater);
-
     }
 
     @Override
@@ -418,21 +423,25 @@ public class Lists extends Fragment {
         switch(id) {
             case R.id.sort_name:
                 sortList(true, 0);
+                setSortIcons();
                 clearMenuCheckables();
                 option.setChecked(true);
                 break;
             case R.id.sort_time:
                 sortList(true, 1);
+                setSortIcons();
                 clearMenuCheckables();
                 option.setChecked(true);
                 break;
             case R.id.sort_owner:
                 sortList(true, 2);
+                setSortIcons();
                 clearMenuCheckables();
                 option.setChecked(true);
                 break;
             case R.id.unsorted:
                 sortList(false, -1);
+                setSortIcons();
                 clearMenuCheckables();
                 break;
             case R.id.delete:
@@ -519,16 +528,22 @@ public class Lists extends Fragment {
         dialog.show();
     }
 
-    public void setListeners() {
-        // Floating Action Button
-        FloatingActionButton addButton = (FloatingActionButton) getView().findViewById(R.id.float_button);
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addListDialog();
-            }
-        });
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser) {
+            // Floating Action Button
+            FloatingActionButton addButton = (FloatingActionButton) getActivity().findViewById(R.id.float_button);
+            addButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    addListDialog();
+                }
+            });
+        }
+    }
 
+    public void setListeners() {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long id) {
                 Intent intent = new Intent(dashboard, CurrentList.class);

@@ -35,9 +35,25 @@ public class Dashboard  extends AppCompatActivity {
 
         String listOpened = aisleShareData.optString("ListOpened");
         if(!listOpened.equals("")){
+            pager.setCurrentItem(0);
             Intent intent = new Intent(Dashboard.this, CurrentList.class);
-            String name = listOpened;
-            intent.putExtra(LIST_NAME, name);
+            intent.putExtra(LIST_NAME, listOpened);
+            startActivity(intent);
+        }
+
+        String recipeOpened = aisleShareData.optString("RecipeOpened");
+        if(!recipeOpened.equals("")) {
+            pager.setCurrentItem(1);
+            Intent intent = new Intent(Dashboard.this, CurrentRecipe.class);
+            intent.putExtra(LIST_NAME, recipeOpened);
+            startActivity(intent);
+        }
+
+        String activityOpened = aisleShareData.optString("ActivityOpened");
+        if(!activityOpened.equals("")){
+            pager.setCurrentItem(2);
+            Intent intent = new Intent(Dashboard.this, CurrentActivity.class);
+            intent.putExtra(LIST_NAME, activityOpened);
             startActivity(intent);
         }
     }
@@ -73,10 +89,12 @@ public class Dashboard  extends AppCompatActivity {
                 aisleShareData.accumulate("Recipes", new JSONObject());
                 aisleShareData.accumulate("RecipesSort", -1);
                 aisleShareData.accumulate("RecipesDirection", true);
+                aisleShareData.accumulate("RecipeOpened", "");
 
                 aisleShareData.accumulate("Activities", new JSONObject());
                 aisleShareData.accumulate("ActivitiesSort", -1);
                 aisleShareData.accumulate("ActivitiesDirection", true);
+                aisleShareData.accumulate("ActivityOpened", "");
 
                 aisleShareData.accumulate("Transfers", new JSONObject());
                 aisleShareData.optJSONObject("Transfers").accumulate("sort", -1);

@@ -20,7 +20,8 @@
         android:scaleY="1.25"
         android:onClick="itemClick"
         android:maxWidth="32dp"
-        android:minWidth="32dp" />
+        android:minWidth="32dp"
+        android:checked="false" />
 
     <LinearLayout
         android:id="@+id/column1"
@@ -55,16 +56,16 @@
     <Button
         android:id="@+id/Minus"
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
         android:text="-"
         android:textStyle="bold"
         android:textSize="30dp"
-        android:background="#eeeeee"
         android:layout_weight=".025"
         android:onClick="minusClick"
         style="?android:attr/borderlessButtonStyle"
         android:textColor="#7fff0000"
-        android:minWidth="50dp" />
+        android:minWidth="50dp"
+        android:textAlignment="gravity" />
 
     <LinearLayout
         android:orientation="vertical"
@@ -74,7 +75,8 @@
         android:gravity="center_vertical"
         android:paddingRight="10dp"
         android:paddingLeft="10dp"
-        android:longClickable="true">
+        android:longClickable="true"
+        android:onClick="itemClick">
 
         <TextView
             android:layout_width="wrap_content"
@@ -87,7 +89,8 @@
             android:maxLength="5"
             android:gravity="center_horizontal"
             android:layout_gravity="center_horizontal"
-            android:longClickable="true" />
+            android:longClickable="true"
+            android:onClick="itemClick" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -100,17 +103,17 @@
             android:maxLength="10"
             android:gravity="center_horizontal"
             android:layout_gravity="center_horizontal"
-            android:longClickable="true" />
+            android:longClickable="true"
+            android:onClick="itemClick" />
     </LinearLayout>
     <Button
         android:id="@+id/Plus"
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
         android:text="+"
         android:textStyle="bold"
         android:textSize="30dp"
         android:textAlignment="gravity"
-        android:background="#eeeeee"
         android:layout_weight=".025"
         android:onClick="plusClick"
         style="?android:attr/borderlessButtonStyle"

@@ -22,7 +22,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -100,13 +99,8 @@ public class Activities extends Fragment {
 
         // Unsorted
         if(currentOrder == -1){
-            menuActivities.get("sort").setIcon(0);
-            menuActivities.get("unsorted").setVisible(false);
             saveSortInfo();
             return;
-        }
-        else{
-            menuActivities.get("unsorted").setVisible(true);
         }
 
         switch (currentOrder){
@@ -127,14 +121,26 @@ public class Activities extends Fragment {
                 break;}
         }
 
-        if(isIncreasingOrder) {
-            menuActivities.get("sort").setIcon(R.mipmap.inc_sort);
-        }
-        else{
+        if(!isIncreasingOrder) {
             Collections.reverse(activities);
-            menuActivities.get("sort").setIcon(R.mipmap.dec_sort);
         }
         saveSortInfo();
+    }
+
+    public void setSortIcons(){
+        if(currentOrder == -1){
+            menuActivities.get("sort").setIcon(0);
+            menuActivities.get("unsorted").setVisible(false);
+        }
+        else {
+            menuActivities.get("unsorted").setVisible(true);
+            if(isIncreasingOrder) {
+                menuActivities.get("sort").setIcon(R.mipmap.inc_sort);
+            }
+            else{
+                menuActivities.get("sort").setIcon(R.mipmap.dec_sort);
+            }
+        }
     }
 
     // Popup for adding an Activity
@@ -303,6 +309,7 @@ public class Activities extends Fragment {
                     }
                 }
             }
+            sortActivity(false, currentOrder);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -394,7 +401,7 @@ public class Activities extends Fragment {
         menuActivities.get("owner").setCheckable(true);
         menuActivities.get("unsorted").setVisible(false);
 
-        sortActivity(false, currentOrder);
+        setSortIcons();
         switch (currentOrder){
             case 0:
                 menuActivities.get("name").setChecked(true);
@@ -406,9 +413,7 @@ public class Activities extends Fragment {
                 menuActivities.get("owner").setChecked(true);
                 break;
         }
-        itemAdapter.notifyDataSetChanged();
         super.onCreateOptionsMenu(menu, inflater);
-
     }
 
     @Override
@@ -422,21 +427,25 @@ public class Activities extends Fragment {
         switch(id) {
             case R.id.sort_name:
                 sortActivity(true, 0);
+                setSortIcons();
                 clearMenuCheckables();
                 option.setChecked(true);
                 break;
             case R.id.sort_time:
                 sortActivity(true, 1);
+                setSortIcons();
                 clearMenuCheckables();
                 option.setChecked(true);
                 break;
             case R.id.sort_owner:
                 sortActivity(true, 2);
+                setSortIcons();
                 clearMenuCheckables();
                 option.setChecked(true);
                 break;
             case R.id.unsorted:
                 sortActivity(false, -1);
+                setSortIcons();
                 clearMenuCheckables();
                 break;
             case R.id.delete:
@@ -524,16 +533,22 @@ public class Activities extends Fragment {
         dialog.show();
     }
 
-    public void setListeners() {
-        // Floating Action Button
-        FloatingActionButton addButton = (FloatingActionButton) getView().findViewById(R.id.float_button);
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addActivityDialog();
-            }
-        });
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser) {
+            // Floating Action Button
+            FloatingActionButton addButton = (FloatingActionButton) getActivity().findViewById(R.id.float_button);
+            addButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    addActivityDialog();
+                }
+            });
+        }
+    }
 
+    public void setListeners() {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long id) {
                 Intent intent = new Intent(dashboard, CurrentActivity.class);

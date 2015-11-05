@@ -96,13 +96,8 @@ public class Recipes extends Fragment {
 
         // Unsorted
         if(currentOrder == -1){
-            menuRecipes.get("sort").setIcon(0);
-            menuRecipes.get("unsorted").setVisible(false);
             saveSortInfo();
             return;
-        }
-        else{
-            menuRecipes.get("unsorted").setVisible(true);
         }
 
         switch (currentOrder){
@@ -123,14 +118,26 @@ public class Recipes extends Fragment {
                 break;}
         }
 
-        if(isIncreasingOrder) {
-            menuRecipes.get("sort").setIcon(R.mipmap.inc_sort);
-        }
-        else{
+        if(!isIncreasingOrder) {
             Collections.reverse(recipes);
-            menuRecipes.get("sort").setIcon(R.mipmap.dec_sort);
         }
         saveSortInfo();
+    }
+
+    public void setSortIcons(){
+        if(currentOrder == -1){
+            menuRecipes.get("sort").setIcon(0);
+            menuRecipes.get("unsorted").setVisible(false);
+        }
+        else {
+            menuRecipes.get("unsorted").setVisible(true);
+            if(isIncreasingOrder) {
+                menuRecipes.get("sort").setIcon(R.mipmap.inc_sort);
+            }
+            else{
+                menuRecipes.get("sort").setIcon(R.mipmap.dec_sort);
+            }
+        }
     }
 
     // Popup for adding a Recipe
@@ -298,6 +305,7 @@ public class Recipes extends Fragment {
                         e.printStackTrace();
                     }
                 }
+                sortRecipe(false, currentOrder);
             }
 
         } catch (JSONException e) {
@@ -390,7 +398,7 @@ public class Recipes extends Fragment {
         menuRecipes.get("owner").setCheckable(true);
         menuRecipes.get("unsorted").setVisible(false);
 
-        sortRecipe(false, currentOrder);
+        setSortIcons();
         switch (currentOrder){
             case 0:
                 menuRecipes.get("name").setChecked(true);
@@ -402,7 +410,6 @@ public class Recipes extends Fragment {
                 menuRecipes.get("owner").setChecked(true);
                 break;
         }
-        itemAdapter.notifyDataSetChanged();
         super.onCreateOptionsMenu(menu, inflater);
 
     }
@@ -418,21 +425,25 @@ public class Recipes extends Fragment {
         switch(id) {
             case R.id.sort_name:
                 sortRecipe(true, 0);
+                setSortIcons();
                 clearMenuCheckables();
                 option.setChecked(true);
                 break;
             case R.id.sort_time:
                 sortRecipe(true, 1);
+                setSortIcons();
                 clearMenuCheckables();
                 option.setChecked(true);
                 break;
             case R.id.sort_owner:
                 sortRecipe(true, 2);
+                setSortIcons();
                 clearMenuCheckables();
                 option.setChecked(true);
                 break;
             case R.id.unsorted:
                 sortRecipe(false, -1);
+                setSortIcons();
                 clearMenuCheckables();
                 break;
             case R.id.delete:
@@ -520,16 +531,22 @@ public class Recipes extends Fragment {
         dialog.show();
     }
 
-    public void setListeners() {
-        // Floating Action Button
-        FloatingActionButton addButton = (FloatingActionButton) getView().findViewById(R.id.float_button);
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addRecipeDialog();
-            }
-        });
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser) {
+            // Floating Action Button
+            FloatingActionButton addButton = (FloatingActionButton) getActivity().findViewById(R.id.float_button);
+            addButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    addRecipeDialog();
+                }
+            });
+        }
+    }
 
+    public void setListeners() {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long id) {
                 Intent intent = new Intent(dashboard, CurrentRecipe.class);

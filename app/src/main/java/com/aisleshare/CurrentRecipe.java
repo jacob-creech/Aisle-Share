@@ -30,6 +30,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -210,6 +211,8 @@ public class CurrentRecipe extends AppCompatActivity {
                 break;
             case android.R.id.home:
                 try {
+                    File file = new File(getFilesDir().getPath() + "/Aisle_Share_Data.json");
+                    aisleShareData = new JSONObject(loadJSONFromAsset(file));
                     aisleShareData.put("RecipeOpened", "");
                     saveData();
                 } catch (JSONException e) {
@@ -227,6 +230,8 @@ public class CurrentRecipe extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         try {
+            File file = new File(getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            aisleShareData = new JSONObject(loadJSONFromAsset(file));
             aisleShareData.put("RecipeOpened", "");
             saveData();
         } catch (JSONException e) {
@@ -648,10 +653,12 @@ public class CurrentRecipe extends AppCompatActivity {
                     for (Item i : items) {
                         aisleShareData.optJSONObject("Transfers").optJSONArray("items").put(i.getJSONString());
                     }
-                } catch (JSONException e) {
+                    FileOutputStream fos = new FileOutputStream(getFilesDir().getPath() + "/Aisle_Share_Data.json");
+                    fos.write(aisleShareData.toString().getBytes());
+                    fos.close();
+                } catch (JSONException | IOException e) {
                     e.printStackTrace();
                 }
-                saveData();
                 dialog.dismiss();
 
                 Intent intent = new Intent(CurrentRecipe.this, Transfer.class);

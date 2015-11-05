@@ -265,6 +265,8 @@ public class CurrentList extends AppCompatActivity {
                 return true;
             case android.R.id.home:
                 try {
+                    File file = new File(getFilesDir().getPath() + "/Aisle_Share_Data.json");
+                    aisleShareData = new JSONObject(loadJSONFromAsset(file));
                     aisleShareData.put("ListOpened", "");
                     saveData();
                 } catch (JSONException e) {
@@ -282,6 +284,8 @@ public class CurrentList extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         try {
+            File file = new File(getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            aisleShareData = new JSONObject(loadJSONFromAsset(file));
             aisleShareData.put("ListOpened", "");
             saveData();
         } catch (JSONException e) {

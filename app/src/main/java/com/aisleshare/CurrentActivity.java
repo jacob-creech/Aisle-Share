@@ -195,6 +195,8 @@ public class CurrentActivity extends AppCompatActivity {
                 break;
             case android.R.id.home:
                 try {
+                    File file = new File(getFilesDir().getPath() + "/Aisle_Share_Data.json");
+                    aisleShareData = new JSONObject(loadJSONFromAsset(file));
                     aisleShareData.put("ActivityOpened", "");
                     saveData();
                 } catch (JSONException e) {
@@ -212,6 +214,8 @@ public class CurrentActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         try {
+            File file = new File(getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            aisleShareData = new JSONObject(loadJSONFromAsset(file));
             aisleShareData.put("ActivityOpened", "");
             saveData();
         } catch (JSONException e) {
@@ -636,10 +640,12 @@ public class CurrentActivity extends AppCompatActivity {
                     for (Item i : items) {
                         aisleShareData.optJSONObject("Transfers").optJSONArray("items").put(i.getJSONString());
                     }
-                } catch (JSONException e) {
+                    FileOutputStream fos = new FileOutputStream(getFilesDir().getPath() + "/Aisle_Share_Data.json");
+                    fos.write(aisleShareData.toString().getBytes());
+                    fos.close();
+                } catch (JSONException | IOException e) {
                     e.printStackTrace();
                 }
-                saveData();
                 dialog.dismiss();
 
                 Intent intent = new Intent(CurrentActivity.this, Transfer.class);

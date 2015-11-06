@@ -18,7 +18,6 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
@@ -51,6 +50,8 @@ public class CurrentList extends AppCompatActivity {
     private String listTitle;
     private TextView emptyNotice;
     private PopupWindow undoPopup;
+    private CountDownTimer undoTimer;
+    private SwipeDismissList swipeAdapter;
     private JSONObject aisleShareData;
 
     @Override
@@ -116,7 +117,7 @@ public class CurrentList extends AppCompatActivity {
             }
         };
         SwipeDismissList.UndoMode mode = SwipeDismissList.UndoMode.MULTI_UNDO;
-        new SwipeDismissList(listView, callback, mode);
+        swipeAdapter = new SwipeDismissList(listView, callback, mode);
     }
 
     // Sorted based on the order index parameter
@@ -272,6 +273,10 @@ public class CurrentList extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                if(undoTimer != null) {
+                    undoTimer.cancel();
+                }
+                swipeAdapter.finish();
                 finish();
                 return true;
         }
@@ -291,6 +296,10 @@ public class CurrentList extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        if(undoTimer != null) {
+            undoTimer.cancel();
+        }
+        swipeAdapter.finish();
         super.onBackPressed();
     }
 
@@ -612,13 +621,14 @@ public class CurrentList extends AppCompatActivity {
     }
 
     public void hideUndoBoxTimer(){
-        new CountDownTimer(5000, 5000) {
+        undoTimer = new CountDownTimer(5000, 5000) {
             public void onTick(long millisUntilFinished) {}
             public void onFinish() {
                 if(undoPopup.isShowing()) {
                     undoPopup.dismiss();
                 }
                 items_backup.clear();
+                undoTimer = null;
             }
         }.start();
     }

@@ -83,6 +83,7 @@ public final class SwipeDismissList implements View.OnTouchListener {
 	private UndoMode mMode;
 	private List<Undoable> mUndoActions;
 	private Handler mHandler;
+	private boolean finished;
 
 	private PopupWindow mUndoPopup;
 	private TextView mUndoText;
@@ -231,6 +232,7 @@ public final class SwipeDismissList implements View.OnTouchListener {
 		}
 
 		mHandler = new HideUndoPopupHandler();
+		finished = false;
 		mListView = listView;
 		mCallback = callback;
 		mMode = mode;
@@ -286,6 +288,10 @@ public final class SwipeDismissList implements View.OnTouchListener {
 				break;
 		}
 
+	}
+
+	public void finish(){
+		finished = true;
 	}
 
 	/**
@@ -486,7 +492,7 @@ public final class SwipeDismissList implements View.OnTouchListener {
 			}
 
 			case MotionEvent.ACTION_MOVE: {
-				if(mTouchBeforeAutoHide && mUndoPopup.isShowing()) {	
+				if(mTouchBeforeAutoHide && mUndoPopup.isShowing()) {
 					// Send a delayed message to hide popup
 					mHandler.sendMessageDelayed(mHandler.obtainMessage(mDelayedMsgId), 
 						mAutoHideDelay);
@@ -619,7 +625,7 @@ public final class SwipeDismissList implements View.OnTouchListener {
 							0, (int)(mDensity * 15));
 						
 						// Queue the dismiss only if required
-						if(!mTouchBeforeAutoHide) {	
+						if(!mTouchBeforeAutoHide) {
 							// Send a delayed message to hide popup
 							mHandler.sendMessageDelayed(mHandler.obtainMessage(mDelayedMsgId), 
 								mAutoHideDelay);
@@ -736,7 +742,9 @@ public final class SwipeDismissList implements View.OnTouchListener {
 					undo.discard();
 				}
 				mUndoActions.clear();
-				mUndoPopup.dismiss();
+				if(!finished) {
+					mUndoPopup.dismiss();
+				}
 			}
 		}
 		

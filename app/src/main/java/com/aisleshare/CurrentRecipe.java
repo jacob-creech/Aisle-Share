@@ -30,7 +30,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -56,6 +55,8 @@ public class CurrentRecipe extends AppCompatActivity {
     private String recipeTitle;
     private TextView emptyNotice;
     private PopupWindow undoPopup;
+    private CountDownTimer undoTimer;
+    private SwipeDismissList swipeAdapter;
     private JSONObject aisleShareData;
 
     @Override
@@ -117,7 +118,7 @@ public class CurrentRecipe extends AppCompatActivity {
             }
         };
         SwipeDismissList.UndoMode mode = SwipeDismissList.UndoMode.MULTI_UNDO;
-        new SwipeDismissList(listView, callback, mode);
+        swipeAdapter = new SwipeDismissList(listView, callback, mode);
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -218,6 +219,10 @@ public class CurrentRecipe extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                if(undoTimer != null) {
+                    undoTimer.cancel();
+                }
+                swipeAdapter.finish();
                 finish();
                 return true;
         }
@@ -237,6 +242,10 @@ public class CurrentRecipe extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        if(undoTimer != null) {
+            undoTimer.cancel();
+        }
+        swipeAdapter.finish();
         super.onBackPressed();
     }
 
@@ -803,13 +812,14 @@ public class CurrentRecipe extends AppCompatActivity {
     }
 
     public void hideUndoBoxTimer(){
-        new CountDownTimer(5000, 5000) {
+        undoTimer = new CountDownTimer(5000, 5000) {
             public void onTick(long millisUntilFinished) {}
             public void onFinish() {
                 if(undoPopup.isShowing()) {
                     undoPopup.dismiss();
                 }
                 items_backup.clear();
+                undoTimer = null;
             }
         }.start();
     }

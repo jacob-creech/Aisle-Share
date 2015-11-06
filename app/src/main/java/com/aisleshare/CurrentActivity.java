@@ -55,6 +55,8 @@ public class CurrentActivity extends AppCompatActivity {
     private String activityTitle;
     private TextView emptyNotice;
     private PopupWindow undoPopup;
+    private CountDownTimer undoTimer;
+    private SwipeDismissList swipeAdapter;
     private JSONObject aisleShareData;
 
     @Override
@@ -117,7 +119,7 @@ public class CurrentActivity extends AppCompatActivity {
             }
         };
         SwipeDismissList.UndoMode mode = SwipeDismissList.UndoMode.MULTI_UNDO;
-        new SwipeDismissList(listView, callback, mode);
+        swipeAdapter = new SwipeDismissList(listView, callback, mode);
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -202,6 +204,10 @@ public class CurrentActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                if(undoTimer != null) {
+                    undoTimer.cancel();
+                }
+                swipeAdapter.finish();
                 finish();
                 return true;
         }
@@ -221,6 +227,10 @@ public class CurrentActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        if(undoTimer != null) {
+            undoTimer.cancel();
+        }
+        swipeAdapter.finish();
         super.onBackPressed();
     }
 
@@ -790,13 +800,14 @@ public class CurrentActivity extends AppCompatActivity {
     }
 
     public void hideUndoBoxTimer(){
-        new CountDownTimer(5000, 5000) {
+        undoTimer = new CountDownTimer(5000, 5000) {
             public void onTick(long millisUntilFinished) {}
             public void onFinish() {
                 if(undoPopup.isShowing()) {
                     undoPopup.dismiss();
                 }
                 items_backup.clear();
+                undoTimer = null;
             }
         }.start();
     }

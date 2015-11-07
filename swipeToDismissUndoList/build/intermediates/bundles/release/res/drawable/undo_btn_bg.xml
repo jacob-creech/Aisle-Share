@@ -3,4 +3,4 @@
 	<item android:state_pressed="true" android:drawable="@drawable/undo_btn_bg_pressed"/> <!-- pressed -->
 	<item android:state_focused="true" android:drawable="@drawable/undo_btn_bg_focused"/> <!-- focused -->
 	<item android:drawable="@color/btn_normal"/> <!-- default -->
-</selector><!-- From: file:/C:/Users/David/Documents/GitHub/Aisle-Share/swipeToDismissUndoList/src/main/res/drawable/undo_btn_bg.xml -->
+</selector><!-- From: file:/C:/Users/Jacob/Documents/GitHub/Aisle-Share/swipeToDismissUndoList/src/main/res/drawable/undo_btn_bg.xml -->

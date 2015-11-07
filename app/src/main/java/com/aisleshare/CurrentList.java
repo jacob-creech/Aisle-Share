@@ -1,7 +1,9 @@
 package com.aisleshare;
 
 import android.app.Dialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.provider.Settings;
@@ -56,6 +58,7 @@ public class CurrentList extends AppCompatActivity {
     private CountDownTimer undoTimer;
     private SwipeDismissList swipeAdapter;
     private JSONObject aisleShareData;
+    private Bluetooth blueAdapt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +74,7 @@ public class CurrentList extends AppCompatActivity {
         deviceName = Settings.Secure.getString(CurrentList.this.getContentResolver(), Settings.Secure.ANDROID_ID);
         menuItems = new HashMap<>();
         categories = new ArrayList<>();
+        blueAdapt = new Bluetooth(CurrentList.this);
 
         setListTitle(savedInstanceState);
         readSavedItems();
@@ -283,11 +287,41 @@ public class CurrentList extends AppCompatActivity {
                 swipeAdapter.finish();
                 finish();
                 return true;
+            case R.id.share:
+                setBluetooth();
+                break;
         }
 
         saveData();
         customAdapter.notifyDataSetChanged();
         return true;
+    }
+
+    //TODO: find a way
+    private void setBluetooth() {
+        BluetoothAdapter mBluetoothAdapter = null;
+        //blueAdapt.setBluetooth();
+        //blueAdapt.ensureDiscoverable();
+        //blueAdapt.startDeviceList();
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter == null) {
+            // Device does not support Bluetooth
+        }
+        else if (!mBluetoothAdapter.isEnabled()) {
+            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableIntent, 2);
+            // Otherwise, setup the chat session
+        }
+        if(mBluetoothAdapter.isEnabled()) {
+            if (mBluetoothAdapter.getScanMode() !=
+                    BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
+                Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+                discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+                startActivity(discoverableIntent);
+            }
+        }
+        Intent serverIntent = new Intent(this, DeviceListActivity.class);
+        //startActivityForResult(serverIntent, 1);
     }
 
     @Override
@@ -759,6 +793,8 @@ public class CurrentList extends AppCompatActivity {
                 return true;
             }
         });
+
+
     }
 
     public void editItemDialog(final int position){

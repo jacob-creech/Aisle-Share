@@ -16,6 +16,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -46,6 +48,7 @@ public class CurrentList extends AppCompatActivity {
     private boolean isIncreasingOrder;
     private int currentOrder;
     private Map<String, MenuItem> menuItems;
+    private ArrayList<String> categories;
     private String deviceName;
     private String listTitle;
     private TextView emptyNotice;
@@ -67,6 +70,7 @@ public class CurrentList extends AppCompatActivity {
         emptyNotice = (TextView) findViewById(R.id.empty_notice);
         deviceName = Settings.Secure.getString(CurrentList.this.getContentResolver(), Settings.Secure.ANDROID_ID);
         menuItems = new HashMap<>();
+        categories = new ArrayList<>();
 
         setListTitle(savedInstanceState);
         readSavedItems();
@@ -319,7 +323,7 @@ public class CurrentList extends AppCompatActivity {
         dialog.setTitle("Add a New Item");
 
         final EditText itemName = (EditText) dialog.findViewById(R.id.Name);
-        final EditText itemType = (EditText) dialog.findViewById(R.id.Type);
+        final AutoCompleteTextView itemType = (AutoCompleteTextView) dialog.findViewById(R.id.Type);
         final Button minus = (Button) dialog.findViewById(R.id.Minus);
         final EditText itemQuantity = (EditText) dialog.findViewById(R.id.Quantity);
         final EditText itemUnits = (EditText) dialog.findViewById(R.id.units);
@@ -327,6 +331,9 @@ public class CurrentList extends AppCompatActivity {
         final Button cancel = (Button) dialog.findViewById(R.id.Cancel);
         final Button more = (Button) dialog.findViewById(R.id.More);
         final Button done = (Button) dialog.findViewById(R.id.Done);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, categories);
+
 
         // Open keyboard automatically
         itemName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -417,6 +424,17 @@ public class CurrentList extends AppCompatActivity {
                         quantity = 1;
                     }
 
+                    //check categories to prevent duplications
+                    int cat_index;
+                    for(cat_index = 0 ; cat_index < categories.size(); cat_index++) {
+                        if(categories.get(cat_index).compareTo(type) == 0) {
+                            break;
+                        }
+                    }
+                    if(cat_index == categories.size()) {
+                        categories.add(type);
+                    }
+
                     Item i = new Item(deviceName, name, type, quantity, units);
                     items.add(i);
                     saveData();
@@ -450,6 +468,17 @@ public class CurrentList extends AppCompatActivity {
                         quantity = 1;
                     }
 
+                    //check categories to prevent duplications
+                    int cat_index;
+                    for(cat_index = 0 ; cat_index < categories.size(); cat_index++) {
+                        if(categories.get(cat_index).compareTo(type) == 0) {
+                            break;
+                        }
+                    }
+                    if(cat_index == categories.size()) {
+                        categories.add(type);
+                    }
+
                     Item i = new Item(deviceName, name, type, quantity, units);
                     items.add(i);
                     saveData();
@@ -463,7 +492,7 @@ public class CurrentList extends AppCompatActivity {
                 }
             }
         });
-
+        itemType.setAdapter(adapter);
         dialog.show();
     }
 
@@ -641,6 +670,13 @@ public class CurrentList extends AppCompatActivity {
             aisleShareData = new JSONObject(loadJSONFromAsset(file));
             currentOrder = aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).getInt("sort");
             isIncreasingOrder = aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).getBoolean("direction");
+            JSONArray read_cat = aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).getJSONArray("category");
+            if (read_cat != null) {
+                int len = read_cat.length();
+                for (int i=0;i<len;i++){
+                    categories.add(read_cat.get(i).toString());
+                }
+            }
             JSONArray read_items = aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).getJSONArray("items");
             for(int index = 0; index < read_items.length(); index++){
                 try {
@@ -688,6 +724,7 @@ public class CurrentList extends AppCompatActivity {
             }
             aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).put("sort", currentOrder);
             aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).put("direction", isIncreasingOrder);
+            aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).put("category", new JSONArray(categories));
 
             FileOutputStream fos = new FileOutputStream(getFilesDir().getPath() + "/Aisle_Share_Data.json");
             fos.write(aisleShareData.toString().getBytes());
@@ -750,6 +787,8 @@ public class CurrentList extends AppCompatActivity {
         final Button cancel = (Button) dialog.findViewById(R.id.Cancel);
         final Button done = (Button) dialog.findViewById(R.id.Done);
 
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, categories);
+
         itemName.setText(item.getName());
         itemType.setText(item.getType());
         if(item.getQuantity() % 1 == 0){
@@ -766,10 +805,9 @@ public class CurrentList extends AppCompatActivity {
                 if (!itemQuantity.getText().toString().isEmpty()) {
                     double value = Double.parseDouble(itemQuantity.getText().toString());
                     if (value > 1) {
-                        if(value % 1 == 0){
+                        if (value % 1 == 0) {
                             itemQuantity.setText(String.format("%s", (int) (value - 1)));
-                        }
-                        else {
+                        } else {
                             itemQuantity.setText(String.format("%s", (int) Math.ceil(value - 1)));
                         }
                     }
@@ -830,7 +868,6 @@ public class CurrentList extends AppCompatActivity {
                 }
             }
         });
-
         dialog.show();
     }
 }

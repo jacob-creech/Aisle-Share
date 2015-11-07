@@ -18,6 +18,7 @@ import android.view.WindowManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -50,6 +51,7 @@ public class CurrentActivity extends AppCompatActivity {
     private CustomAdapter customAdapter;
     private boolean isIncreasingOrder;
     private int currentOrder;
+    private ArrayList<String> categories;
     private Map<String, MenuItem> menuItems;
     private String deviceName;
     private String activityTitle;
@@ -72,6 +74,7 @@ public class CurrentActivity extends AppCompatActivity {
         emptyNotice = (TextView) findViewById(R.id.empty_notice);
         deviceName = Settings.Secure.getString(CurrentActivity.this.getContentResolver(), Settings.Secure.ANDROID_ID);
         menuItems = new HashMap<>();
+        categories = new ArrayList<>();
 
         setActivityTitle(savedInstanceState);
         initializeStorage();
@@ -340,7 +343,7 @@ public class CurrentActivity extends AppCompatActivity {
         dialog.setTitle("Add a New Item");
 
         final EditText itemName = (EditText) dialog.findViewById(R.id.Name);
-        final EditText itemType = (EditText) dialog.findViewById(R.id.Type);
+        final AutoCompleteTextView itemType = (AutoCompleteTextView) dialog.findViewById(R.id.Type);
         final Button minus = (Button) dialog.findViewById(R.id.Minus);
         final EditText itemQuantity = (EditText) dialog.findViewById(R.id.Quantity);
         final EditText itemUnits = (EditText) dialog.findViewById(R.id.units);
@@ -348,6 +351,8 @@ public class CurrentActivity extends AppCompatActivity {
         final Button cancel = (Button) dialog.findViewById(R.id.Cancel);
         final Button more = (Button) dialog.findViewById(R.id.More);
         final Button done = (Button) dialog.findViewById(R.id.Done);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, categories);
 
         // Open keyboard automatically
         itemName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -440,6 +445,18 @@ public class CurrentActivity extends AppCompatActivity {
                     else{
                         quantity = 1;
                     }
+
+                    //check categories to prevent duplications
+                    int cat_index;
+                    for(cat_index = 0 ; cat_index < categories.size(); cat_index++) {
+                        if(categories.get(cat_index).compareTo(type) == 0) {
+                            break;
+                        }
+                    }
+                    if(cat_index == categories.size()) {
+                        categories.add(type);
+                    }
+
                     Item m = new Item(deviceName, name, type, quantity, units);
                     items.add(m);
 
@@ -474,6 +491,18 @@ public class CurrentActivity extends AppCompatActivity {
                     else{
                         quantity = 1;
                     }
+
+                    //check categories to prevent duplications
+                    int cat_index;
+                    for(cat_index = 0 ; cat_index < categories.size(); cat_index++) {
+                        if(categories.get(cat_index).compareTo(type) == 0) {
+                            break;
+                        }
+                    }
+                    if(cat_index == categories.size()) {
+                        categories.add(type);
+                    }
+
                     Item m = new Item(deviceName, name, type, quantity, units);
                     items.add(m);
 
@@ -489,7 +518,7 @@ public class CurrentActivity extends AppCompatActivity {
                 }
             }
         });
-
+        itemType.setAdapter(adapter);
         dialog.show();
     }
 
@@ -519,6 +548,8 @@ public class CurrentActivity extends AppCompatActivity {
         final Button cancel = (Button) dialog.findViewById(R.id.Cancel);
         final Button done = (Button) dialog.findViewById(R.id.Done);
 
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, categories);
+
         itemName.setText(item.getName());
         itemType.setText(item.getType());
         if(item.getQuantity() % 1 == 0){
@@ -535,10 +566,9 @@ public class CurrentActivity extends AppCompatActivity {
                 if (!itemQuantity.getText().toString().isEmpty()) {
                     double value = Double.parseDouble(itemQuantity.getText().toString());
                     if (value > 1) {
-                        if(value % 1 == 0){
+                        if (value % 1 == 0) {
                             itemQuantity.setText(String.format("%s", (int) (value - 1)));
-                        }
-                        else {
+                        } else {
                             itemQuantity.setText(String.format("%s", (int) Math.ceil(value - 1)));
                         }
                     }
@@ -598,7 +628,6 @@ public class CurrentActivity extends AppCompatActivity {
                 }
             }
         });
-
         dialog.show();
     }
 
@@ -821,6 +850,13 @@ public class CurrentActivity extends AppCompatActivity {
 
             currentOrder = aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).getInt("sort");
             isIncreasingOrder = aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).getBoolean("direction");
+            JSONArray read_cat = aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).getJSONArray("category");
+            if (read_cat != null) {
+                int len = read_cat.length();
+                for (int i=0;i<len;i++){
+                    categories.add(read_cat.get(i).toString());
+                }
+            }
             JSONArray read_items = aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).getJSONArray("items");
             for(int index = 0; index < read_items.length(); index++){
                 try {
@@ -868,6 +904,7 @@ public class CurrentActivity extends AppCompatActivity {
             }
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).put("sort", currentOrder);
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).put("direction", isIncreasingOrder);
+            aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).put("category", new JSONArray(categories));
 
             FileOutputStream fos = new FileOutputStream(getFilesDir().getPath() + "/Aisle_Share_Data.json");
             fos.write(aisleShareData.toString().getBytes());

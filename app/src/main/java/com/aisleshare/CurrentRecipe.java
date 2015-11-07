@@ -18,6 +18,7 @@ import android.view.WindowManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -48,6 +49,7 @@ public class CurrentRecipe extends AppCompatActivity {
     private ArrayList<Item> items;
     private ArrayList<Item> items_backup;
     private CustomAdapter customAdapter;
+    private ArrayList<String> categories;
     private boolean isIncreasingOrder;
     private int currentOrder;
     private Map<String, MenuItem> menuItems;
@@ -72,6 +74,7 @@ public class CurrentRecipe extends AppCompatActivity {
         emptyNotice = (TextView) findViewById(R.id.empty_notice);
         deviceName = Settings.Secure.getString(CurrentRecipe.this.getContentResolver(), Settings.Secure.ANDROID_ID);
         menuItems = new HashMap<>();
+        categories = new ArrayList<>();
 
         setRecipeTitle(savedInstanceState);
         initializeStorage();
@@ -355,7 +358,7 @@ public class CurrentRecipe extends AppCompatActivity {
         dialog.setTitle("Add a New Item");
 
         final EditText itemName = (EditText) dialog.findViewById(R.id.Name);
-        final EditText itemType = (EditText) dialog.findViewById(R.id.Type);
+        final AutoCompleteTextView itemType = (AutoCompleteTextView) dialog.findViewById(R.id.Type);
         final Button minus = (Button) dialog.findViewById(R.id.Minus);
         final EditText itemQuantity = (EditText) dialog.findViewById(R.id.Quantity);
         final EditText itemUnits = (EditText) dialog.findViewById(R.id.units);
@@ -363,6 +366,8 @@ public class CurrentRecipe extends AppCompatActivity {
         final Button cancel = (Button) dialog.findViewById(R.id.Cancel);
         final Button more = (Button) dialog.findViewById(R.id.More);
         final Button done = (Button) dialog.findViewById(R.id.Done);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, categories);
 
         // Open keyboard automatically
         itemName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -454,6 +459,18 @@ public class CurrentRecipe extends AppCompatActivity {
                     } else {
                         quantity = 1;
                     }
+
+                    //check categories to prevent duplications
+                    int cat_index;
+                    for(cat_index = 0 ; cat_index < categories.size(); cat_index++) {
+                        if(categories.get(cat_index).compareTo(type) == 0) {
+                            break;
+                        }
+                    }
+                    if(cat_index == categories.size()) {
+                        categories.add(type);
+                    }
+
                     Item m = new Item(deviceName, name, type, quantity, units);
                     items.add(m);
 
@@ -487,6 +504,18 @@ public class CurrentRecipe extends AppCompatActivity {
                     else{
                         quantity = 1;
                     }
+
+                    //check categories to prevent duplications
+                    int cat_index;
+                    for(cat_index = 0 ; cat_index < categories.size(); cat_index++) {
+                        if(categories.get(cat_index).compareTo(type) == 0) {
+                            break;
+                        }
+                    }
+                    if(cat_index == categories.size()) {
+                        categories.add(type);
+                    }
+
                     Item m = new Item(deviceName, name, type, quantity, units);
                     items.add(m);
 
@@ -502,7 +531,7 @@ public class CurrentRecipe extends AppCompatActivity {
                 }
             }
         });
-
+        itemType.setAdapter(adapter);
         dialog.show();
     }
 
@@ -531,6 +560,8 @@ public class CurrentRecipe extends AppCompatActivity {
         final Button plus = (Button) dialog.findViewById(R.id.Plus);
         final Button cancel = (Button) dialog.findViewById(R.id.Cancel);
         final Button done = (Button) dialog.findViewById(R.id.Done);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, categories);
 
         itemName.setText(item.getName());
         itemType.setText(item.getType());
@@ -611,7 +642,6 @@ public class CurrentRecipe extends AppCompatActivity {
                 }
             }
         });
-
         dialog.show();
     }
 
@@ -833,6 +863,13 @@ public class CurrentRecipe extends AppCompatActivity {
 
             currentOrder = aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).getInt("sort");
             isIncreasingOrder = aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).getBoolean("direction");
+            JSONArray read_cat = aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).getJSONArray("category");
+            if (read_cat != null) {
+                int len = read_cat.length();
+                for (int i=0;i<len;i++){
+                    categories.add(read_cat.get(i).toString());
+                }
+            }
             JSONArray read_items = aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).getJSONArray("items");
             for(int index = 0; index < read_items.length(); index++){
                 try {
@@ -880,6 +917,7 @@ public class CurrentRecipe extends AppCompatActivity {
             }
             aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).put("sort", currentOrder);
             aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).put("direction", isIncreasingOrder);
+            aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).put("category", new JSONArray(categories));
 
             FileOutputStream fos = new FileOutputStream(getFilesDir().getPath() + "/Aisle_Share_Data.json");
             fos.write(aisleShareData.toString().getBytes());

@@ -2,14 +2,18 @@ package com.aisleshare;
 
 import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.ParcelUuid;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -34,10 +38,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.logging.Handler;
+
 import de.timroes.swipetodismiss.SwipeDismissList;
 
 public class CurrentList extends AppCompatActivity {
@@ -299,29 +308,8 @@ public class CurrentList extends AppCompatActivity {
 
     //TODO: find a way
     private void setBluetooth() {
-        BluetoothAdapter mBluetoothAdapter = null;
-        //blueAdapt.setBluetooth();
-        //blueAdapt.ensureDiscoverable();
-        //blueAdapt.startDeviceList();
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (mBluetoothAdapter == null) {
-            // Device does not support Bluetooth
-        }
-        else if (!mBluetoothAdapter.isEnabled()) {
-            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableIntent, 2);
-            // Otherwise, setup the chat session
-        }
-        if(mBluetoothAdapter.isEnabled()) {
-            if (mBluetoothAdapter.getScanMode() !=
-                    BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
-                Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-                discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-                startActivity(discoverableIntent);
-            }
-        }
         Intent serverIntent = new Intent(this, DeviceListActivity.class);
-        //startActivityForResult(serverIntent, 1);
+        startActivityForResult(serverIntent, 1);
     }
 
     @Override
@@ -582,23 +570,23 @@ public class CurrentList extends AppCompatActivity {
                 boolean removals = false;
 
                 items_backup.clear();
-                for(Item item : items){
+                for (Item item : items) {
                     items_backup.add(item);
                 }
 
                 int length = items.size();
-                for(int index = length - 1; index > -1; index--){
-                    if(deviceName.equals(items.get(index).getOwner())){
+                for (int index = length - 1; index > -1; index--) {
+                    if (deviceName.equals(items.get(index).getOwner())) {
                         items.remove(index);
                         removals = true;
                     }
                 }
                 saveData();
                 customAdapter.notifyDataSetChanged();
-                if(items.size() == 0){
+                if (items.size() == 0) {
                     emptyNotice.setVisibility(View.VISIBLE);
                 }
-                if(removals){
+                if (removals) {
                     undoBox();
                 }
                 dialog.dismiss();
@@ -771,6 +759,7 @@ public class CurrentList extends AppCompatActivity {
     public void setListeners() {
         // Floating Action Button
         FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.float_button);
+        Button bMessageButton = (Button) findViewById(R.id.button);
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -794,8 +783,36 @@ public class CurrentList extends AppCompatActivity {
             }
         });
 
-
+        bMessageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //addItemDialog();
+            }
+        });
     }
+
+    private OutputStream outputStream;
+    private InputStream inStream;;
+
+    public void sendBluetoothMessage() throws IOException {
+        BluetoothAdapter blueAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (blueAdapter.isEnabled()) {
+            Set<BluetoothDevice> bondedDevices = blueAdapter.getBondedDevices();
+
+            if(bondedDevices.size() > 0){
+                BluetoothDevice[] devices = (BluetoothDevice[]) bondedDevices.toArray();
+                BluetoothDevice device = devices[0];
+                ParcelUuid[] uuids = device.getUuids();
+                BluetoothSocket socket = device.createRfcommSocketToServiceRecord(uuids[0].getUuid());
+                socket.connect();
+                outputStream = socket.getOutputStream();
+                inStream = socket.getInputStream();
+            }
+
+            Log.e("error", "No appropriate paired devices.");
+        }
+    }
+
 
     public void editItemDialog(final int position){
         final Item item = items.get(position);

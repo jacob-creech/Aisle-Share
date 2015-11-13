@@ -46,6 +46,9 @@
                 android:value="com.aisleshare.Dashboard" />
         </activity>
         <activity
+            android:name=".DeviceListActivity"
+            android:label="DeviceList" />
+        <activity
             android:name=".Transfer"
             />
     </application>

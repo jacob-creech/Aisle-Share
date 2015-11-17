@@ -383,6 +383,7 @@ public class CurrentList extends AppCompatActivity {
                         int duration = Toast.LENGTH_LONG;
 
                         Toast toast = Toast.makeText(context, text, duration);
+                        toast.setGravity(Gravity.TOP,0,0);
                         toast.show();
                     }
                 }
@@ -468,6 +469,10 @@ public class CurrentList extends AppCompatActivity {
                     itemQuantity.setText("1");
                     itemUnits.setText("");
                     itemName.requestFocus();
+
+                    Toast toast = Toast.makeText(CurrentList.this, "Item Added", Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.TOP,0,0);
+                    toast.show();
                 }
                 else{
                     itemName.setError("Name is empty...");
@@ -759,7 +764,6 @@ public class CurrentList extends AppCompatActivity {
     public void setListeners() {
         // Floating Action Button
         FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.float_button);
-        Button bMessageButton = (Button) findViewById(R.id.button);
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -783,6 +787,8 @@ public class CurrentList extends AppCompatActivity {
             }
         });
 
+
+        Button bMessageButton = (Button) findViewById(R.id.button);
         bMessageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

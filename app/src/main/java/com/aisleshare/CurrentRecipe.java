@@ -399,6 +399,7 @@ public class CurrentRecipe extends AppCompatActivity {
                         int duration = Toast.LENGTH_LONG;
 
                         Toast toast = Toast.makeText(context, text, duration);
+                        toast.setGravity(Gravity.TOP,0,0);
                         toast.show();
                     }
                 }
@@ -484,6 +485,10 @@ public class CurrentRecipe extends AppCompatActivity {
                     itemQuantity.setText("1");
                     itemUnits.setText("");
                     itemName.requestFocus();
+
+                    Toast toast = Toast.makeText(CurrentRecipe.this, "Item Added", Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.TOP, 0, 0);
+                    toast.show();
                 } else {
                     itemName.setError("Name is empty...");
                 }

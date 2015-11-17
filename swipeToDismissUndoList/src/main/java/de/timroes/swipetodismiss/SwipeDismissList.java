@@ -265,13 +265,13 @@ public final class SwipeDismissList implements View.OnTouchListener {
         // Get scren width in dp and set width respectively
         int xdensity = (int)(mListView.getContext().getResources().getDisplayMetrics().widthPixels / mDensity);
         if(xdensity < 300) {
-    		mUndoPopup.setWidth((int)(mDensity * 280));
+    		mUndoPopup.setWidth((int)(mDensity * 220));
         } else if(xdensity < 350) {
-            mUndoPopup.setWidth((int)(mDensity * 300));
+            mUndoPopup.setWidth((int)(mDensity * 240));
         } else if(xdensity < 500) {
-            mUndoPopup.setWidth((int)(mDensity * 330));
+            mUndoPopup.setWidth((int)(mDensity * 270));
         } else {
-            mUndoPopup.setWidth((int)(mDensity * 450));
+            mUndoPopup.setWidth((int)(mDensity * 390));
         }
 		mUndoPopup.setHeight((int)(mDensity * 56));
 		// -- END Load undo popu --
@@ -621,8 +621,8 @@ public final class SwipeDismissList implements View.OnTouchListener {
 
 						// Show undo popup
 						mUndoPopup.showAtLocation(mListView, 
-							Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM,
-							0, (int)(mDensity * 15));
+							Gravity.LEFT | Gravity.BOTTOM,
+							30, (int)(mDensity * 15));
 						
 						// Queue the dismiss only if required
 						if(!mTouchBeforeAutoHide) {

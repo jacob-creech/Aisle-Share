@@ -30,7 +30,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="You do not have any items."
+            android:text="Ready for New Items"
             android:id="@+id/empty_notice"
             android:layout_gravity="center"
             android:textSize="14sp"

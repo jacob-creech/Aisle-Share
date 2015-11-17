@@ -24,7 +24,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="You don't have any lists."
+        android:text="Ready for New Lists"
         android:id="@+id/empty_notice"
         android:textSize="14sp"
         android:visibility="invisible"

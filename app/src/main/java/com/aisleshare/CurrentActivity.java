@@ -814,17 +814,17 @@ public class CurrentActivity extends AppCompatActivity {
         // Get scren width in dp and set width respectively
         int xdensity = (int)(listView.getContext().getResources().getDisplayMetrics().widthPixels / density);
         if(xdensity < 300) {
-            undoPopup.setWidth((int)(density * 280));
+            undoPopup.setWidth((int)(density * 220));
         } else if(xdensity < 350) {
-            undoPopup.setWidth((int)(density * 300));
+            undoPopup.setWidth((int)(density * 240));
         } else if(xdensity < 500) {
-            undoPopup.setWidth((int)(density * 330));
+            undoPopup.setWidth((int)(density * 270));
         } else {
-            undoPopup.setWidth((int)(density * 450));
+            undoPopup.setWidth((int)(density * 390));
         }
         undoPopup.setHeight((int) (density * 56));
 
-        undoPopup.showAtLocation(listView, Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM, 0, (int) (density * 15));
+        undoPopup.showAtLocation(listView, Gravity.LEFT | Gravity.BOTTOM, 30, (int) (density * 15));
         hideUndoBoxTimer();
     }
 

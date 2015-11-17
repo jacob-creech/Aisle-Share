@@ -23,7 +23,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="You don't have any recipes."
+        android:text="Ready for New Recipes"
         android:id="@+id/empty_notice"
         android:textSize="14sp"
         android:visibility="invisible"

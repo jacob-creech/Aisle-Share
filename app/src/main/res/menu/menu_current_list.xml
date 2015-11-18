@@ -34,4 +34,10 @@
         android:id="@+id/delete_items"
         android:icon="@mipmap/trash"
         app:showAsAction="ifRoom"/>
+    <item
+        android:title="Add a Recipe"
+        android:id="@+id/addRecipe"/>
+    <item
+        android:title="Add an Activity"
+        android:id="@+id/addActivity"/>
 </menu>

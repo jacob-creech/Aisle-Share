@@ -55,6 +55,7 @@ import de.timroes.swipetodismiss.SwipeDismissList;
 public class CurrentList extends AppCompatActivity {
 
     // Class Variables
+    public final static String LIST_NAME = "com.ShoppingList.MESSAGE";
     private ListView listView;
     private ArrayList<Item> items;
     private ArrayList<Item> items_backup;
@@ -71,6 +72,7 @@ public class CurrentList extends AppCompatActivity {
     private SwipeDismissList swipeAdapter;
     private JSONObject aisleShareData;
     private Bluetooth blueAdapt;
+    private boolean transfering;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +89,7 @@ public class CurrentList extends AppCompatActivity {
         menuItems = new HashMap<>();
         categories = new ArrayList<>();
         blueAdapt = new Bluetooth(CurrentList.this);
+        transfering = false;
 
         setListTitle(savedInstanceState);
         readSavedItems();
@@ -153,13 +156,14 @@ public class CurrentList extends AppCompatActivity {
         ItemComparator compare = new ItemComparator(CurrentList.this);
 
         // Unsorted
-        if(currentOrder == -1){
-            menuItems.get("sort").setIcon(0);
-            menuItems.get("unsorted").setVisible(false);
-            return;
-        }
-        else{
-            menuItems.get("unsorted").setVisible(true);
+        if(menuItems.get("sort") != null && menuItems.get("unsorted") != null) {
+            if (currentOrder == -1) {
+                menuItems.get("sort").setIcon(0);
+                menuItems.get("unsorted").setVisible(false);
+                return;
+            } else {
+                menuItems.get("unsorted").setVisible(true);
+            }
         }
 
         switch (currentOrder){
@@ -191,11 +195,15 @@ public class CurrentList extends AppCompatActivity {
         }
 
         if(isIncreasingOrder) {
-            menuItems.get("sort").setIcon(R.mipmap.inc_sort);
+            if(menuItems.get("sort") != null) {
+                menuItems.get("sort").setIcon(R.mipmap.inc_sort);
+            }
         }
         else{
             Collections.reverse(items);
-            menuItems.get("sort").setIcon(R.mipmap.dec_sort);
+            if(menuItems.get("sort") != null) {
+                menuItems.get("sort").setIcon(R.mipmap.dec_sort);
+            }
         }
     }
 
@@ -282,6 +290,12 @@ public class CurrentList extends AppCompatActivity {
             case R.id.delete_items:
                 confirmDeletion();
                 break;
+            case R.id.addRecipe:
+                addToListDialog("Recipes");
+                break;
+            case R.id.addActivity:
+                addToListDialog("Activities");
+                break;
             case R.id.sort:
                 return true;
             case android.R.id.home:
@@ -309,6 +323,91 @@ public class CurrentList extends AppCompatActivity {
         return true;
     }
 
+    // Popup for adding an Item
+    public void addToListDialog(final String type) {
+        // custom dialog
+        final Dialog dialog = new Dialog(CurrentList.this);
+        dialog.setContentView(R.layout.dialog_select_list);
+        if(type.equals("Recipes")) {
+            dialog.setTitle("Select a Recipe");
+        }
+        else if(type.equals("Activities")) {
+            dialog.setTitle("Select an Activity");
+        }
+        else{
+            return;
+        }
+
+        final ListView lv = (ListView) dialog.findViewById(R.id.lists);
+        final Button cancel = (Button) dialog.findViewById(R.id.cancel);
+
+        final ArrayList<String> entries = new ArrayList<>();
+        JSONArray names = aisleShareData.optJSONObject(type).names();
+        if(names != null) {
+            for (int i = 0; i < names.length(); i++) {
+                try {
+                    entries.add(names.get(i).toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        else{
+            return;
+        }
+
+        ArrayAdapter<String> itemAdapter = new ArrayAdapter<>(CurrentList.this,android.R.layout.simple_list_item_1, entries);
+        lv.setAdapter(itemAdapter);
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String name = entries.get(position);
+                JSONArray sel_items = new JSONArray();
+                try {
+                    int sel_currentOrder = aisleShareData.optJSONObject(type).optJSONObject(name).optInt("sort");
+                    boolean sel_isIncreasingOrder = aisleShareData.optJSONObject(type).optJSONObject(name).optBoolean("order");
+                    sel_items = aisleShareData.optJSONObject(type).optJSONObject(name).optJSONArray("items");
+
+                    aisleShareData.optJSONObject("Transfers").put("sort", sel_currentOrder);
+                    aisleShareData.optJSONObject("Transfers").put("order", sel_isIncreasingOrder);
+                    aisleShareData.optJSONObject("Transfers").put("name", listTitle);
+                    aisleShareData.optJSONObject("Transfers").remove("items");
+                    aisleShareData.optJSONObject("Transfers").accumulate("items", new JSONArray());
+                    for (int index = 0; index < sel_items.length(); index++) {
+                        aisleShareData.optJSONObject("Transfers").optJSONArray("items").put(sel_items.get(index));
+                    }
+                    FileOutputStream fos = new FileOutputStream(getFilesDir().getPath() + "/Aisle_Share_Data.json");
+                    fos.write(aisleShareData.toString().getBytes());
+                    fos.close();
+                } catch (JSONException | IOException e) {
+                    e.printStackTrace();
+                }
+                dialog.dismiss();
+
+                if(sel_items.length() > 0) {
+                    transfering = true;
+                    Intent intent = new Intent(CurrentList.this, Transfer.class);
+                    intent.putExtra(LIST_NAME, "Select which Items to Add");
+                    startActivity(intent);
+                }
+                else{
+                    Toast toast = Toast.makeText(CurrentList.this, name + " is empty...", Toast.LENGTH_LONG);
+                    toast.show();
+                }
+            }
+        });
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+    }
+
     //TODO: find a way
     private void setBluetooth() {
         Intent serverIntent = new Intent(this, DeviceListActivity.class);
@@ -330,6 +429,17 @@ public class CurrentList extends AppCompatActivity {
         }
         swipeAdapter.finish();
         super.onBackPressed();
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        if(transfering) {
+            readSavedItems();
+            sortList(false, currentOrder);
+            customAdapter.notifyDataSetChanged();
+            transfering = false;
+        }
     }
 
     public void clearMenuCheckables(){
@@ -672,6 +782,7 @@ public class CurrentList extends AppCompatActivity {
                 }
             }
             JSONArray read_items = aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).getJSONArray("items");
+            items.clear();
             for(int index = 0; index < read_items.length(); index++){
                 try {
                     JSONObject obj = new JSONObject(read_items.get(index).toString());

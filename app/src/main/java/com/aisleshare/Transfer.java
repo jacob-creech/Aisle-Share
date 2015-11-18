@@ -210,7 +210,11 @@ public class Transfer extends AppCompatActivity {
                     item.setType(type);
                     item.setQuantity(quantity);
                     item.setUnits(units);
+                    item.setChecked(true);
                     items.set(position, item);
+
+                    final Button done = (Button) findViewById(R.id.Done);
+                    done.setEnabled(true);
 
                     sortList(false, currentOrder);
                     customAdapter.notifyDataSetChanged();
@@ -370,6 +374,10 @@ public class Transfer extends AppCompatActivity {
         if (quantity > 1) {
             items.get(v.getId()).setQuantity((int) Math.ceil(quantity - 1));
         }
+        items.get(v.getId()).setChecked(true);
+        final Button done = (Button) findViewById(R.id.Done);
+        done.setEnabled(true);
+
         customAdapter.notifyDataSetChanged();
     }
 
@@ -378,6 +386,10 @@ public class Transfer extends AppCompatActivity {
         if (quantity < 99999) {
             items.get(v.getId()).setQuantity((int) Math.floor(quantity + 1));
         }
+        items.get(v.getId()).setChecked(true);
+        final Button done = (Button) findViewById(R.id.Done);
+        done.setEnabled(true);
+
         customAdapter.notifyDataSetChanged();
     }
 

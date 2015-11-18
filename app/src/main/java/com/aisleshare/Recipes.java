@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.app.Fragment;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -354,6 +355,7 @@ public class Recipes extends Fragment {
 
             aisleShareData.optJSONObject("Recipes").accumulate(recipeTitle, new JSONObject());
             aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("items", new JSONArray());
+            aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("category", new JSONArray());
             aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("sort", -1);
             aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("direction", true);
             aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("time", timeCreated);
@@ -462,8 +464,9 @@ public class Recipes extends Fragment {
         menuRecipes.get("owner").setChecked(false);
     }
 
-    public AlertDialog confirmDeletion(final String recipeName, final int position)
+    public AlertDialog confirmDeletion(final int position)
     {
+        final String recipeName = recipes.get(position).getName();
         return new AlertDialog.Builder(dashboard)
                 .setTitle("Confirm Deletion")
                 .setMessage("Are you sure? This cannot be undone.")
@@ -491,7 +494,6 @@ public class Recipes extends Fragment {
     }
 
     public void deleteItems(){
-        System.out.println("DELETE ITEMS");
         // custom dialog
         final Dialog dialog = new Dialog(dashboard); //has a problem, not caring atm
         dialog.setContentView(R.layout.dialog_select_list);
@@ -516,7 +518,7 @@ public class Recipes extends Fragment {
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                confirmDeletion(recipeNames.get(position), position).show();
+                confirmDeletion(position).show();
                 dialog.dismiss();
             }
         });
@@ -556,12 +558,40 @@ public class Recipes extends Fragment {
             }
         });
 
-        //Long Click for editing
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
-                editRecipeDialog(pos);
+        // Long Click opens contextual menu
+        registerForContextMenu(listView);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getActivity().getMenuInflater();
+        inflater.inflate(R.menu.context_menu_dash, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem menuItem) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
+        int index = info.position;
+
+        if (!getUserVisibleHint()) {
+            return false;
+        }
+
+        switch (menuItem.getItemId()) {
+            case R.id.edit:
+                editRecipeDialog(index);
                 return true;
-            }
-        });
+            case R.id.share:
+                // TODO: share the recipe
+                return true;
+            case R.id.delete:
+                confirmDeletion(index).show();
+                return true;
+            case R.id.cancel:
+                return super.onContextItemSelected(menuItem);
+            default:
+                return super.onContextItemSelected(menuItem);
+        }
     }
 }

@@ -1,10 +1,12 @@
 package com.aisleshare;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -14,9 +16,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -45,7 +49,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Handler;
 
 import de.timroes.swipetodismiss.SwipeDismissList;
 
@@ -277,7 +280,7 @@ public class CurrentList extends AppCompatActivity {
                 clearMenuCheckables();
                 break;
             case R.id.delete_items:
-                deleteItems();
+                confirmDeletion();
                 break;
             case R.id.sort:
                 return true;
@@ -532,14 +535,6 @@ public class CurrentList extends AppCompatActivity {
         customAdapter.notifyDataSetChanged();
     }
 
-    public void rowClick(int position){
-        Item item = items.get(position);
-        item.toggleChecked();
-        saveData();
-        sortList(false, currentOrder);
-        customAdapter.notifyDataSetChanged();
-    }
-
     public void setListTitle(Bundle savedInstanceState){
         Bundle extras = getIntent().getExtras();
         if (savedInstanceState == null) {
@@ -551,84 +546,56 @@ public class CurrentList extends AppCompatActivity {
         setTitle(listTitle);
     }
 
-    public void deleteItems(){
-        // custom dialog
-        final Dialog dialog = new Dialog(CurrentList.this);
-        dialog.setContentView(R.layout.dialog_delete_items);
-        dialog.setTitle("What Should We Delete?");
-
-        final Button cancel = (Button) dialog.findViewById(R.id.cancel);
-        final Button delete_all = (Button) dialog.findViewById(R.id.delete_all);
-        final Button delete_checked = (Button) dialog.findViewById(R.id.delete_checked);
-
-
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
+    public void confirmDeletion()
+    {
+        boolean itemsChecked = false;
+        for(Item i : items){
+            if(i.getChecked()){
+                itemsChecked = true;
+                break;
             }
-        });
+        }
+        if(itemsChecked) {
+            new AlertDialog.Builder(CurrentList.this)
+                .setTitle("Delete Checked Items?")
+                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        boolean removals = false;
 
-        delete_all.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                boolean removals = false;
+                        items_backup.clear();
+                        for (Item item : items) {
+                            items_backup.add(item);
+                        }
 
-                items_backup.clear();
-                for (Item item : items) {
-                    items_backup.add(item);
-                }
-
-                int length = items.size();
-                for (int index = length - 1; index > -1; index--) {
-                    if (deviceName.equals(items.get(index).getOwner())) {
-                        items.remove(index);
-                        removals = true;
+                        int length = items.size();
+                        for (int index = length - 1; index > -1; index--) {
+                            if (deviceName.equals(items.get(index).getOwner()) && items.get(index).getChecked()) {
+                                items.remove(index);
+                                removals = true;
+                            }
+                        }
+                        saveData();
+                        customAdapter.notifyDataSetChanged();
+                        if (items.size() == 0) {
+                            emptyNotice.setVisibility(View.VISIBLE);
+                        }
+                        if (removals) {
+                            undoBox();
+                        }
                     }
-                }
-                saveData();
-                customAdapter.notifyDataSetChanged();
-                if (items.size() == 0) {
-                    emptyNotice.setVisibility(View.VISIBLE);
-                }
-                if (removals) {
-                    undoBox();
-                }
-                dialog.dismiss();
-            }
-        });
-
-        delete_checked.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                boolean removals = false;
-
-                items_backup.clear();
-                for (Item item : items) {
-                    items_backup.add(item);
-                }
-
-                int length = items.size();
-                for (int index = length - 1; index > -1; index--) {
-                    if (deviceName.equals(items.get(index).getOwner()) &&
-                            items.get(index).getChecked()) {
-                        items.remove(index);
-                        removals = true;
+                })
+                .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
                     }
-                }
-                saveData();
-                customAdapter.notifyDataSetChanged();
-                if (items.size() == 0) {
-                    emptyNotice.setVisibility(View.VISIBLE);
-                }
-                if (removals) {
-                    undoBox();
-                }
-                dialog.dismiss();
-            }
-        });
-
-        dialog.show();
+                })
+                .create()
+                .show();
+        }
+        else{
+            Toast toast = Toast.makeText(CurrentList.this, "No Checked Items...", Toast.LENGTH_LONG);
+            toast.show();
+        }
     }
 
     public void undoBox(){
@@ -779,14 +746,8 @@ public class CurrentList extends AppCompatActivity {
             }
         });
 
-        // Long Click for editing
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
-                editItemDialog(pos);
-                return true;
-            }
-        });
-
+        // Long Click opens contextual menu
+        registerForContextMenu(listView);
 
         Button bMessageButton = (Button) findViewById(R.id.button);
         bMessageButton.setOnClickListener(new View.OnClickListener() {
@@ -797,6 +758,43 @@ public class CurrentList extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.context_menu_curr, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem menuItem) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
+        int index = info.position;
+        switch (menuItem.getItemId()) {
+            case R.id.edit:
+                editItemDialog(index);
+                return true;
+            case R.id.delete:
+                items_backup.clear();
+                for (Item item : items) {
+                    items_backup.add(item);
+                }
+
+                items.remove(index);
+                customAdapter.notifyDataSetChanged();
+                if(items.size() == 0) {
+                    emptyNotice.setVisibility(View.VISIBLE);
+                }
+                saveData();
+                undoBox();
+                return true;
+            case R.id.cancel:
+                return super.onContextItemSelected(menuItem);
+            default:
+                return super.onContextItemSelected(menuItem);
+        }
+    }
+
+    // TODO: global fields should not be down here...move to top
     private OutputStream outputStream;
     private InputStream inStream;;
 

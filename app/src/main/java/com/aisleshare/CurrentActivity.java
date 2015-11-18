@@ -9,9 +9,11 @@ import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -137,7 +139,6 @@ public class CurrentActivity extends AppCompatActivity {
         menuItems.put("quantity", menu.findItem(R.id.sort_quantity));
         menuItems.put("owner", menu.findItem(R.id.sort_owner));
         menuItems.put("unsorted", menu.findItem(R.id.unsorted));
-        menuItems.put("delete", menu.findItem(R.id.delete_items));
 
         menuItems.get("name").setCheckable(true);
         menuItems.get("type").setCheckable(true);
@@ -189,9 +190,6 @@ public class CurrentActivity extends AppCompatActivity {
             case R.id.unsorted:
                 sortList(false, -1);
                 clearMenuCheckables();
-                break;
-            case R.id.delete_items:
-                deleteItemsDialog();
                 break;
             case R.id.sort:
                 return true;
@@ -256,13 +254,44 @@ public class CurrentActivity extends AppCompatActivity {
             }
         });
 
-        //Long Click for editing
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
-                editItemDialog(pos);
+        // Long Click opens contextual menu
+        registerForContextMenu(listView);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.context_menu_curr, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem menuItem) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
+        int index = info.position;
+        switch (menuItem.getItemId()) {
+            case R.id.edit:
+                editItemDialog(index);
                 return true;
-            }
-        });
+            case R.id.delete:
+                items_backup.clear();
+                for (Item item : items) {
+                    items_backup.add(item);
+                }
+
+                items.remove(index);
+                customAdapter.notifyDataSetChanged();
+                if(items.size() == 0) {
+                    emptyNotice.setVisibility(View.VISIBLE);
+                }
+                saveData();
+                undoBox();
+                return true;
+            case R.id.cancel:
+                return super.onContextItemSelected(menuItem);
+            default:
+                return super.onContextItemSelected(menuItem);
+        }
     }
 
     public void setActivityTitle(Bundle savedInstanceState){
@@ -440,21 +469,20 @@ public class CurrentActivity extends AppCompatActivity {
                     String type = itemType.getText().toString();
                     double quantity;
                     String units = itemUnits.getText().toString();
-                    if(!itemQuantity.getText().toString().isEmpty()) {
+                    if (!itemQuantity.getText().toString().isEmpty()) {
                         quantity = Double.parseDouble(itemQuantity.getText().toString());
-                    }
-                    else{
+                    } else {
                         quantity = 1;
                     }
 
                     //check categories to prevent duplications
                     int cat_index;
-                    for(cat_index = 0 ; cat_index < categories.size(); cat_index++) {
-                        if(categories.get(cat_index).compareTo(type) == 0) {
+                    for (cat_index = 0; cat_index < categories.size(); cat_index++) {
+                        if (categories.get(cat_index).compareTo(type) == 0) {
                             break;
                         }
                     }
-                    if(cat_index == categories.size()) {
+                    if (cat_index == categories.size()) {
                         categories.add(type);
                     }
 
@@ -475,8 +503,7 @@ public class CurrentActivity extends AppCompatActivity {
                     Toast toast = Toast.makeText(CurrentActivity.this, "Item Added", Toast.LENGTH_LONG);
                     toast.setGravity(Gravity.TOP, 0, 0);
                     toast.show();
-                }
-                else{
+                } else {
                     itemName.setError("Name is empty...");
                 }
             }
@@ -490,21 +517,20 @@ public class CurrentActivity extends AppCompatActivity {
                     String type = itemType.getText().toString();
                     double quantity;
                     String units = itemUnits.getText().toString();
-                    if(!itemQuantity.getText().toString().isEmpty()) {
+                    if (!itemQuantity.getText().toString().isEmpty()) {
                         quantity = Double.parseDouble(itemQuantity.getText().toString());
-                    }
-                    else{
+                    } else {
                         quantity = 1;
                     }
 
                     //check categories to prevent duplications
                     int cat_index;
-                    for(cat_index = 0 ; cat_index < categories.size(); cat_index++) {
-                        if(categories.get(cat_index).compareTo(type) == 0) {
+                    for (cat_index = 0; cat_index < categories.size(); cat_index++) {
+                        if (categories.get(cat_index).compareTo(type) == 0) {
                             break;
                         }
                     }
-                    if(cat_index == categories.size()) {
+                    if (cat_index == categories.size()) {
                         categories.add(type);
                     }
 
@@ -517,8 +543,7 @@ public class CurrentActivity extends AppCompatActivity {
                     customAdapter.notifyDataSetChanged();
                     dialog.dismiss();
                     emptyNotice.setVisibility(View.INVISIBLE);
-                }
-                else{
+                } else {
                     itemName.setError("Name is empty...");
                 }
             }
@@ -701,86 +726,6 @@ public class CurrentActivity extends AppCompatActivity {
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
-
-        dialog.show();
-    }
-
-    public void deleteItemsDialog(){
-        // custom dialog
-        final Dialog dialog = new Dialog(CurrentActivity.this);
-        dialog.setContentView(R.layout.dialog_delete_items);
-        dialog.setTitle("What Should We Delete?");
-
-        final Button cancel = (Button) dialog.findViewById(R.id.cancel);
-        final Button delete_all = (Button) dialog.findViewById(R.id.delete_all);
-        final Button delete_checked = (Button) dialog.findViewById(R.id.delete_checked);
-
-
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
-
-        delete_all.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                boolean removals = false;
-
-                items_backup.clear();
-                for (Item item : items) {
-                    items_backup.add(item);
-                }
-
-                int length = items.size();
-                for (int index = length - 1; index > -1; index--) {
-                    if (deviceName.equals(items.get(index).getOwner())) {
-                        items.remove(index);
-                        removals = true;
-                    }
-                }
-                saveData();
-                customAdapter.notifyDataSetChanged();
-                if (items.size() == 0) {
-                    emptyNotice.setVisibility(View.VISIBLE);
-                }
-                if (removals) {
-                    undoBox();
-                }
-                dialog.dismiss();
-            }
-        });
-
-        delete_checked.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                boolean removals = false;
-
-                items_backup.clear();
-                for (Item item : items) {
-                    items_backup.add(item);
-                }
-
-                int length = items.size();
-                for (int index = length - 1; index > -1; index--) {
-                    if (deviceName.equals(items.get(index).getOwner()) &&
-                            items.get(index).getChecked()) {
-                        items.remove(index);
-                        removals = true;
-                    }
-                }
-                saveData();
-                customAdapter.notifyDataSetChanged();
-                if (items.size() == 0) {
-                    emptyNotice.setVisibility(View.VISIBLE);
-                }
-                if (removals) {
-                    undoBox();
-                }
                 dialog.dismiss();
             }
         });

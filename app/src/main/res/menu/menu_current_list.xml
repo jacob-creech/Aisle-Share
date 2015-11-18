@@ -30,8 +30,8 @@
         </menu>
     </item>
     <item
-        android:title="Delete Items..."
+        android:title="Delete Checked Items"
         android:id="@+id/delete_items"
-        app:showAsAction="ifRoom"
-        android:icon="@mipmap/trash"/>
+        android:icon="@mipmap/trash"
+        app:showAsAction="ifRoom"/>
 </menu>

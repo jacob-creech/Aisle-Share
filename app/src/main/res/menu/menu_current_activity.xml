@@ -2,12 +2,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" tools:context="com.aisleshare.CurrentList">
     <item
-        android:title="Add To List..."
-        android:id="@+id/add_to_list"
-        app:showAsAction="ifRoom"
-        android:icon="@mipmap/add_to_list"
-        />
-    <item
         android:title="Sort"
         android:id="@+id/sort_root"
         app:showAsAction="ifRoom|withText">
@@ -30,11 +24,14 @@
         </menu>
     </item>
     <item
-        android:title="Copy to Friend"
+        android:title="Share"
         android:id="@+id/share"
+        app:showAsAction="ifRoom|withText"
         />
     <item
-        android:title="Delete Items..."
-        android:id="@+id/delete_items"
-        android:icon="@mipmap/trash"/>
+        android:title="Add To List..."
+        android:id="@+id/add_to_list"
+        app:showAsAction="ifRoom"
+        android:icon="@mipmap/add_to_list"
+        />
 </menu>

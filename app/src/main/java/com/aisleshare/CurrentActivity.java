@@ -148,7 +148,23 @@ public class CurrentActivity extends AppCompatActivity {
         menuItems.get("unsorted").setVisible(false);
 
         sortList(false, currentOrder);
-        menuItems.get("time").setChecked(true);
+        switch (currentOrder){
+            case 0:
+                menuItems.get("name").setChecked(true);
+                break;
+            case 1:
+                menuItems.get("quantity").setChecked(true);
+                break;
+            case 2:
+                menuItems.get("time").setChecked(true);
+                break;
+            case 3:
+                menuItems.get("type").setChecked(true);
+                break;
+            case 4:
+                menuItems.get("owner").setChecked(true);
+                break;
+        }
         itemAdapter.notifyDataSetChanged();
         return true;
     }

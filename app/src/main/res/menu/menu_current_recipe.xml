@@ -2,6 +2,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" tools:context="com.aisleshare.CurrentList">
     <item
+        android:title="Share"
+        android:id="@+id/share"
+        app:showAsAction="ifRoom|withText"
+        />
+    <item
         android:title="Sort"
         android:id="@+id/sort_root"
         app:showAsAction="ifRoom|withText">
@@ -23,11 +28,6 @@
                 android:title="Custom Sort"/>   -->
         </menu>
     </item>
-    <item
-        android:title="Share"
-        android:id="@+id/share"
-        app:showAsAction="ifRoom|withText"
-        />
     <item
         android:title="Add To List..."
         android:id="@+id/add_to_list"

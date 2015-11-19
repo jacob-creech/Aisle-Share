@@ -18,13 +18,13 @@ import java.util.Collections;
 /**
  * Created by Jason on 10/24/2015.
  */
-public class CustomListAdapter extends ArrayAdapter {
+public class ListItemAdapter extends ArrayAdapter {
     private ArrayList<ListItem> items = null;
     private Context context;
     private String deviceName;
     private int layout;
 
-    public CustomListAdapter(Context context, ArrayList<ListItem> items, int layout) {
+    public ListItemAdapter(Context context, ArrayList<ListItem> items, int layout) {
         super(context, layout, items);
         this.context = context;
         this.items = items;

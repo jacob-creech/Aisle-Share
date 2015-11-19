@@ -41,7 +41,7 @@ public class Lists extends Fragment {
     private ListView listView;
     private ArrayList<ListItem> lists;
     private Map<String, MenuItem> menuLists;
-    private CustomListAdapter itemAdapter;
+    private ListItemAdapter itemAdapter;
     private Context dashboard;
     private TextView emptyNotice;
     private boolean isIncreasingOrder;
@@ -77,7 +77,7 @@ public class Lists extends Fragment {
             emptyNotice.setVisibility(View.VISIBLE);
         }
 
-        itemAdapter = new CustomListAdapter(dashboard, lists, R.layout.row_dashboard);
+        itemAdapter = new ListItemAdapter(dashboard, lists, R.layout.row_dashboard);
         listView.setAdapter(itemAdapter);
 
         setListeners();

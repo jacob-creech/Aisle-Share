@@ -42,7 +42,7 @@ public class Recipes extends Fragment {
     private ListView listView;
     private ArrayList<ListItem> recipes;
     private Map<String, MenuItem> menuRecipes;
-    private CustomListAdapter itemAdapter;
+    private ListItemAdapter itemAdapter;
     private Context dashboard;
     private TextView emptyNotice;
     private boolean isIncreasingOrder;
@@ -78,7 +78,7 @@ public class Recipes extends Fragment {
             emptyNotice.setVisibility(View.VISIBLE);
         }
 
-        itemAdapter = new CustomListAdapter(dashboard, recipes, R.layout.row_dashboard);
+        itemAdapter = new ListItemAdapter(dashboard, recipes, R.layout.row_dashboard);
         listView.setAdapter(itemAdapter);
 
         setListeners();

@@ -15,13 +15,13 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class CustomAdapter extends ArrayAdapter{
+public class ItemAdapter extends ArrayAdapter{
     private ArrayList<Item> items = null;
     private Context context;
     private String deviceName;
     private int layout;
 
-    public CustomAdapter(Context context, ArrayList<Item> items, int layout) {
+    public ItemAdapter(Context context, ArrayList<Item> items, int layout) {
         super(context,layout,items);
         this.context = context;
         this.items = items;

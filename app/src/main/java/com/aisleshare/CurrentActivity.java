@@ -50,7 +50,7 @@ public class CurrentActivity extends AppCompatActivity {
     private ListView listView;
     private ArrayList<Item> items;
     private ArrayList<Item> items_backup;
-    private CustomAdapter customAdapter;
+    private ItemAdapter itemAdapter;
     private boolean isIncreasingOrder;
     private int currentOrder;
     private ArrayList<String> categories;
@@ -87,8 +87,8 @@ public class CurrentActivity extends AppCompatActivity {
             emptyNotice.setVisibility(View.VISIBLE);
         }
 
-        customAdapter = new CustomAdapter(this, items, R.layout.row_activity);
-        listView.setAdapter(customAdapter);
+        itemAdapter = new ItemAdapter(this, items, R.layout.row_activity);
+        listView.setAdapter(itemAdapter);
 
         try {
             aisleShareData.put("ActivityOpened", activityTitle);
@@ -106,7 +106,7 @@ public class CurrentActivity extends AppCompatActivity {
                 final Item i = items.get(position);
                 if(deviceName.equals(i.getOwner())) {
                     items.remove(position);
-                    customAdapter.notifyDataSetChanged();
+                    itemAdapter.notifyDataSetChanged();
                     if(items.size() == 0) {
                         emptyNotice.setVisibility(View.VISIBLE);
                     }
@@ -114,7 +114,7 @@ public class CurrentActivity extends AppCompatActivity {
                     return new SwipeDismissList.Undoable() {
                         public void undo() {
                             items.add(position, i);
-                            customAdapter.notifyDataSetChanged();
+                            itemAdapter.notifyDataSetChanged();
                             emptyNotice.setVisibility(View.INVISIBLE);
                             saveData();
                         }
@@ -149,7 +149,7 @@ public class CurrentActivity extends AppCompatActivity {
 
         sortList(false, currentOrder);
         menuItems.get("time").setChecked(true);
-        customAdapter.notifyDataSetChanged();
+        itemAdapter.notifyDataSetChanged();
         return true;
     }
 
@@ -214,7 +214,7 @@ public class CurrentActivity extends AppCompatActivity {
         }
 
         saveData();
-        customAdapter.notifyDataSetChanged();
+        itemAdapter.notifyDataSetChanged();
         return true;
     }
 
@@ -280,7 +280,7 @@ public class CurrentActivity extends AppCompatActivity {
                 }
 
                 items.remove(index);
-                customAdapter.notifyDataSetChanged();
+                itemAdapter.notifyDataSetChanged();
                 if(items.size() == 0) {
                     emptyNotice.setVisibility(View.VISIBLE);
                 }
@@ -492,7 +492,7 @@ public class CurrentActivity extends AppCompatActivity {
                     saveData();
 
                     sortList(false, currentOrder);
-                    customAdapter.notifyDataSetChanged();
+                    itemAdapter.notifyDataSetChanged();
                     emptyNotice.setVisibility(View.INVISIBLE);
                     itemName.setText("");
                     itemType.setText("");
@@ -540,7 +540,7 @@ public class CurrentActivity extends AppCompatActivity {
                     saveData();
 
                     sortList(false, currentOrder);
-                    customAdapter.notifyDataSetChanged();
+                    itemAdapter.notifyDataSetChanged();
                     dialog.dismiss();
                     emptyNotice.setVisibility(View.INVISIBLE);
                 } else {
@@ -651,7 +651,7 @@ public class CurrentActivity extends AppCompatActivity {
                     saveData();
 
                     sortList(false, currentOrder);
-                    customAdapter.notifyDataSetChanged();
+                    itemAdapter.notifyDataSetChanged();
                     dialog.dismiss();
                 } else {
                     itemName.setError("Name is empty...");
@@ -746,7 +746,7 @@ public class CurrentActivity extends AppCompatActivity {
                     items.add(item);
                 }
                 saveData();
-                customAdapter.notifyDataSetChanged();
+                itemAdapter.notifyDataSetChanged();
                 emptyNotice.setVisibility(View.INVISIBLE);
                 undoPopup.dismiss();
             }

@@ -50,7 +50,7 @@ public class CurrentRecipe extends AppCompatActivity {
     private ListView listView;
     private ArrayList<Item> items;
     private ArrayList<Item> items_backup;
-    private CustomAdapter customAdapter;
+    private ItemAdapter itemAdapter;
     private ArrayList<String> categories;
     private boolean isIncreasingOrder;
     private int currentOrder;
@@ -87,8 +87,8 @@ public class CurrentRecipe extends AppCompatActivity {
             emptyNotice.setVisibility(View.VISIBLE);
         }
 
-        customAdapter = new CustomAdapter(this, items, R.layout.row_recipe);
-        listView.setAdapter(customAdapter);
+        itemAdapter = new ItemAdapter(this, items, R.layout.row_recipe);
+        listView.setAdapter(itemAdapter);
 
         try {
             aisleShareData.put("RecipeOpened", recipeTitle);
@@ -105,7 +105,7 @@ public class CurrentRecipe extends AppCompatActivity {
                 final Item i = items.get(position);
                 if(deviceName.equals(i.getOwner())) {
                     items.remove(position);
-                    customAdapter.notifyDataSetChanged();
+                    itemAdapter.notifyDataSetChanged();
                     if(items.size() == 0) {
                         emptyNotice.setVisibility(View.VISIBLE);
                     }
@@ -113,7 +113,7 @@ public class CurrentRecipe extends AppCompatActivity {
                     return new SwipeDismissList.Undoable() {
                         public void undo() {
                             items.add(position, i);
-                            customAdapter.notifyDataSetChanged();
+                            itemAdapter.notifyDataSetChanged();
                             emptyNotice.setVisibility(View.INVISIBLE);
                             saveData();
                         }
@@ -164,7 +164,7 @@ public class CurrentRecipe extends AppCompatActivity {
                 menuItems.get("owner").setChecked(true);
                 break;
         }
-        customAdapter.notifyDataSetChanged();
+        itemAdapter.notifyDataSetChanged();
         return true;
     }
 
@@ -229,7 +229,7 @@ public class CurrentRecipe extends AppCompatActivity {
         }
 
         saveData();
-        customAdapter.notifyDataSetChanged();
+        itemAdapter.notifyDataSetChanged();
         return true;
     }
 
@@ -295,7 +295,7 @@ public class CurrentRecipe extends AppCompatActivity {
                 }
 
                 items.remove(index);
-                customAdapter.notifyDataSetChanged();
+                itemAdapter.notifyDataSetChanged();
                 if(items.size() == 0) {
                     emptyNotice.setVisibility(View.VISIBLE);
                 }
@@ -507,7 +507,7 @@ public class CurrentRecipe extends AppCompatActivity {
                     saveData();
 
                     sortList(false, currentOrder);
-                    customAdapter.notifyDataSetChanged();
+                    itemAdapter.notifyDataSetChanged();
                     emptyNotice.setVisibility(View.INVISIBLE);
                     itemName.setText("");
                     itemType.setText("");
@@ -555,7 +555,7 @@ public class CurrentRecipe extends AppCompatActivity {
                     saveData();
 
                     sortList(false, currentOrder);
-                    customAdapter.notifyDataSetChanged();
+                    itemAdapter.notifyDataSetChanged();
                     dialog.dismiss();
                     emptyNotice.setVisibility(View.INVISIBLE);
                 } else {
@@ -667,7 +667,7 @@ public class CurrentRecipe extends AppCompatActivity {
                     saveData();
 
                     sortList(false, currentOrder);
-                    customAdapter.notifyDataSetChanged();
+                    itemAdapter.notifyDataSetChanged();
                     dialog.dismiss();
                 } else {
                     itemName.setError("Name is empty...");
@@ -761,7 +761,7 @@ public class CurrentRecipe extends AppCompatActivity {
                     items.add(item);
                 }
                 saveData();
-                customAdapter.notifyDataSetChanged();
+                itemAdapter.notifyDataSetChanged();
                 emptyNotice.setVisibility(View.INVISIBLE);
                 undoPopup.dismiss();
             }

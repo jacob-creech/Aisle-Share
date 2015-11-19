@@ -59,7 +59,7 @@ public class CurrentList extends AppCompatActivity {
     private ListView listView;
     private ArrayList<Item> items;
     private ArrayList<Item> items_backup;
-    private CustomAdapter customAdapter;
+    private ItemAdapter itemAdapter;
     private boolean isIncreasingOrder;
     private int currentOrder;
     private Map<String, MenuItem> menuItems;
@@ -100,8 +100,8 @@ public class CurrentList extends AppCompatActivity {
             emptyNotice.setVisibility(View.VISIBLE);
         }
 
-        customAdapter = new CustomAdapter(this, items, R.layout.row_list);
-        listView.setAdapter(customAdapter);
+        itemAdapter = new ItemAdapter(this, items, R.layout.row_list);
+        listView.setAdapter(itemAdapter);
 
         try {
             aisleShareData.put("ListOpened", listTitle);
@@ -118,7 +118,7 @@ public class CurrentList extends AppCompatActivity {
                 final Item i = items.get(position);
                 if(deviceName.equals(i.getOwner())) {
                     items.remove(position);
-                    customAdapter.notifyDataSetChanged();
+                    itemAdapter.notifyDataSetChanged();
                     if(items.size() == 0) {
                         emptyNotice.setVisibility(View.VISIBLE);
                     }
@@ -126,7 +126,7 @@ public class CurrentList extends AppCompatActivity {
                     return new SwipeDismissList.Undoable() {
                         public void undo() {
                             items.add(position, i);
-                            customAdapter.notifyDataSetChanged();
+                            itemAdapter.notifyDataSetChanged();
                             emptyNotice.setVisibility(View.INVISIBLE);
                             saveData();
                         }
@@ -245,7 +245,7 @@ public class CurrentList extends AppCompatActivity {
                 menuItems.get("owner").setChecked(true);
                 break;
         }
-        customAdapter.notifyDataSetChanged();
+        itemAdapter.notifyDataSetChanged();
         return true;
     }
 
@@ -319,7 +319,7 @@ public class CurrentList extends AppCompatActivity {
         }
 
         saveData();
-        customAdapter.notifyDataSetChanged();
+        itemAdapter.notifyDataSetChanged();
         return true;
     }
 
@@ -385,13 +385,12 @@ public class CurrentList extends AppCompatActivity {
                 }
                 dialog.dismiss();
 
-                if(sel_items.length() > 0) {
+                if (sel_items.length() > 0) {
                     transfering = true;
                     Intent intent = new Intent(CurrentList.this, Transfer.class);
                     intent.putExtra(LIST_NAME, "Select which Items to Add");
                     startActivity(intent);
-                }
-                else{
+                } else {
                     Toast toast = Toast.makeText(CurrentList.this, name + " is empty...", Toast.LENGTH_LONG);
                     toast.show();
                 }
@@ -437,7 +436,7 @@ public class CurrentList extends AppCompatActivity {
         if(transfering) {
             readSavedItems();
             sortList(false, currentOrder);
-            customAdapter.notifyDataSetChanged();
+            itemAdapter.notifyDataSetChanged();
             transfering = false;
         }
     }
@@ -575,7 +574,7 @@ public class CurrentList extends AppCompatActivity {
                     items.add(i);
                     saveData();
                     sortList(false, currentOrder);
-                    customAdapter.notifyDataSetChanged();
+                    itemAdapter.notifyDataSetChanged();
                     emptyNotice.setVisibility(View.INVISIBLE);
                     itemName.setText("");
                     itemType.setText("");
@@ -623,7 +622,7 @@ public class CurrentList extends AppCompatActivity {
                     items.add(i);
                     saveData();
                     sortList(false, currentOrder);
-                    customAdapter.notifyDataSetChanged();
+                    itemAdapter.notifyDataSetChanged();
                     dialog.dismiss();
                     emptyNotice.setVisibility(View.INVISIBLE);
                 }
@@ -642,7 +641,7 @@ public class CurrentList extends AppCompatActivity {
         item.toggleChecked();
         saveData();
         sortList(false, currentOrder);
-        customAdapter.notifyDataSetChanged();
+        itemAdapter.notifyDataSetChanged();
     }
 
     public void setListTitle(Bundle savedInstanceState){
@@ -685,7 +684,7 @@ public class CurrentList extends AppCompatActivity {
                             }
                         }
                         saveData();
-                        customAdapter.notifyDataSetChanged();
+                        itemAdapter.notifyDataSetChanged();
                         if (items.size() == 0) {
                             emptyNotice.setVisibility(View.VISIBLE);
                         }
@@ -721,7 +720,7 @@ public class CurrentList extends AppCompatActivity {
                     items.add(item);
                 }
                 saveData();
-                customAdapter.notifyDataSetChanged();
+                itemAdapter.notifyDataSetChanged();
                 emptyNotice.setVisibility(View.INVISIBLE);
                 undoPopup.dismiss();
             }
@@ -891,7 +890,7 @@ public class CurrentList extends AppCompatActivity {
                 }
 
                 items.remove(index);
-                customAdapter.notifyDataSetChanged();
+                itemAdapter.notifyDataSetChanged();
                 if(items.size() == 0) {
                     emptyNotice.setVisibility(View.VISIBLE);
                 }
@@ -1029,7 +1028,7 @@ public class CurrentList extends AppCompatActivity {
 
                     saveData();
                     sortList(false, currentOrder);
-                    customAdapter.notifyDataSetChanged();
+                    itemAdapter.notifyDataSetChanged();
                     dialog.dismiss();
                 } else {
                     itemName.setError("Name is empty...");

@@ -4,13 +4,13 @@
     <item
         android:title="Share"
         android:id="@+id/share"
-        app:showAsAction="ifRoom"
+        app:showAsAction="always"
         android:icon="@mipmap/share_list"
         />
     <item
         android:title="Sort"
         android:id="@+id/sort_root"
-        app:showAsAction="ifRoom|withText">
+        app:showAsAction="always|withText">
         <menu
             android:id="@+id/sort">
             <item android:id="@+id/sort_time"
@@ -30,14 +30,23 @@
         </menu>
     </item>
     <item
+        android:title="Add"
+        android:id="@+id/plus"
+        android:icon="@mipmap/plus"
+        app:showAsAction="always">
+        <menu
+            android:id="@+id/plus_menu">
+            <item
+                android:title="Add a Recipe"
+                android:id="@+id/addRecipe"/>
+            <item
+                android:title="Add an Activity"
+                android:id="@+id/addActivity"/>
+        </menu>
+    </item>
+    <item
         android:title="Delete Checked Items"
         android:id="@+id/delete_items"
         android:icon="@mipmap/trash"
-        app:showAsAction="ifRoom"/>
-    <item
-        android:title="Add a Recipe"
-        android:id="@+id/addRecipe"/>
-    <item
-        android:title="Add an Activity"
-        android:id="@+id/addActivity"/>
+        app:showAsAction="always"/>
 </menu>

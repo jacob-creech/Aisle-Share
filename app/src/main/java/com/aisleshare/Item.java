@@ -10,6 +10,7 @@ public class Item {
     private String units;
     private boolean checked;
     private long created;
+    private boolean isItem;
 
     Item(String owner, String name){
         this.owner = owner;
@@ -19,6 +20,7 @@ public class Item {
         this.units = "";
         this.checked = false;
         this.created = System.currentTimeMillis()/1000;
+        this.isItem = true;
     }
     Item(String owner, String name, String type){
         this.owner = owner;
@@ -28,6 +30,17 @@ public class Item {
         this.units = "";
         this.checked = false;
         this.created = System.currentTimeMillis()/1000;
+        this.isItem = true;
+    }
+    Item(String owner, String name, boolean item){
+        this.owner = owner;
+        this.name = name;
+        this.type = "";
+        this.quantity = 1;
+        this.units = "";
+        this.checked = false;
+        this.created = System.currentTimeMillis()/1000;
+        this.isItem = item;
     }
     Item(String owner, String name, String type, double quantity){
         this.owner = owner;
@@ -37,6 +50,7 @@ public class Item {
         this.units = "";
         this.checked = false;
         this.created = System.currentTimeMillis()/1000;
+        this.isItem = true;
     }
     Item(String owner, String name, String type, double quantity, String units){
         this.owner = owner;
@@ -46,6 +60,7 @@ public class Item {
         this.units = units;
         this.checked = false;
         this.created = System.currentTimeMillis()/1000;
+        this.isItem = true;
     }
     Item(String owner, String name, String type, double quantity, String units, boolean value){
         this.owner = owner;
@@ -55,6 +70,7 @@ public class Item {
         this.units = units;
         this.checked = value;
         this.created = System.currentTimeMillis()/1000;
+        this.isItem = true;
     }
     Item(String owner, String name, String type, double quantity, String units, boolean value, long created){
         this.owner = owner;
@@ -64,12 +80,14 @@ public class Item {
         this.units = units;
         this.checked = value;
         this.created = created;
+        this.isItem = true;
     }
 
+
+
     // Accessors
-    public String getOwner(){
-        return this.owner;
-    }
+    public boolean getIsItem() { return this.isItem; }
+    public String getOwner(){ return this.owner; }
     public String getName(){
         return this.name;
     }
@@ -97,7 +115,8 @@ public class Item {
         jsonString += ",\"units\":" + checkNull(units);
         jsonString += ",\"type\":" + checkNull(type);
         jsonString += ",\"timeCreated\":" + this.getCreated();
-        jsonString += ",\"checked\":" + this.getChecked() + "}";
+        jsonString += ",\"checked\":" + this.getChecked();
+        jsonString += ",\"isItem\":" + this.getIsItem() + "}";
 
         return jsonString;
     }
@@ -126,7 +145,6 @@ public class Item {
     public void toggleChecked(){
         checked = !checked;
     }
-    public void setChecked(boolean value){
-        checked = value;
-    }
+    public void setChecked(boolean value){ checked = value; }
+    public void setIsItem(boolean value) { isItem = value; }
 }

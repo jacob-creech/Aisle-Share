@@ -1,5 +1,7 @@
 package com.aisleshare;
 
+import android.app.ActionBar;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
@@ -10,8 +12,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Message;
 import android.os.ParcelUuid;
 import android.provider.Settings;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -55,7 +60,10 @@ import de.timroes.swipetodismiss.SwipeDismissList;
 public class CurrentList extends AppCompatActivity {
 
     // Class Variables
-    public final static String LIST_NAME = "com.ShoppingList.MESSAGE";
+    private static final String LIST_NAME = "com.ShoppingList.MESSAGE";
+    private static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
+    private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
+    private static final int REQUEST_ENABLE_BT = 3;
     private ListView listView;
     private ArrayList<Item> items;
     private ArrayList<Item> items_backup;
@@ -71,8 +79,10 @@ public class CurrentList extends AppCompatActivity {
     private CountDownTimer undoTimer;
     private SwipeDismissList swipeAdapter;
     private JSONObject aisleShareData;
-    private Bluetooth blueAdapt;
     private boolean transfering;
+    private Bluetooth mBlueService = null;
+    public BluetoothAdapter mBluetoothAdapter = null;
+    private String mConnectedDeviceName = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,8 +98,8 @@ public class CurrentList extends AppCompatActivity {
         deviceName = Settings.Secure.getString(CurrentList.this.getContentResolver(), Settings.Secure.ANDROID_ID);
         menuItems = new HashMap<>();
         categories = new ArrayList<>();
-        blueAdapt = new Bluetooth(CurrentList.this);
         transfering = false;
+        mBluetoothAdapter = Constants.mBluetoothAdapter;
 
         setListTitle(savedInstanceState);
         readSavedItems();
@@ -109,6 +119,72 @@ public class CurrentList extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // If BT is not on, request that it be enabled.
+        // setupChat() will then be called during onActivityResult
+        if (!mBluetoothAdapter.isEnabled()) {
+            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+            // Otherwise, setup the chat session
+        } else if (mBlueService == null) {
+            setupBluetooth();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mBlueService != null) {
+            mBlueService.stop();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        try {
+            File file = new File(getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            aisleShareData = new JSONObject(loadJSONFromAsset(file));
+            aisleShareData.put("ListOpened", "");
+            saveData();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        if(undoTimer != null) {
+            undoTimer.cancel();
+        }
+        swipeAdapter.finish();
+        super.onBackPressed();
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        if(transfering) {
+            readSavedItems();
+            sortList(false, currentOrder);
+            itemAdapter.notifyDataSetChanged();
+            transfering = false;
+        }
+
+        // Performing this check in onResume() covers the case in which BT was
+        // not enabled during onStart(), so we were paused to enable it...
+        // onResume() will be called when ACTION_REQUEST_ENABLE activity returns.
+        if (mBlueService != null) {
+            // Only if the state is STATE_NONE, do we know that we haven't started already
+            if (mBlueService.getState() == Bluetooth.STATE_NONE) {
+                // Start the Bluetooth chat services
+                mBlueService.start();
+            }
+        }
+    }
+
+
+    private void setupBluetooth() {
+        mBlueService = new Bluetooth(CurrentList.this, mHandler);
     }
 
     public void setSwipeToDelete() {
@@ -409,37 +485,11 @@ public class CurrentList extends AppCompatActivity {
 
     //TODO: find a way
     private void setBluetooth() {
-        Intent serverIntent = new Intent(this, DeviceListActivity.class);
-        startActivityForResult(serverIntent, 1);
+        Intent serverIntent = new Intent(CurrentList.this, DeviceListActivity.class);
+        startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
     }
 
-    @Override
-    public void onBackPressed() {
-        try {
-            File file = new File(getFilesDir().getPath() + "/Aisle_Share_Data.json");
-            aisleShareData = new JSONObject(loadJSONFromAsset(file));
-            aisleShareData.put("ListOpened", "");
-            saveData();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        if(undoTimer != null) {
-            undoTimer.cancel();
-        }
-        swipeAdapter.finish();
-        super.onBackPressed();
-    }
 
-    @Override
-    public void onResume(){
-        super.onResume();
-        if(transfering) {
-            readSavedItems();
-            sortList(false, currentOrder);
-            itemAdapter.notifyDataSetChanged();
-            transfering = false;
-        }
-    }
 
     public void clearMenuCheckables(){
         menuItems.get("name").setChecked(false);
@@ -863,9 +913,24 @@ public class CurrentList extends AppCompatActivity {
         bMessageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //addItemDialog();
+                sendMessage("1");
             }
         });
+    }
+
+    private void sendMessage(String message) {
+        // Check that we're actually connected before trying anything
+        if (mBlueService.getState() != Bluetooth.STATE_CONNECTED) {
+            Toast.makeText(CurrentList.this, R.string.not_connected, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Check that there's actually something to send
+        if (message.length() > 0) {
+            // Get the message bytes and tell the BluetoothChatService to write
+            byte[] send = message.getBytes();
+            mBlueService.write(send);
+        }
     }
 
     @Override
@@ -901,29 +966,6 @@ public class CurrentList extends AppCompatActivity {
                 return super.onContextItemSelected(menuItem);
             default:
                 return super.onContextItemSelected(menuItem);
-        }
-    }
-
-    // TODO: global fields should not be down here...move to top
-    private OutputStream outputStream;
-    private InputStream inStream;;
-
-    public void sendBluetoothMessage() throws IOException {
-        BluetoothAdapter blueAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (blueAdapter.isEnabled()) {
-            Set<BluetoothDevice> bondedDevices = blueAdapter.getBondedDevices();
-
-            if(bondedDevices.size() > 0){
-                BluetoothDevice[] devices = (BluetoothDevice[]) bondedDevices.toArray();
-                BluetoothDevice device = devices[0];
-                ParcelUuid[] uuids = device.getUuids();
-                BluetoothSocket socket = device.createRfcommSocketToServiceRecord(uuids[0].getUuid());
-                socket.connect();
-                outputStream = socket.getOutputStream();
-                inStream = socket.getInputStream();
-            }
-
-            Log.e("error", "No appropriate paired devices.");
         }
     }
 
@@ -1036,5 +1078,126 @@ public class CurrentList extends AppCompatActivity {
             }
         });
         dialog.show();
+    }
+
+    private void setStatus(int resId) {
+        FragmentActivity activity = CurrentList.this;
+        if (null == activity) {
+            return;
+        }
+        final ActionBar actionBar = activity.getActionBar();
+        if (null == actionBar) {
+            return;
+        }
+        actionBar.setSubtitle(resId);
+    }
+
+    private void setStatus(CharSequence subTitle) {
+        FragmentActivity activity = CurrentList.this;
+        if (null == activity) {
+            return;
+        }
+        final ActionBar actionBar = activity.getActionBar();
+        if (null == actionBar) {
+            return;
+        }
+        actionBar.setSubtitle(subTitle);
+    }
+
+    private final Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            FragmentActivity activity = CurrentList.this;
+            switch (msg.what) {
+                case Constants.MESSAGE_STATE_CHANGE:
+                    switch (msg.arg1) {
+                        case Bluetooth.STATE_CONNECTED:
+                            setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
+                            Toast.makeText(CurrentList.this, "CONNECTED LOL", Toast.LENGTH_SHORT).show();
+                            break;
+                        case Bluetooth.STATE_CONNECTING:
+                            setStatus(R.string.title_connecting);
+                            break;
+                        case Bluetooth.STATE_LISTEN:
+                        case Bluetooth.STATE_NONE:
+                            setStatus(R.string.title_not_connected);
+                            break;
+                    }
+                    break;
+                case Constants.MESSAGE_WRITE:
+                    byte[] writeBuf = (byte[]) msg.obj;
+                    // construct a string from the buffer
+                    String writeMessage = new String(writeBuf);
+                    Toast.makeText(CurrentList.this, "SENT MESSAGE", Toast.LENGTH_SHORT).show();
+                    break;
+                case Constants.MESSAGE_READ:
+                    byte[] readBuf = (byte[]) msg.obj;
+                    // construct a string from the valid bytes in the buffer
+                    String readMessage = new String(readBuf, 0, msg.arg1);
+                    if(readMessage.equals("1")) {
+                        Toast.makeText(CurrentList.this, "YES!!", Toast.LENGTH_SHORT).show();
+                    }
+                    break;
+                case Constants.MESSAGE_DEVICE_NAME:
+                    // save the connected device's name
+                    mConnectedDeviceName = msg.getData().getString(Constants.DEVICE_NAME);
+                    if (null != activity) {
+                        Toast.makeText(activity, "Connected to "
+                                + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
+                    }
+                    break;
+                case Constants.MESSAGE_TOAST:
+                    if (null != activity) {
+                        Toast.makeText(activity, msg.getData().getString(Constants.TOAST),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                    break;
+            }
+        }
+    };
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_CONNECT_DEVICE_SECURE:
+                // When DeviceListActivity returns with a device to connect
+                if (resultCode == Activity.RESULT_OK) {
+                    connectDevice(data, true);
+                }
+                break;
+            case REQUEST_CONNECT_DEVICE_INSECURE:
+                // When DeviceListActivity returns with a device to connect
+                if (resultCode == Activity.RESULT_OK) {
+                    connectDevice(data, false);
+                }
+                break;
+            case REQUEST_ENABLE_BT:
+                // When the request to enable Bluetooth returns
+                if (resultCode == Activity.RESULT_OK) {
+                    // Bluetooth is now enabled, so set up a chat session
+                    setupBluetooth();
+                } else {
+                    // User did not enable Bluetooth or an error occurred
+                    Toast.makeText(CurrentList.this, R.string.bt_not_enabled_leaving,
+                            Toast.LENGTH_SHORT).show();
+                    CurrentList.this.finish();
+                }
+        }
+    }
+
+    /**
+     * Establish connection with other device
+     *
+     * @param data   An {@link Intent} with {@link DeviceListActivity#EXTRA_DEVICE_ADDRESS} extra.
+     * @param secure Socket Security type - Secure (true) , Insecure (false)
+     */
+    private void connectDevice(Intent data, boolean secure) {
+        // Get the device MAC address
+        String address = data.getExtras()
+                .getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+        // Get the BluetoothDevice object
+        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+        // Attempt to connect to the device
+        mBlueService.connect(device, secure);
     }
 }

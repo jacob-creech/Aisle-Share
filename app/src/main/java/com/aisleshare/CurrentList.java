@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -1032,7 +1033,7 @@ public class CurrentList extends AppCompatActivity {
         });
     }
 
-    private void sendMessage(String message) {
+    public void sendMessage(String message) {
         // Check that we're actually connected before trying anything
         if (mBlueService.getState() != Bluetooth.STATE_CONNECTED) {
             Toast.makeText(CurrentList.this, R.string.not_connected, Toast.LENGTH_SHORT).show();
@@ -1242,10 +1243,11 @@ public class CurrentList extends AppCompatActivity {
                     switch (msg.arg1) {
                         case Bluetooth.STATE_CONNECTED:
                             setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
-                            Toast.makeText(CurrentList.this, "CONNECTED LOL", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(CurrentList.this, "CONNECTED", Toast.LENGTH_SHORT).show();
                             break;
                         case Bluetooth.STATE_CONNECTING:
                             setStatus(R.string.title_connecting);
+                            Toast.makeText(CurrentList.this, "CONNECTING...", Toast.LENGTH_SHORT).show();
                             break;
                         case Bluetooth.STATE_LISTEN:
                         case Bluetooth.STATE_NONE:
@@ -1257,7 +1259,6 @@ public class CurrentList extends AppCompatActivity {
                     byte[] writeBuf = (byte[]) msg.obj;
                     // construct a string from the buffer
                     String writeMessage = new String(writeBuf);
-                    Toast.makeText(CurrentList.this, "SENT MESSAGE", Toast.LENGTH_SHORT).show();
                     break;
                 case Constants.MESSAGE_READ:
                     byte[] readBuf = (byte[]) msg.obj;
@@ -1268,15 +1269,41 @@ public class CurrentList extends AppCompatActivity {
                     }
                     else{
                         try {
-                            JSONObject obj = new JSONObject(readMessage);
-                            items.add(new Item(
-                                    obj.getString("owner"),
-                                    obj.getString("name"),
-                                    obj.getString("type"),
-                                    obj.getDouble("quantity"),
-                                    obj.getString("units"),
-                                    obj.getBoolean("checked"),
-                                    obj.getLong("timeCreated")));
+                            List<String> sentItems = new ArrayList<>();
+                            int currentItem = 0;
+                            sentItems.add("");
+                            for(int index = 0; index < readMessage.length(); index ++){
+                                String c = readMessage.substring(index, index +1);
+                                if(!c.equals("|")){
+                                    sentItems.set(currentItem, sentItems.get(currentItem) + c);
+                                }
+                                else if (index != readMessage.length() - 1) {
+                                    currentItem++;
+                                    sentItems.add("");
+                                }
+                            }
+
+                            for(String item : sentItems) {
+                                JSONObject obj = new JSONObject(item);
+                                boolean found = false;
+                                for (Item i : items) {
+                                    if (i.getName().equals(obj.getString("name")) &&
+                                            i.getCreated() == obj.getLong("timeCreated")) {
+                                        i.setChecked(obj.getBoolean("checked"));
+                                        found = true;
+                                    }
+                                }
+                                if (!found) {
+                                    items.add(new Item(
+                                            obj.getString("owner"),
+                                            obj.getString("name"),
+                                            obj.getString("type"),
+                                            obj.getDouble("quantity"),
+                                            obj.getString("units"),
+                                            obj.getBoolean("checked"),
+                                            obj.getLong("timeCreated")));
+                                }
+                            }
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -1289,6 +1316,13 @@ public class CurrentList extends AppCompatActivity {
                     if (null != activity) {
                         Toast.makeText(activity, "Connected to "
                                 + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
+                        String message = "";
+                        for(Item i : items){
+                            message += i.getJSONString() + "|";
+                            //byte[] send = i.getJSONString().getBytes();
+                            //mBlueService.write(send);
+                        }
+                        CurrentList.this.sendMessage(message);
                     }
                     break;
                 case Constants.MESSAGE_TOAST:

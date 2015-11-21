@@ -132,9 +132,8 @@ public class CurrentList extends AppCompatActivity {
         // If BT is not on, request that it be enabled.
         // setupChat() will then be called during onActivityResult
         if (!mBluetoothAdapter.isEnabled()) {
-            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
-            // Otherwise, setup the chat session
+            //Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            //startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
         } else if (mBlueService == null) {
             setupBluetooth();
         }
@@ -461,6 +460,7 @@ public class CurrentList extends AppCompatActivity {
                 finish();
                 return true;
             case R.id.share:
+                setupBluetooth();
                 setBluetooth();
                 break;
         }
@@ -786,6 +786,7 @@ public class CurrentList extends AppCompatActivity {
         saveData();
         sortList(false, currentOrder);
         itemAdapter.notifyDataSetChanged();
+        sendMessage(item.getJSONString());
     }
 
     public void setListTitle(Bundle savedInstanceState){
@@ -1265,6 +1266,22 @@ public class CurrentList extends AppCompatActivity {
                     if(readMessage.equals("1")) {
                         Toast.makeText(CurrentList.this, "YES!!", Toast.LENGTH_SHORT).show();
                     }
+                    else{
+                        try {
+                            JSONObject obj = new JSONObject(readMessage);
+                            items.add(new Item(
+                                    obj.getString("owner"),
+                                    obj.getString("name"),
+                                    obj.getString("type"),
+                                    obj.getDouble("quantity"),
+                                    obj.getString("units"),
+                                    obj.getBoolean("checked"),
+                                    obj.getLong("timeCreated")));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        itemAdapter.notifyDataSetChanged();
+                    }
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
                     // save the connected device's name
@@ -1303,12 +1320,11 @@ public class CurrentList extends AppCompatActivity {
                 // When the request to enable Bluetooth returns
                 if (resultCode == Activity.RESULT_OK) {
                     // Bluetooth is now enabled, so set up a chat session
-                    setupBluetooth();
+                    //setupBluetooth();
                 } else {
                     // User did not enable Bluetooth or an error occurred
-                    Toast.makeText(CurrentList.this, R.string.bt_not_enabled_leaving,
-                            Toast.LENGTH_SHORT).show();
-                    CurrentList.this.finish();
+                    //Toast.makeText(CurrentList.this, R.string.bt_not_enabled_leaving,
+                    //        Toast.LENGTH_SHORT).show();
                 }
         }
     }

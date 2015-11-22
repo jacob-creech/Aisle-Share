@@ -143,7 +143,7 @@ public class CurrentList extends AppCompatActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (mBlueService != null) {
+        if (mBlueService != null && mBlueService.getState() == Bluetooth.STATE_CONNECTED) {
             mBlueService.stop();
         }
     }
@@ -1035,16 +1035,18 @@ public class CurrentList extends AppCompatActivity {
 
     public void sendMessage(String message) {
         // Check that we're actually connected before trying anything
-        if (mBlueService.getState() != Bluetooth.STATE_CONNECTED) {
-            Toast.makeText(CurrentList.this, R.string.not_connected, Toast.LENGTH_SHORT).show();
-            return;
-        }
+        if(mBlueService != null) {
+            if (mBlueService.getState() != Bluetooth.STATE_CONNECTED) {
+                //Toast.makeText(CurrentList.this, R.string.not_connected, Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-        // Check that there's actually something to send
-        if (message.length() > 0) {
-            // Get the message bytes and tell the BluetoothChatService to write
-            byte[] send = message.getBytes();
-            mBlueService.write(send);
+            // Check that there's actually something to send
+            if (message.length() > 0) {
+                // Get the message bytes and tell the BluetoothChatService to write
+                byte[] send = message.getBytes();
+                mBlueService.write(send);
+            }
         }
     }
 

@@ -423,6 +423,9 @@ public final class SwipeDismissList implements View.OnTouchListener {
 					child = mListView.getChildAt(i);
 					child.getHitRect(rect);
 					if (rect.contains(x, y)) {
+						if (child.getTag() != null && child.getTag().equals("header")) {
+							return false;
+						}
 						mDownView = child;
 						break;
 					}

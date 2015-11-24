@@ -24,4 +24,11 @@
         android:id="@+id/delete"
         app:showAsAction="ifRoom"
         android:icon="@mipmap/trash"/>
+    <item
+        android:title="Disable Autocomplete"
+        android:id="@+id/autocomplete"
+        android:checkable="true"/>
+    <item
+        android:title="Clear Autocomplete Memory"
+        android:id="@+id/clearAutocomplete"/>
 </menu>

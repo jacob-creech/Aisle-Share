@@ -64,6 +64,7 @@ public class CurrentActivity extends AppCompatActivity {
     private CountDownTimer undoTimer;
     private SwipeDismissList swipeAdapter;
     private JSONObject aisleShareData;
+    private boolean disableAutocomplete;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +84,7 @@ public class CurrentActivity extends AppCompatActivity {
         units = new ArrayList<>();
 
         setActivityTitle(savedInstanceState);
-        initializeStorage();
+        readSavedData();
         setListeners();
         setSwipeToDelete();
 
@@ -108,8 +109,12 @@ public class CurrentActivity extends AppCompatActivity {
             @Override
             public SwipeDismissList.Undoable onDismiss(AbsListView listView, final int position) {
                 final Item i = items.get(position);
-                if(deviceName.equals(i.getOwner())) {
+                if(deviceName.equals(i.getOwner()) && i.isItem()) {
                     items.remove(position);
+                    if(currentOrder == 3) {
+                        removeHeaders();
+                        addHeaders();
+                    }
                     itemAdapter.notifyDataSetChanged();
                     if(items.size() == 0) {
                         emptyNotice.setVisibility(View.VISIBLE);
@@ -117,12 +122,22 @@ public class CurrentActivity extends AppCompatActivity {
                     saveData();
                     return new SwipeDismissList.Undoable() {
                         public void undo() {
-                            items.add(position, i);
+                            // if sorted by type, the position could be wrong if headers removed
+                            if (currentOrder == 3) {
+                                items.add(i);
+                                sortList(false, currentOrder);
+                            } else {
+                                items.add(position, i);
+                            }
                             itemAdapter.notifyDataSetChanged();
                             emptyNotice.setVisibility(View.INVISIBLE);
                             saveData();
                         }
                     };
+                }
+                else {
+                    Toast toast = Toast.makeText(CurrentActivity.this, "Item not owned...", Toast.LENGTH_LONG);
+                    toast.show();
                 }
                 return null;
             }
@@ -132,57 +147,30 @@ public class CurrentActivity extends AppCompatActivity {
     }
 
     public void addHeaders() {
-        Item header;
-        switch(currentOrder) {
-            case 0: {
-                //add new headers
-                if(items.size() < 1) break;
-                String title = items.get(0).getName();
-                if(title.length() < 1) break;
-                header = new Item(deviceName, title.substring(0, 1), false);
-                items.add(0, header);
-                for(int i = 1; i < items.size()-1; i++) {
-                    if(items.get(i).getName().substring(0, 1).compareTo(items.get(i+1).getName().substring(0, 1)) != 0) {
-                        title = items.get(i+1).getName();
-                        header = new Item(deviceName, title.substring(0, 1), false);
-                        items.add(i+1, header);
-                        i++;
-                    }
+        String title;
+
+        title = items.get(0).getType();
+        if(title.equals("")){
+            title = "No Category";
+        }
+        items.add(0, new Item(deviceName, title, false));
+        for(int i = 1; i < items.size()-1; i++) {
+            if(items.get(i).getType().compareTo(items.get(i + 1).getType()) != 0) {
+                title = items.get(i+1).getType();
+                if(title.equals("")){
+                    title = "No Category";
                 }
-                break;
+                items.add(i+1, new Item(deviceName, title, false));
+                i++;
             }
-            case 1: {
-                //add new headers
-                if(items.size() < 1) break;
-                double num = items.get(0).getQuantity();
-                header = new Item(deviceName, String.valueOf(num), false);
-                items.add(0, header);
-                for(int i = 1; i < items.size()-1; i++) {
-                    if(items.get(i).getQuantity() != items.get(i+1).getQuantity()) {
-                        num = items.get(i+1).getQuantity();
-                        header = new Item(deviceName, String.valueOf(num), false);
-                        items.add(i+1, header);
-                        i++;
-                    }
-                }
-                break;
-            }
-            case 3: {
-                //add new headers
-                if(items.size() < 1) break;
-                String title = items.get(0).getType();
-                //if(title.length() < 1) break;
-                header = new Item(deviceName, title, false);
-                items.add(0, header);
-                for(int i = 1; i < items.size()-1; i++) {
-                    if(items.get(i).getType().compareTo(items.get(i + 1).getType()) != 0) {
-                        title = items.get(i+1).getType();
-                        header = new Item(deviceName, title, false);
-                        items.add(i+1, header);
-                        i++;
-                    }
-                }
-                break;
+        }
+    }
+
+    public void removeHeaders() {
+        for(int i = 0; i < items.size(); i++) {
+            if(!items.get(i).isItem()) {
+                items.remove(i);
+                i--;
             }
         }
     }
@@ -336,9 +324,14 @@ public class CurrentActivity extends AppCompatActivity {
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.context_menu_curr, menu);
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+        int position = info.position;
+        Item i = items.get(position);
+        if(i.isItem()) {
+            super.onCreateContextMenu(menu, v, menuInfo);
+            MenuInflater inflater = getMenuInflater();
+            inflater.inflate(R.menu.context_menu_curr, menu);
+        }
     }
 
     @Override
@@ -355,13 +348,21 @@ public class CurrentActivity extends AppCompatActivity {
                     items_backup.add(item);
                 }
 
-                items.remove(index);
-                itemAdapter.notifyDataSetChanged();
-                if(items.size() == 0) {
-                    emptyNotice.setVisibility(View.VISIBLE);
+                if(items.get(index).getOwner().equals(deviceName) && items.get(index).isItem()) {
+                    items.remove(index);
+                    removeHeaders();
+
+                    if(currentOrder == 3) {
+                        removeHeaders();
+                        addHeaders();
+                    }
+                    itemAdapter.notifyDataSetChanged();
+                    if (items.size() == 0) {
+                        emptyNotice.setVisibility(View.VISIBLE);
+                    }
+                    saveData();
+                    undoBox();
                 }
-                saveData();
-                undoBox();
                 return true;
             case R.id.cancel:
                 return super.onContextItemSelected(menuItem);
@@ -383,13 +384,6 @@ public class CurrentActivity extends AppCompatActivity {
 
     // Sorted based on the order index parameter
     public void sortList(boolean reverseOrder, int order) {
-        //remove all previous headers
-        for(int i = 0; i < items.size(); i++) {
-            if(!items.get(i).getIsItem()) {
-                items.remove(i);
-                i--;
-            }
-        }
         if(reverseOrder) {
             isIncreasingOrder = !isIncreasingOrder;
         }
@@ -399,6 +393,7 @@ public class CurrentActivity extends AppCompatActivity {
         }
 
         ItemComparator compare = new ItemComparator(CurrentActivity.this);
+        removeHeaders();
 
         // Unsorted
         if(currentOrder == -1){
@@ -410,37 +405,36 @@ public class CurrentActivity extends AppCompatActivity {
             menuItems.get("unsorted").setVisible(true);
         }
 
-        switch (currentOrder) {
+        ItemComparator.Name name = compare.new Name();
+        ItemComparator.Quantity quantity = compare.new Quantity();
+        ItemComparator.Created created = compare.new Created();
+        ItemComparator.Type type = compare.new Type();
+        ItemComparator.Owner owner = compare.new Owner();
+
+        switch (currentOrder){
             // Name
-            case 0: {
-                ItemComparator.Name sorter = compare.new Name();
-                Collections.sort(items, sorter);
-                break;
-            }
+            case 0:{
+                Collections.sort(items, name);
+                break;}
             // Quantity
-            case 1: {
-                ItemComparator.Quantity sorter = compare.new Quantity();
-                Collections.sort(items, sorter);
-                break;
-            }
+            case 1:{
+                Collections.sort(items, name);
+                Collections.sort(items, quantity);
+                break;}
             // Time Created
-            case 2: {
-                ItemComparator.Created sorter = compare.new Created();
-                Collections.sort(items, sorter);
-                break;
-            }
+            case 2:{
+                Collections.sort(items, created);
+                break;}
             // Type
-            case 3: {
-                ItemComparator.Type sorter = compare.new Type();
-                Collections.sort(items, sorter);
-                break;
-            }
+            case 3:{
+                Collections.sort(items, name);
+                Collections.sort(items, type);
+                break;}
             // Owner
-            case 4: {
-                ItemComparator.Owner sorter = compare.new Owner();
-                Collections.sort(items, sorter);
-                break;
-            }
+            case 4:{
+                Collections.sort(items, name);
+                Collections.sort(items, owner);
+                break;}
         }
 
         if(isIncreasingOrder) {
@@ -450,7 +444,7 @@ public class CurrentActivity extends AppCompatActivity {
             Collections.reverse(items);
             menuItems.get("sort").setIcon(R.mipmap.dec_sort);
         }
-        if(currentOrder >= 0) {
+        if(currentOrder == 3) {
             addHeaders();
         }
     }
@@ -514,13 +508,13 @@ public class CurrentActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
                 String name = itemName.getText().toString();
                 for (int index = 0; index < items.size(); index++) {
-                    if (name.toLowerCase().equals(items.get(index).getName().toLowerCase())) {
+                    if (items.get(index).isItem() && name.toLowerCase().equals(items.get(index).getName().toLowerCase())) {
                         Context context = getApplicationContext();
                         CharSequence text = "Is this a Duplicate?";
                         int duration = Toast.LENGTH_LONG;
 
                         Toast toast = Toast.makeText(context, text, duration);
-                        toast.setGravity(Gravity.TOP,0,0);
+                        toast.setGravity(Gravity.TOP, 0, 0);
                         toast.show();
                     }
                 }
@@ -576,20 +570,20 @@ public class CurrentActivity extends AppCompatActivity {
                     double quantity;
                     String unit = itemUnits.getText().toString();
                     String duplicator; //used to check for duplicate auto complete words
-                    if(!itemQuantity.getText().toString().isEmpty()) {
+                    if (!itemQuantity.getText().toString().isEmpty()) {
                         quantity = Double.parseDouble(itemQuantity.getText().toString());
                     } else {
                         quantity = 1;
                     }
 
                     duplicator = autoComplete_DupCheck(categories, type);
-                    if(duplicator.compareTo(type) == 0) categories.add(type);
+                    if (duplicator.compareTo(type) == 0) categories.add(type);
 
                     duplicator = autoComplete_DupCheck(names, name);
-                    if(duplicator.compareTo(name) == 0) names.add(name);
+                    if (duplicator.compareTo(name) == 0) names.add(name);
 
                     duplicator = autoComplete_DupCheck(units, unit);
-                    if(duplicator.compareTo(unit) == 0) units.add(unit);
+                    if (duplicator.compareTo(unit) == 0) units.add(unit);
 
                     Item m = new Item(deviceName, name, type, quantity, unit);
                     items.add(m);
@@ -623,20 +617,20 @@ public class CurrentActivity extends AppCompatActivity {
                     double quantity;
                     String unit = itemUnits.getText().toString();
                     String duplicator; //used to check for duplicate auto complete words
-                    if(!itemQuantity.getText().toString().isEmpty()) {
+                    if (!itemQuantity.getText().toString().isEmpty()) {
                         quantity = Double.parseDouble(itemQuantity.getText().toString());
                     } else {
                         quantity = 1;
                     }
 
                     duplicator = autoComplete_DupCheck(categories, type);
-                    if(duplicator.compareTo(type) == 0) categories.add(type);
+                    if (duplicator.compareTo(type) == 0) categories.add(type);
 
                     duplicator = autoComplete_DupCheck(names, name);
-                    if(duplicator.compareTo(name) == 0) names.add(name);
+                    if (duplicator.compareTo(name) == 0) names.add(name);
 
                     duplicator = autoComplete_DupCheck(units, unit);
-                    if(duplicator.compareTo(unit) == 0) units.add(unit);
+                    if (duplicator.compareTo(unit) == 0) units.add(unit);
 
                     Item m = new Item(deviceName, name, type, quantity, unit);
                     items.add(m);
@@ -652,9 +646,11 @@ public class CurrentActivity extends AppCompatActivity {
                 }
             }
         });
-        itemType.setAdapter(catAdapter);
-        itemUnits.setAdapter(unitAdapter);
-        itemName.setAdapter(nameAdapter);
+        if(!disableAutocomplete) {
+            itemType.setAdapter(catAdapter);
+            itemUnits.setAdapter(unitAdapter);
+            itemName.setAdapter(nameAdapter);
+        }
         dialog.show();
     }
 
@@ -777,9 +773,11 @@ public class CurrentActivity extends AppCompatActivity {
                 }
             }
         });
-        itemType.setAdapter(catAdapter);
-        itemName.setAdapter(nameAdapter);
-        itemUnits.setAdapter(unitAdapter);
+        if(!disableAutocomplete) {
+            itemType.setAdapter(catAdapter);
+            itemName.setAdapter(nameAdapter);
+            itemUnits.setAdapter(unitAdapter);
+        }
         dialog.show();
     }
 
@@ -929,7 +927,7 @@ public class CurrentActivity extends AppCompatActivity {
         }
     }
 
-    public void initializeStorage(){
+    public void readSavedData(){
         try {
             File file = new File(getFilesDir().getPath() + "/Aisle_Share_Data.json");
             // Read or Initializes aisleShareData
@@ -938,6 +936,7 @@ public class CurrentActivity extends AppCompatActivity {
 
             currentOrder = aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).getInt("sort");
             isIncreasingOrder = aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).getBoolean("direction");
+            disableAutocomplete = aisleShareData.optBoolean("DisableAutocomplete");
             JSONArray read_cat = aisleShareData.getJSONArray("category");
             readSavedArray(read_cat, 0);
             JSONArray read_name = aisleShareData.getJSONArray("name");
@@ -989,7 +988,9 @@ public class CurrentActivity extends AppCompatActivity {
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).remove("items");
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).accumulate("items", new JSONArray());
             for(Item i : items){
-                aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).optJSONArray("items").put(i.getJSONString());
+                if(i.isItem()) {
+                    aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).optJSONArray("items").put(i.getJSONString());
+                }
             }
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).put("sort", currentOrder);
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).put("direction", isIncreasingOrder);

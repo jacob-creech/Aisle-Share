@@ -75,7 +75,7 @@ public class Activities extends Fragment {
         emptyNotice = (TextView) getView().findViewById(R.id.empty_notice);
         deviceName = Settings.Secure.getString(dashboard.getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        readSavedActivities();
+        readSavedData();
 
         if(activities.size() == 0) {
             emptyNotice.setVisibility(View.VISIBLE);
@@ -287,7 +287,7 @@ public class Activities extends Fragment {
         dialog.show();
     }
 
-    public void readSavedActivities(){
+    public void readSavedData(){
         try {
             File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
             // Read or Initializes aisleShareData
@@ -487,7 +487,7 @@ public class Activities extends Fragment {
                         }
                     }
                 })
-                .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
                     }

@@ -1,7 +1,5 @@
 package com.aisleshare;
 
-import org.json.JSONObject;
-
 public class Item {
     private String owner;
     private String name;
@@ -86,7 +84,7 @@ public class Item {
 
 
     // Accessors
-    public boolean getIsItem() { return this.isItem; }
+    public boolean isItem() { return this.isItem; }
     public String getOwner(){ return this.owner; }
     public String getName(){
         return this.name;
@@ -116,7 +114,7 @@ public class Item {
         jsonString += ",\"type\":" + checkNull(type);
         jsonString += ",\"timeCreated\":" + this.getCreated();
         jsonString += ",\"checked\":" + this.getChecked();
-        jsonString += ",\"isItem\":" + this.getIsItem() + "}";
+        jsonString += ",\"isItem\":" + this.isItem() + "}";
 
         return jsonString;
     }

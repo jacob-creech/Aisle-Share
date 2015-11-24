@@ -33,6 +33,17 @@ public  class ItemComparator{
     }
     public class Type implements Comparator<Item>{
         public int compare(Item left, Item right) {
+            boolean lEmpty = left.getType().equals("");
+            boolean rEmpty = right.getType().equals("");
+            if(lEmpty && rEmpty){
+                return 0;
+            }
+            else if (lEmpty) {
+                return 1;
+            }
+            else if (rEmpty) {
+                return -1;
+            }
             return left.getType().toLowerCase().compareTo(right.getType().toLowerCase());
         }
     }

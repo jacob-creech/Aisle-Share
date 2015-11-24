@@ -1,11 +1,16 @@
 package com.aisleshare;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,14 +18,17 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Dashboard  extends AppCompatActivity {
     public final static String LIST_NAME = "com.ShoppingList.MESSAGE";
     private TabsAdapter adapter;
     private ViewPager pager;
+    private boolean disableAutocomplete;
+    private Map<String, MenuItem> menuItems;
     private JSONObject aisleShareData;
 
     @Override
@@ -32,6 +40,8 @@ public class Dashboard  extends AppCompatActivity {
         adapter = new TabsAdapter(getSupportFragmentManager());
         pager = (ViewPager) findViewById(R.id.pager);
         pager.setAdapter(adapter);
+        disableAutocomplete = aisleShareData.optBoolean("DisableAutocomplete");
+        menuItems = new HashMap<>();
 
         String listOpened = aisleShareData.optString("ListOpened");
         if(!listOpened.equals("")){
@@ -62,6 +72,9 @@ public class Dashboard  extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_dashboard, menu);
+        menuItems.put("disableAutocomplete", menu.findItem(R.id.autocomplete));
+
+        menuItems.get("disableAutocomplete").setChecked(disableAutocomplete);
         return true;
     }
 
@@ -72,6 +85,17 @@ public class Dashboard  extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         //noinspection SimplifiableIfStatement
+
+        switch(id) {
+            case R.id.autocomplete:
+                disableAutocomplete = !disableAutocomplete;
+                menuItems.get("disableAutocomplete").setChecked(disableAutocomplete);
+                saveData();
+                return true;
+            case R.id.clearAutocomplete:
+                confirmAutocompleteDeletion().show();
+                return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -102,6 +126,8 @@ public class Dashboard  extends AppCompatActivity {
                 aisleShareData.optJSONObject("Transfers").accumulate("name", "");
                 aisleShareData.optJSONObject("Transfers").accumulate("items", new JSONArray());
 
+                aisleShareData.accumulate("DisableAutocomplete", false);
+
                 FileOutputStream fos = new FileOutputStream(getFilesDir().getPath() + "/Aisle_Share_Data.json");
                 fos.write(aisleShareData.toString().getBytes());
                 fos.close();
@@ -112,6 +138,56 @@ public class Dashboard  extends AppCompatActivity {
         } catch (JSONException | IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void saveData(){
+        try {
+            File file = new File(getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            aisleShareData = new JSONObject(loadJSONFromAsset(file));
+
+            aisleShareData.put("DisableAutocomplete", disableAutocomplete);
+
+            FileOutputStream fos = new FileOutputStream(getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            fos.write(aisleShareData.toString().getBytes());
+            fos.close();
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public AlertDialog confirmAutocompleteDeletion()
+    {
+        return new AlertDialog.Builder(Dashboard.this)
+                .setTitle("Confirm Deletion")
+                .setMessage("Are you sure? Erasing the autocomplete dictionary cannot be undone.")
+                .setPositiveButton("Clear", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        try {
+                            File file = new File(getFilesDir().getPath() + "/Aisle_Share_Data.json");
+                            aisleShareData = new JSONObject(loadJSONFromAsset(file));
+
+                            aisleShareData.put("category", new JSONArray());
+                            aisleShareData.put("name", new JSONArray());
+                            aisleShareData.put("unit", new JSONArray());
+
+                            FileOutputStream fos = new FileOutputStream(getFilesDir().getPath() + "/Aisle_Share_Data.json");
+                            fos.write(aisleShareData.toString().getBytes());
+                            fos.close();
+
+                            Toast toast = Toast.makeText(Dashboard.this, "Cleared", Toast.LENGTH_LONG);
+                            toast.show();
+                        } catch (IOException | JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .create();
     }
 
     public String loadJSONFromAsset(File f) {

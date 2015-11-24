@@ -17,7 +17,7 @@
             <item android:id="@+id/sort_name"
                 android:title="Sort By Name"/>
             <item android:id="@+id/sort_type"
-                android:title="Sort By Type"/>
+                android:title="Sort By Category"/>
             <item android:id="@+id/sort_quantity"
                 android:title="Sort By Quantity"/>
             <item android:id="@+id/sort_owner"

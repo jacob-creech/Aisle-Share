@@ -6,7 +6,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,13 +13,11 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
-import android.os.ParcelUuid;
 import android.provider.Settings;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -47,15 +44,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import de.timroes.swipetodismiss.SwipeDismissList;
 
@@ -87,6 +80,7 @@ public class CurrentList extends AppCompatActivity {
     private Bluetooth mBlueService = null;
     public BluetoothAdapter mBluetoothAdapter = null;
     private String mConnectedDeviceName = null;
+    private boolean disableAutocomplete;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +102,7 @@ public class CurrentList extends AppCompatActivity {
         mBluetoothAdapter = Constants.mBluetoothAdapter;
 
         setListTitle(savedInstanceState);
-        readSavedItems();
+        readSavedData();
         setListeners();
         setSwipeToDelete();
 
@@ -169,7 +163,7 @@ public class CurrentList extends AppCompatActivity {
     public void onResume(){
         super.onResume();
         if(transfering) {
-            readSavedItems();
+            readSavedData();
             sortList(false, currentOrder);
             itemAdapter.notifyDataSetChanged();
             transfering = false;
@@ -197,8 +191,12 @@ public class CurrentList extends AppCompatActivity {
             @Override
             public SwipeDismissList.Undoable onDismiss(AbsListView listView, final int position) {
                 final Item i = items.get(position);
-                if(deviceName.equals(i.getOwner())) {
+                if(deviceName.equals(i.getOwner()) && i.isItem()) {
                     items.remove(position);
+                    if(currentOrder == 3) {
+                        removeHeaders();
+                        addHeaders();
+                    }
                     itemAdapter.notifyDataSetChanged();
                     if(items.size() == 0) {
                         emptyNotice.setVisibility(View.VISIBLE);
@@ -206,14 +204,20 @@ public class CurrentList extends AppCompatActivity {
                     saveData();
                     return new SwipeDismissList.Undoable() {
                         public void undo() {
-                            items.add(position, i);
+                            // if sorted by type, the position could be wrong if headers removed
+                            if (currentOrder == 3) {
+                                items.add(i);
+                                sortList(false, currentOrder);
+                            } else {
+                                items.add(position, i);
+                            }
                             itemAdapter.notifyDataSetChanged();
                             emptyNotice.setVisibility(View.INVISIBLE);
                             saveData();
                         }
                     };
                 }
-                else{
+                else {
                     Toast toast = Toast.makeText(CurrentList.this, "Item not owned...", Toast.LENGTH_LONG);
                     toast.show();
                 }
@@ -225,70 +229,36 @@ public class CurrentList extends AppCompatActivity {
     }
 
     public void addHeaders() {
-        Item header;
-        switch(currentOrder) {
-            case 0: {
-                //add new headers
-                if(items.size() < 1) break;
-                String title = items.get(0).getName();
-                if(title.length() < 1) break;
-                header = new Item(deviceName, title.substring(0, 1), false);
-                items.add(0, header);
-                for(int i = 1; i < items.size()-1; i++) {
-                    if(items.get(i).getName().substring(0, 1).compareTo(items.get(i+1).getName().substring(0, 1)) != 0) {
-                        title = items.get(i+1).getName();
-                        header = new Item(deviceName, title.substring(0, 1), false);
-                        items.add(i+1, header);
-                        i++;
-                    }
+        String title;
+
+        title = items.get(0).getType();
+        if(title.equals("")){
+            title = "No Category";
+        }
+        items.add(0, new Item(deviceName, title, false));
+        for(int i = 1; i < items.size()-1; i++) {
+            if(items.get(i).getType().compareTo(items.get(i + 1).getType()) != 0) {
+                title = items.get(i+1).getType();
+                if(title.equals("")){
+                    title = "No Category";
                 }
-                break;
+                items.add(i + 1, new Item(deviceName, title, false));
+                i++;
             }
-            case 1: {
-                //add new headers
-                if(items.size() < 1) break;
-                double num = items.get(0).getQuantity();
-                header = new Item(deviceName, String.valueOf(num), false);
-                items.add(0, header);
-                for(int i = 1; i < items.size()-1; i++) {
-                    if(items.get(i).getQuantity() != items.get(i+1).getQuantity()) {
-                        num = items.get(i+1).getQuantity();
-                        header = new Item(deviceName, String.valueOf(num), false);
-                        items.add(i+1, header);
-                        i++;
-                    }
-                }
-                break;
-            }
-            case 3: {
-                //add new headers
-                if(items.size() < 1) break;
-                String title = items.get(0).getType();
-                //if(title.length() < 1) break;
-                header = new Item(deviceName, title, false);
-                items.add(0, header);
-                for(int i = 1; i < items.size()-1; i++) {
-                    if(items.get(i).getType().compareTo(items.get(i + 1).getType()) != 0) {
-                        title = items.get(i+1).getType();
-                        header = new Item(deviceName, title, false);
-                        items.add(i+1, header);
-                        i++;
-                    }
-                }
-                break;
+        }
+    }
+
+    public void removeHeaders() {
+        for(int i = 0; i < items.size(); i++) {
+            if(!items.get(i).isItem()) {
+                items.remove(i);
+                i--;
             }
         }
     }
 
     // Sorted based on the order index parameter
     public void sortList(boolean reverseOrder, int order) {
-        //remove all previous headers
-        for(int i = 0; i < items.size(); i++) {
-            if(!items.get(i).getIsItem()) {
-                items.remove(i);
-                i--;
-            }
-        }
         if(reverseOrder) {
             isIncreasingOrder = !isIncreasingOrder;
         }
@@ -298,6 +268,7 @@ public class CurrentList extends AppCompatActivity {
         }
 
         ItemComparator compare = new ItemComparator(CurrentList.this);
+        removeHeaders();
 
         // Unsorted
         if(menuItems.get("sort") != null && menuItems.get("unsorted") != null) {
@@ -310,31 +281,42 @@ public class CurrentList extends AppCompatActivity {
             }
         }
 
+
+        ItemComparator.Name name = compare.new Name();
+        ItemComparator.Quantity quantity = compare.new Quantity();
+        ItemComparator.Created created = compare.new Created();
+        ItemComparator.Type type = compare.new Type();
+        ItemComparator.Owner owner = compare.new Owner();
+        ItemComparator.Checked checked = compare.new Checked();
+
         switch (currentOrder){
             // Name
             case 0:{
-                ItemComparator.Name sorter = compare.new Name();
-                Collections.sort(items, sorter);
+                Collections.sort(items, name);
+                Collections.sort(items, checked);
                 break;}
             // Quantity
             case 1:{
-                ItemComparator.Quantity sorter = compare.new Quantity();
-                Collections.sort(items, sorter);
+                Collections.sort(items, name);
+                Collections.sort(items, quantity);
+                Collections.sort(items, checked);
                 break;}
             // Time Created
             case 2:{
-                ItemComparator.Created sorter = compare.new Created();
-                Collections.sort(items, sorter);
+                Collections.sort(items, created);
+                Collections.sort(items, checked);
                 break;}
             // Type
             case 3:{
-                ItemComparator.Type sorter = compare.new Type();
-                Collections.sort(items, sorter);
+                Collections.sort(items, name);
+                Collections.sort(items, checked);
+                Collections.sort(items, type);
                 break;}
             // Owner
             case 4:{
-                ItemComparator.Owner sorter = compare.new Owner();
-                Collections.sort(items, sorter);
+                Collections.sort(items, name);
+                Collections.sort(items, owner);
+                Collections.sort(items, checked);
                 break;}
         }
 
@@ -349,7 +331,7 @@ public class CurrentList extends AppCompatActivity {
                 menuItems.get("sort").setIcon(R.mipmap.dec_sort);
             }
         }
-        if(currentOrder >= 0) {
+        if(currentOrder == 3) {
             addHeaders();
         }
     }
@@ -602,12 +584,10 @@ public class CurrentList extends AppCompatActivity {
         final Button more = (Button) dialog.findViewById(R.id.More);
         final Button done = (Button) dialog.findViewById(R.id.Done);
 
-        //minus.setVisibility(View.INVISIBLE);
 
         ArrayAdapter<String> catAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, categories);
         ArrayAdapter<String> nameAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, names);
         ArrayAdapter<String> unitAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, units);
-
 
 
         // Open keyboard automatically
@@ -630,7 +610,7 @@ public class CurrentList extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
                 String name = itemName.getText().toString();
                 for(int index = 0; index < items.size(); index++){
-                    if(name.toLowerCase().equals(items.get(index).getName().toLowerCase())){
+                    if(items.get(index).isItem() && name.toLowerCase().equals(items.get(index).getName().toLowerCase())){
                         Context context = getApplicationContext();
                         CharSequence text = "Is this a Duplicate?";
                         int duration = Toast.LENGTH_LONG;
@@ -774,14 +754,19 @@ public class CurrentList extends AppCompatActivity {
                 }
             }
         });
-        itemType.setAdapter(catAdapter);
-        itemUnits.setAdapter(unitAdapter);
-        itemName.setAdapter(nameAdapter);
+        if(!disableAutocomplete) {
+            itemType.setAdapter(catAdapter);
+            itemUnits.setAdapter(unitAdapter);
+            itemName.setAdapter(nameAdapter);
+        }
         dialog.show();
     }
 
     // Checks/UnChecks an item by clicking on any element in its row
     public void itemClick(View v){
+        if(v.getId() > items.size() || v.getId() < 0){
+            return;
+        }
         Item item = items.get(v.getId());
         item.toggleChecked();
         saveData();
@@ -824,10 +809,14 @@ public class CurrentList extends AppCompatActivity {
 
                         int length = items.size();
                         for (int index = length - 1; index > -1; index--) {
-                            if (deviceName.equals(items.get(index).getOwner()) && items.get(index).getChecked()) {
+                            if (deviceName.equals(items.get(index).getOwner()) && items.get(index).getChecked() && items.get(index).isItem()) {
                                 items.remove(index);
                                 removals = true;
                             }
+                        }
+                        if(currentOrder == 3) {
+                            removeHeaders();
+                            addHeaders();
                         }
                         saveData();
                         itemAdapter.notifyDataSetChanged();
@@ -927,7 +916,7 @@ public class CurrentList extends AppCompatActivity {
         }
     }
 
-    public void readSavedItems(){
+    public void readSavedData(){
         try {
             File file = new File(getFilesDir().getPath() + "/Aisle_Share_Data.json");
             // Read or Initializes aisleShareData
@@ -935,6 +924,7 @@ public class CurrentList extends AppCompatActivity {
             aisleShareData = new JSONObject(loadJSONFromAsset(file));
             currentOrder = aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).getInt("sort");
             isIncreasingOrder = aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).getBoolean("direction");
+            disableAutocomplete = aisleShareData.optBoolean("DisableAutocomplete");
             JSONArray read_cat = aisleShareData.getJSONArray("category");
             readSavedArray(read_cat, 0);
             JSONArray read_name = aisleShareData.getJSONArray("name");
@@ -987,7 +977,9 @@ public class CurrentList extends AppCompatActivity {
             aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).remove("items");
             aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).accumulate("items", new JSONArray());
             for(Item i : items) {
-                aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).optJSONArray("items").put(i.getJSONString());
+                if(i.isItem()) {
+                    aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).optJSONArray("items").put(i.getJSONString());
+                }
             }
             aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).put("sort", currentOrder);
             aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).put("direction", isIncreasingOrder);
@@ -1024,13 +1016,14 @@ public class CurrentList extends AppCompatActivity {
         // Long Click opens contextual menu
         registerForContextMenu(listView);
 
-        Button bMessageButton = (Button) findViewById(R.id.button);
+        // TODO: Pending Jacob - Remove send toast code below
+        /*Button bMessageButton = (Button) findViewById(R.id.button);
         bMessageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sendMessage("1");
             }
-        });
+        });*/
     }
 
     public void sendMessage(String message) {
@@ -1052,9 +1045,14 @@ public class CurrentList extends AppCompatActivity {
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.context_menu_curr, menu);
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+        int position = info.position;
+        Item i = items.get(position);
+        if(i.isItem()) {
+            super.onCreateContextMenu(menu, v, menuInfo);
+            MenuInflater inflater = getMenuInflater();
+            inflater.inflate(R.menu.context_menu_curr, menu);
+        }
     }
 
     @Override
@@ -1071,13 +1069,19 @@ public class CurrentList extends AppCompatActivity {
                     items_backup.add(item);
                 }
 
-                items.remove(index);
-                itemAdapter.notifyDataSetChanged();
-                if(items.size() == 0) {
-                    emptyNotice.setVisibility(View.VISIBLE);
+                if(items.get(index).getOwner().equals(deviceName) && items.get(index).isItem()) {
+                    items.remove(index);
+                    if(currentOrder == 3) {
+                        removeHeaders();
+                        addHeaders();
+                    }
+                    itemAdapter.notifyDataSetChanged();
+                    if (items.size() == 0) {
+                        emptyNotice.setVisibility(View.VISIBLE);
+                    }
+                    saveData();
+                    undoBox();
                 }
-                saveData();
-                undoBox();
                 return true;
             case R.id.cancel:
                 return super.onContextItemSelected(menuItem);
@@ -1206,9 +1210,11 @@ public class CurrentList extends AppCompatActivity {
                 }
             }
         });
-        itemType.setAdapter(catAdapter);
-        itemName.setAdapter(nameAdapter);
-        itemUnits.setAdapter(unitAdapter);
+        if(!disableAutocomplete) {
+            itemType.setAdapter(catAdapter);
+            itemName.setAdapter(nameAdapter);
+            itemUnits.setAdapter(unitAdapter);
+        }
         dialog.show();
     }
 
@@ -1297,13 +1303,13 @@ public class CurrentList extends AppCompatActivity {
                                 }
                                 if (!found) {
                                     items.add(new Item(
-                                            obj.getString("owner"),
-                                            obj.getString("name"),
-                                            obj.getString("type"),
-                                            obj.getDouble("quantity"),
-                                            obj.getString("units"),
-                                            obj.getBoolean("checked"),
-                                            obj.getLong("timeCreated")));
+                                        obj.getString("owner"),
+                                        obj.getString("name"),
+                                        obj.getString("type"),
+                                        obj.getDouble("quantity"),
+                                        obj.getString("units"),
+                                        obj.getBoolean("checked"),
+                                        obj.getLong("timeCreated")));
                                 }
                             }
                         } catch (JSONException e) {

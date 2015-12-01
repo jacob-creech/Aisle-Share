@@ -92,7 +92,7 @@ public class CurrentActivity extends AppCompatActivity {
             emptyNotice.setVisibility(View.VISIBLE);
         }
 
-        itemAdapter = new ItemAdapter(this, items, R.layout.row_activity);
+        itemAdapter = new ItemAdapter(this, items, R.layout.row_activity, false);
         listView.setAdapter(itemAdapter);
 
         try {
@@ -147,9 +147,7 @@ public class CurrentActivity extends AppCompatActivity {
     }
 
     public void addHeaders() {
-        String title;
-
-        title = items.get(0).getType();
+        String title = items.get(0).getType();
         if(title.equals("")){
             title = "No Category";
         }
@@ -392,19 +390,10 @@ public class CurrentActivity extends AppCompatActivity {
             isIncreasingOrder = true;
         }
 
-        ItemComparator compare = new ItemComparator(CurrentActivity.this);
+        setSortIcon();
         removeHeaders();
 
-        // Unsorted
-        if(currentOrder == -1){
-            menuItems.get("sort").setIcon(0);
-            menuItems.get("unsorted").setVisible(false);
-            return;
-        }
-        else{
-            menuItems.get("unsorted").setVisible(true);
-        }
-
+        ItemComparator compare = new ItemComparator(CurrentActivity.this);
         ItemComparator.Name name = compare.new Name();
         ItemComparator.Quantity quantity = compare.new Quantity();
         ItemComparator.Created created = compare.new Created();
@@ -412,45 +401,66 @@ public class CurrentActivity extends AppCompatActivity {
         ItemComparator.Owner owner = compare.new Owner();
 
         switch (currentOrder){
+            // Unsorted
+            case -1:
+                break;
             // Name
             case 0:{
                 Collections.sort(items, name);
+                setDirection();
                 break;}
             // Quantity
             case 1:{
                 Collections.sort(items, name);
                 Collections.sort(items, quantity);
+                setDirection();
                 break;}
             // Time Created
             case 2:{
                 Collections.sort(items, created);
+                setDirection();
                 break;}
             // Type
             case 3:{
                 Collections.sort(items, name);
+                setDirection();
                 Collections.sort(items, type);
+                addHeaders();
                 break;}
             // Owner
             case 4:{
                 Collections.sort(items, name);
                 Collections.sort(items, owner);
+                setDirection();
                 break;}
-        }
-
-        if(isIncreasingOrder) {
-            menuItems.get("sort").setIcon(R.mipmap.inc_sort);
-        }
-        else{
-            Collections.reverse(items);
-            menuItems.get("sort").setIcon(R.mipmap.dec_sort);
-        }
-        if(currentOrder == 3) {
-            addHeaders();
         }
     }
 
-    public String autoComplete_DupCheck(ArrayList<String> inputArray, String inputString) {
-        //prevents and kills the dups
+    public void setDirection(){
+        if(!isIncreasingOrder) {
+            Collections.reverse(items);
+        }
+    }
+
+    public void setSortIcon(){
+        if(menuItems.get("sort") != null && menuItems.get("unsorted") != null) {
+            if(currentOrder == -1) {
+                menuItems.get("sort").setIcon(0);
+                menuItems.get("unsorted").setVisible(false);
+            }
+            else{
+                menuItems.get("unsorted").setVisible(true);
+                if (isIncreasingOrder) {
+                    menuItems.get("sort").setIcon(R.mipmap.inc_sort);
+                } else {
+                    menuItems.get("sort").setIcon(R.mipmap.dec_sort);
+                }
+            }
+        }
+    }
+
+    public String autoCompleteDupCheck(ArrayList<String> inputArray, String inputString) {
+        //prevents and kills the duplicates
         int index;
         for(index = 0 ; index < inputArray.size(); index++) {
             if(inputArray.get(index).compareTo(inputString) == 0) {
@@ -576,13 +586,13 @@ public class CurrentActivity extends AppCompatActivity {
                         quantity = 1;
                     }
 
-                    duplicator = autoComplete_DupCheck(categories, type);
+                    duplicator = autoCompleteDupCheck(categories, type);
                     if (duplicator.compareTo(type) == 0) categories.add(type);
 
-                    duplicator = autoComplete_DupCheck(names, name);
+                    duplicator = autoCompleteDupCheck(names, name);
                     if (duplicator.compareTo(name) == 0) names.add(name);
 
-                    duplicator = autoComplete_DupCheck(units, unit);
+                    duplicator = autoCompleteDupCheck(units, unit);
                     if (duplicator.compareTo(unit) == 0) units.add(unit);
 
                     Item m = new Item(deviceName, name, type, quantity, unit);
@@ -623,13 +633,13 @@ public class CurrentActivity extends AppCompatActivity {
                         quantity = 1;
                     }
 
-                    duplicator = autoComplete_DupCheck(categories, type);
+                    duplicator = autoCompleteDupCheck(categories, type);
                     if (duplicator.compareTo(type) == 0) categories.add(type);
 
-                    duplicator = autoComplete_DupCheck(names, name);
+                    duplicator = autoCompleteDupCheck(names, name);
                     if (duplicator.compareTo(name) == 0) names.add(name);
 
-                    duplicator = autoComplete_DupCheck(units, unit);
+                    duplicator = autoCompleteDupCheck(units, unit);
                     if (duplicator.compareTo(unit) == 0) units.add(unit);
 
                     Item m = new Item(deviceName, name, type, quantity, unit);
@@ -748,13 +758,13 @@ public class CurrentActivity extends AppCompatActivity {
                         quantity = 1;
                     }
 
-                    duplicator = autoComplete_DupCheck(categories, type);
+                    duplicator = autoCompleteDupCheck(categories, type);
                     if(duplicator.compareTo(type) == 0) categories.add(type);
 
-                    duplicator = autoComplete_DupCheck(names, name);
+                    duplicator = autoCompleteDupCheck(names, name);
                     if(duplicator.compareTo(name) == 0) names.add(name);
 
-                    duplicator = autoComplete_DupCheck(units, unit);
+                    duplicator = autoCompleteDupCheck(units, unit);
                     if(duplicator.compareTo(unit) == 0) units.add(unit);
 
                     item.setName(name);
@@ -955,7 +965,6 @@ public class CurrentActivity extends AppCompatActivity {
                             obj.getString("units"),
                             obj.getBoolean("checked"),
                             obj.getLong("timeCreated"));
-                    i.setIsItem(obj.getBoolean("isItem"));
                     items.add(i);
                 } catch (JSONException e) {
                     e.printStackTrace();

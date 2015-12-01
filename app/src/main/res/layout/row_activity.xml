@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/row"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,104 +9,113 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
         android:paddingLeft="10dp"
-        android:paddingRight="20dp">
+        android:paddingRight="10dp"
+        android:id="@+id/primary"
+        android:layout_gravity="center"
+        android:layout_marginBottom="10dp"
+        android:layout_centerInParent="true">
 
         <LinearLayout
-            android:id="@+id/column1"
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight=".8"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:gravity="center_vertical">
-            <TextView
-                android:id="@+id/name"
-                android:text="Name"
-                android:layout_width="match_parent"
+
+            <LinearLayout
+                android:id="@+id/column1"
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="22sp"
-                android:textStyle="bold" />
-            <TextView
-                android:id="@+id/type"
-                android:text="Type"
-                android:layout_width="match_parent"
+                android:layout_weight=".8"
+                android:gravity="center_vertical">
+                <TextView
+                    android:id="@+id/name"
+                    android:text="Name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/type"
+                    android:text="Type"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="#6b6b6b"
+                    android:textStyle="italic" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="#6b6b6b"
-                android:textStyle="italic" />
+                android:id="@+id/column2"
+                android:layout_weight=".2"
+                android:gravity="center_vertical|right">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="####"
+                    android:id="@+id/quantity"
+                    android:textStyle="bold"
+                    android:textSize="22sp"
+                    android:singleLine="true"
+                    android:gravity="right"
+                    android:minWidth="110dp"
+                    android:maxLength="5"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Units"
+                    android:id="@+id/units"
+                    android:textStyle="italic"
+                    android:textSize="14sp"
+                    android:singleLine="false"
+                    android:gravity="right"
+                    android:maxLength="10"
+                    android:minWidth="110dp" />
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/column2"
-            android:layout_weight=".2"
-            android:gravity="center_vertical|right">
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:weightSum="3"
+            android:background="#3a3a3a"
+            android:visibility="invisible">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:text="####"
-                android:id="@+id/quantity"
-                android:textStyle="bold"
-                android:textSize="22sp"
-                android:singleLine="true"
-                android:gravity="right"
-                android:minWidth="110dp"
-                android:maxLength="5"/>
+                android:id="@+id/txt_delete"
+                android:gravity="center_vertical"
+                android:text="Swipe to Delete"
+                android:clickable="false"
+                android:layout_weight="2"
+                android:hapticFeedbackEnabled="true"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:paddingLeft="25dp" />
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Units"
-                android:id="@+id/units"
-                android:textStyle="italic"
-                android:textSize="14sp"
-                android:singleLine="false"
-                android:gravity="right"
-                android:maxLength="10"
-                android:minWidth="110dp" />
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:id="@+id/txt_undo"
+                android:text="UNDO"
+                android:clickable="false"
+                android:layout_weight="1"
+                android:textColor="#ffea00"
+                android:textStyle="bold"
+                android:textSize="22sp" />
+
         </LinearLayout>
     </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal"
-        android:weightSum="3"
-        android:background="#3a3a3a"
-        android:visibility="invisible">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:id="@+id/txt_delete"
-            android:gravity="center_vertical"
-            android:text="Swipe to Delete"
-            android:clickable="false"
-            android:layout_weight="2"
-            android:hapticFeedbackEnabled="true"
-            android:textColor="@android:color/white"
-            android:textSize="18sp"
-            android:paddingLeft="25dp" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:id="@+id/txt_undo"
-            android:text="UNDO"
-            android:clickable="false"
-            android:layout_weight="1"
-            android:textColor="#ffea00"
-            android:textStyle="bold"
-            android:textSize="22sp" />
-
-    </LinearLayout>
-
-</FrameLayout>
+</RelativeLayout>

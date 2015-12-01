@@ -356,7 +356,7 @@ public class Recipes extends Fragment {
             aisleShareData.optJSONObject("Recipes").accumulate(recipeTitle, new JSONObject());
             aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("items", new JSONArray());
             aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("category", new JSONArray());
-            aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("sort", -1);
+            aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("sort", 2);
             aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("direction", true);
             aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("time", timeCreated);
             aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).accumulate("owner", deviceName);

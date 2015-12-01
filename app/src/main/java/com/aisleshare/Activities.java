@@ -359,7 +359,7 @@ public class Activities extends Fragment {
             aisleShareData.optJSONObject("Activities").accumulate(activityTitle, new JSONObject());
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).accumulate("items", new JSONArray());
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).accumulate("category", new JSONArray());
-            aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).accumulate("sort", -1);
+            aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).accumulate("sort", 2);
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).accumulate("direction", true);
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).accumulate("time", timeCreated);
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).accumulate("owner", deviceName);

@@ -355,7 +355,7 @@ public class Lists extends Fragment {
             aisleShareData.optJSONObject("Lists").accumulate(listTitle, new JSONObject());
             aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).accumulate("items", new JSONArray());
             aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).accumulate("category", new JSONArray());
-            aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).accumulate("sort", -1);
+            aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).accumulate("sort", 2);
             aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).accumulate("direction", true);
             aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).accumulate("time", timeCreated);
             aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).accumulate("owner", deviceName);

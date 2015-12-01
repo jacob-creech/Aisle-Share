@@ -110,7 +110,7 @@ public class CurrentList extends AppCompatActivity {
             emptyNotice.setVisibility(View.VISIBLE);
         }
 
-        itemAdapter = new ItemAdapter(this, items, R.layout.row_list);
+        itemAdapter = new ItemAdapter(this, items, R.layout.row_list, true);
         listView.setAdapter(itemAdapter);
 
         try {
@@ -193,10 +193,7 @@ public class CurrentList extends AppCompatActivity {
                 final Item i = items.get(position);
                 if(deviceName.equals(i.getOwner()) && i.isItem()) {
                     items.remove(position);
-                    if(currentOrder == 3) {
-                        removeHeaders();
-                        addHeaders();
-                    }
+                    sortList(false, currentOrder);
                     itemAdapter.notifyDataSetChanged();
                     if(items.size() == 0) {
                         emptyNotice.setVisibility(View.VISIBLE);
@@ -217,10 +214,6 @@ public class CurrentList extends AppCompatActivity {
                         }
                     };
                 }
-                else {
-                    Toast toast = Toast.makeText(CurrentList.this, "Item not owned...", Toast.LENGTH_LONG);
-                    toast.show();
-                }
                 return null;
             }
         };
@@ -228,10 +221,17 @@ public class CurrentList extends AppCompatActivity {
         swipeAdapter = new SwipeDismissList(listView, callback, mode);
     }
 
-    public void addHeaders() {
-        String title;
+    public void addCheckedHeader(){
+        for(int i = 0; i < items.size(); i++) {
+            if(items.get(i).getChecked()) {
+                items.add(i, new Item(deviceName, "Checked Items", false));
+                break;
+            }
+        }
+    }
 
-        title = items.get(0).getType();
+    public void addHeaders() {
+        String title = items.get(0).getType();
         if(title.equals("")){
             title = "No Category";
         }
@@ -267,21 +267,10 @@ public class CurrentList extends AppCompatActivity {
             isIncreasingOrder = true;
         }
 
-        ItemComparator compare = new ItemComparator(CurrentList.this);
+        setSortIcon();
         removeHeaders();
 
-        // Unsorted
-        if(menuItems.get("sort") != null && menuItems.get("unsorted") != null) {
-            if (currentOrder == -1) {
-                menuItems.get("sort").setIcon(0);
-                menuItems.get("unsorted").setVisible(false);
-                return;
-            } else {
-                menuItems.get("unsorted").setVisible(true);
-            }
-        }
-
-
+        ItemComparator compare = new ItemComparator(CurrentList.this);
         ItemComparator.Name name = compare.new Name();
         ItemComparator.Quantity quantity = compare.new Quantity();
         ItemComparator.Created created = compare.new Created();
@@ -290,49 +279,72 @@ public class CurrentList extends AppCompatActivity {
         ItemComparator.Checked checked = compare.new Checked();
 
         switch (currentOrder){
+            // Unsorted
+            case -1:
+                Collections.sort(items, checked);
+                addCheckedHeader();
+                break;
             // Name
             case 0:{
                 Collections.sort(items, name);
+                setDirection();
                 Collections.sort(items, checked);
+                addCheckedHeader();
                 break;}
             // Quantity
             case 1:{
                 Collections.sort(items, name);
                 Collections.sort(items, quantity);
+                setDirection();
                 Collections.sort(items, checked);
+                addCheckedHeader();
                 break;}
             // Time Created
             case 2:{
                 Collections.sort(items, created);
+                setDirection();
                 Collections.sort(items, checked);
+                addCheckedHeader();
                 break;}
             // Type
             case 3:{
                 Collections.sort(items, name);
+                setDirection();
                 Collections.sort(items, checked);
                 Collections.sort(items, type);
+                addHeaders();
                 break;}
             // Owner
             case 4:{
                 Collections.sort(items, name);
                 Collections.sort(items, owner);
+                setDirection();
                 Collections.sort(items, checked);
+                addCheckedHeader();
                 break;}
         }
+    }
 
-        if(isIncreasingOrder) {
-            if(menuItems.get("sort") != null) {
-                menuItems.get("sort").setIcon(R.mipmap.inc_sort);
-            }
-        }
-        else{
+    public void setDirection(){
+        if(!isIncreasingOrder) {
             Collections.reverse(items);
-            if(menuItems.get("sort") != null) {
-                menuItems.get("sort").setIcon(R.mipmap.dec_sort);
-            }
         }
-        if(currentOrder == 3) {
-            addHeaders();
+    }
+
+    public void setSortIcon(){
+        if(menuItems.get("sort") != null && menuItems.get("unsorted") != null) {
+            if(currentOrder == -1) {
+                menuItems.get("sort").setIcon(0);
+                menuItems.get("unsorted").setVisible(false);
+            }
+            else{
+                menuItems.get("unsorted").setVisible(true);
+                if (isIncreasingOrder) {
+                    menuItems.get("sort").setIcon(R.mipmap.inc_sort);
+                } else {
+                    menuItems.get("sort").setIcon(R.mipmap.dec_sort);
+                }
+            }
         }
     }
 
@@ -347,7 +359,6 @@ public class CurrentList extends AppCompatActivity {
         menuItems.put("quantity", menu.findItem(R.id.sort_quantity));
         menuItems.put("owner", menu.findItem(R.id.sort_owner));
         menuItems.put("unsorted", menu.findItem(R.id.unsorted));
-        menuItems.put("delete", menu.findItem(R.id.delete_items));
 
         menuItems.get("name").setCheckable(true);
         menuItems.get("type").setCheckable(true);
@@ -415,9 +426,6 @@ public class CurrentList extends AppCompatActivity {
             case R.id.unsorted:
                 sortList(false, -1);
                 clearMenuCheckables();
-                break;
-            case R.id.delete_items:
-                confirmDeletion();
                 break;
             case R.id.addRecipe:
                 addToListDialog("Recipes");
@@ -786,11 +794,15 @@ public class CurrentList extends AppCompatActivity {
         setTitle(listTitle);
     }
 
-    public void confirmDeletion()
+    public void confirmDeletion(View v)
     {
+        final int pos = v.getId() + 1;
         boolean itemsChecked = false;
-        for(Item i : items){
-            if(i.getChecked()){
+        for (int index = pos; index < items.size(); index++) {
+            if (!items.get(index).isItem()){
+                break;
+            }
+            else if (deviceName.equals(items.get(index).getOwner()) && items.get(index).getChecked()) {
                 itemsChecked = true;
                 break;
             }
@@ -807,17 +819,17 @@ public class CurrentList extends AppCompatActivity {
                             items_backup.add(item);
                         }
 
-                        int length = items.size();
-                        for (int index = length - 1; index > -1; index--) {
-                            if (deviceName.equals(items.get(index).getOwner()) && items.get(index).getChecked() && items.get(index).isItem()) {
+                        for (int index = pos; index < items.size(); index++) {
+                            if (!items.get(index).isItem()){
+                                break;
+                            }
+                            else if (deviceName.equals(items.get(index).getOwner()) && items.get(index).getChecked()) {
                                 items.remove(index);
                                 removals = true;
+                                index--;
                             }
                         }
-                        if(currentOrder == 3) {
-                            removeHeaders();
-                            addHeaders();
-                        }
+                        sortList(false, currentOrder);
                         saveData();
                         itemAdapter.notifyDataSetChanged();
                         if (items.size() == 0) {
@@ -837,7 +849,7 @@ public class CurrentList extends AppCompatActivity {
                 .show();
         }
         else{
-            Toast toast = Toast.makeText(CurrentList.this, "No Checked Items...", Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(CurrentList.this, "No checked items to remove...", Toast.LENGTH_LONG);
             toast.show();
         }
     }
@@ -944,7 +956,6 @@ public class CurrentList extends AppCompatActivity {
                             obj.getString("units"),
                             obj.getBoolean("checked"),
                             obj.getLong("timeCreated"));
-                    i.setIsItem(obj.getBoolean("isItem"));
                     items.add(i);
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -1071,16 +1082,17 @@ public class CurrentList extends AppCompatActivity {
 
                 if(items.get(index).getOwner().equals(deviceName) && items.get(index).isItem()) {
                     items.remove(index);
-                    if(currentOrder == 3) {
-                        removeHeaders();
-                        addHeaders();
-                    }
+                    sortList(false, currentOrder);
                     itemAdapter.notifyDataSetChanged();
                     if (items.size() == 0) {
                         emptyNotice.setVisibility(View.VISIBLE);
                     }
                     saveData();
                     undoBox();
+                }
+                else if (!items.get(index).getOwner().equals(deviceName)) {
+                    Toast toast = Toast.makeText(CurrentList.this, "You are not the owner...", Toast.LENGTH_LONG);
+                    toast.show();
                 }
                 return true;
             case R.id.cancel:

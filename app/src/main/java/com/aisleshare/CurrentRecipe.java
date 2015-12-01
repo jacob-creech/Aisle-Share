@@ -92,7 +92,7 @@ public class CurrentRecipe extends AppCompatActivity {
             emptyNotice.setVisibility(View.VISIBLE);
         }
 
-        itemAdapter = new ItemAdapter(this, items, R.layout.row_recipe);
+        itemAdapter = new ItemAdapter(this, items, R.layout.row_recipe, false);
         listView.setAdapter(itemAdapter);
 
         try {
@@ -351,9 +351,7 @@ public class CurrentRecipe extends AppCompatActivity {
     }
 
     public void addHeaders() {
-        String title;
-
-        title = items.get(0).getType();
+        String title = items.get(0).getType();
         if(title.equals("")){
             title = "No Category";
         }
@@ -389,19 +387,10 @@ public class CurrentRecipe extends AppCompatActivity {
             isIncreasingOrder = true;
         }
 
-        ItemComparator compare = new ItemComparator(CurrentRecipe.this);
+        setSortIcon();
         removeHeaders();
 
-        // Unsorted
-        if(currentOrder == -1){
-            menuItems.get("sort").setIcon(0);
-            menuItems.get("unsorted").setVisible(false);
-            return;
-        }
-        else{
-            menuItems.get("unsorted").setVisible(true);
-        }
-
+        ItemComparator compare = new ItemComparator(CurrentRecipe.this);
         ItemComparator.Name name = compare.new Name();
         ItemComparator.Quantity quantity = compare.new Quantity();
         ItemComparator.Created created = compare.new Created();
@@ -409,40 +398,61 @@ public class CurrentRecipe extends AppCompatActivity {
         ItemComparator.Owner owner = compare.new Owner();
 
         switch (currentOrder){
+            // Unsorted
+            case -1:
+                break;
             // Name
             case 0:{
                 Collections.sort(items, name);
+                setDirection();
                 break;}
             // Quantity
             case 1:{
                 Collections.sort(items, name);
                 Collections.sort(items, quantity);
+                setDirection();
                 break;}
             // Time Created
             case 2:{
                 Collections.sort(items, created);
+                setDirection();
                 break;}
             // Type
             case 3:{
                 Collections.sort(items, name);
+                setDirection();
                 Collections.sort(items, type);
+                addHeaders();
                 break;}
             // Owner
             case 4:{
                 Collections.sort(items, name);
                 Collections.sort(items, owner);
+                setDirection();
                 break;}
         }
+    }
 
-        if(isIncreasingOrder) {
-            menuItems.get("sort").setIcon(R.mipmap.inc_sort);
-        }
-        else{
+    public void setDirection(){
+        if(!isIncreasingOrder) {
             Collections.reverse(items);
-            menuItems.get("sort").setIcon(R.mipmap.dec_sort);
         }
-        if(currentOrder == 3) {
-            addHeaders();
+    }
+
+    public void setSortIcon(){
+        if(menuItems.get("sort") != null && menuItems.get("unsorted") != null) {
+            if(currentOrder == -1) {
+                menuItems.get("sort").setIcon(0);
+                menuItems.get("unsorted").setVisible(false);
+            }
+            else{
+                menuItems.get("unsorted").setVisible(true);
+                if (isIncreasingOrder) {
+                    menuItems.get("sort").setIcon(R.mipmap.inc_sort);
+                } else {
+                    menuItems.get("sort").setIcon(R.mipmap.dec_sort);
+                }
+            }
         }
     }
 
@@ -950,7 +960,6 @@ public class CurrentRecipe extends AppCompatActivity {
                             obj.getString("units"),
                             obj.getBoolean("checked"),
                             obj.getLong("timeCreated"));
-                    i.setIsItem(obj.getBoolean("isItem"));
                     items.add(i);
 
                 } catch (JSONException e) {

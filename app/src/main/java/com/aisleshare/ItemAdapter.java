@@ -9,11 +9,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
-import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class ItemAdapter extends ArrayAdapter{
     private ArrayList<Item> items = null;
@@ -21,13 +21,15 @@ public class ItemAdapter extends ArrayAdapter{
     private String deviceName;
     private int original_layout;
     private int layout;
+    private boolean showTrash;
 
-    public ItemAdapter(Context context, ArrayList<Item> items, int layout) {
+    public ItemAdapter(Context context, ArrayList<Item> items, int layout, boolean showTrash) {
         super(context,layout,items);
         this.context = context;
         this.items = items;
         this.deviceName = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
         this.original_layout = layout;
+        this.showTrash = showTrash;
     }
 
     @Override
@@ -37,24 +39,43 @@ public class ItemAdapter extends ArrayAdapter{
             LayoutInflater inflater = ((Activity)context).getLayoutInflater();
             convertView = inflater.inflate(layout, parent, false);
 
-            FrameLayout row = (FrameLayout) convertView.findViewById(R.id.row);
+            RelativeLayout row = (RelativeLayout) convertView.findViewById(R.id.row);
+            ImageView imported = (ImageView) convertView.findViewById(R.id.imported);
+            LinearLayout primary = (LinearLayout) convertView.findViewById(R.id.primary);
+            CheckBox cb = (CheckBox) convertView.findViewById(R.id.checkBox);
+            LinearLayout col1 = (LinearLayout) convertView.findViewById(R.id.column1);
             TextView name = (TextView) convertView.findViewById(R.id.name);
             TextView type = (TextView) convertView.findViewById(R.id.type);
+            LinearLayout col2 = (LinearLayout) convertView.findViewById(R.id.column2);
             TextView quantity = (TextView) convertView.findViewById(R.id.quantity);
             TextView units = (TextView) convertView.findViewById(R.id.units);
-            CheckBox cb = (CheckBox) convertView.findViewById(R.id.checkBox);
 
             boolean hasType = items.get(position).getType().equals("");
             boolean hasUnits = items.get(position).getUnits().equals("");
             double quantityVal = items.get(position).getQuantity();
 
+            // Item is not owned
+            if (!items.get(position).getOwner().equals(deviceName)) {
+                if (imported != null) {
+                    imported.setVisibility(View.VISIBLE);
+                }
+
+                row.setTag("Disable Swipe");
+                primary.setTag("Disable Swipe");
+                cb.setTag("Disable Swipe");
+                col1.setTag("Disable Swipe");
+                name.setTag("Disable Swipe");
+                type.setTag("Disable Swipe");
+                col2.setTag("Disable Swipe");
+                quantity.setTag("Disable Swipe");
+                units.setTag("Disable Swipe");
+            }
 
             // Frame
             row.setId(position);
-            if (!items.get(position).getOwner().equals(deviceName)) {
-                //modifies item background color
-                //row.setBackgroundColor(Color.parseColor("#d7d7d7"));
-            }
+
+            // Primary Content
+            primary.setId(position);
 
             // Name
             name.setText(items.get(position).getName());
@@ -101,18 +122,25 @@ public class ItemAdapter extends ArrayAdapter{
             }
         }
         else { //this is a header item
-            layout = R.layout.activity_header;
+            layout = R.layout.row_header;
             LayoutInflater inflater = ((Activity)context).getLayoutInflater();
             convertView = inflater.inflate(layout, parent, false);
-            TextView name = (TextView) convertView.findViewById(R.id.separator);
 
+            RelativeLayout row = (RelativeLayout) convertView.findViewById(R.id.row);
+            row.setId(position);
+            row.setTag("Disable Swipe");
+
+            TextView name = (TextView) convertView.findViewById(R.id.separator);
             name.setText(items.get(position).getName());
             name.setId(position);
-            name.setTag("header");
+            name.setTag("Disable Swipe");
 
-            LinearLayout row = (LinearLayout) convertView.findViewById(R.id.row);
-            name.setId(position);
-            row.setTag("header");
+            if (showTrash) {
+                ImageView trash = (ImageView) convertView.findViewById(R.id.trash);
+                trash.setVisibility(View.VISIBLE);
+                trash.setId(position);
+                trash.setTag("Disable Swipe");
+            }
         }
 
         return convertView;

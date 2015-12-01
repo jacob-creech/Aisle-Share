@@ -81,29 +81,14 @@ public class Item {
         this.isItem = true;
     }
 
-
-
     // Accessors
-    public boolean isItem() { return this.isItem; }
     public String getOwner(){ return this.owner; }
-    public String getName(){
-        return this.name;
-    }
-    public String getType(){
-        return this.type;
-    }
-    public double getQuantity(){
-        return this.quantity;
-    }
-    public String getUnits(){
-        return this.units;
-    }
-    public long getCreated(){
-        return this.created;
-    }
-    public boolean getChecked(){
-        return this.checked;
-    }
+    public String getName(){ return this.name; }
+    public String getType(){ return this.type; }
+    public double getQuantity(){ return this.quantity; }
+    public String getUnits(){ return this.units; }
+    public long getCreated(){ return this.created; }
+    public boolean getChecked(){ return this.checked; }
     public String getJSONString() {
         String jsonString = "";
 
@@ -126,23 +111,13 @@ public class Item {
             return "\"\"";
         }
     }
+    public boolean isItem() { return this.isItem; }
 
     // Modifiers
-    public void setName(String name){
-        this.name = name;
-    }
-    public void setType(String type){
-        this.type = type;
-    }
-    public void setQuantity(double quantity){
-        this.quantity = quantity;
-    }
-    public void setUnits(String units){
-        this.units = units;
-    }
-    public void toggleChecked(){
-        checked = !checked;
-    }
+    public void setName(String name){ this.name = name; }
+    public void setType(String type){ this.type = type; }
+    public void setQuantity(double quantity){ this.quantity = quantity; }
+    public void setUnits(String units){ this.units = units; }
+    public void toggleChecked(){ checked = !checked; }
     public void setChecked(boolean value){ checked = value; }
-    public void setIsItem(boolean value) { isItem = value; }
 }

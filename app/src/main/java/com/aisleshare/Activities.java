@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Activities extends Fragment {
-    // // TODO: update ACTIVITY_NAME with a com.Activities.MESSAGE variable
     public final static String ACTIVITY_NAME = "com.ShoppingList.MESSAGE";
     private ListView listView;
     private ArrayList<ListItem> activities;
@@ -65,7 +64,6 @@ public class Activities extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        //setHasOptionsMenu(true);
         dashboard = getActivity();
         listView = (ListView) getView().findViewById(R.id.activities);
         activities = new ArrayList<>();
@@ -87,7 +85,7 @@ public class Activities extends Fragment {
         setListeners();
     }
 
-    public void sortActivity(boolean reverseOrder, int order) {
+    private void sortActivity(boolean reverseOrder, int order) {
         if(reverseOrder) {
             isIncreasingOrder = !isIncreasingOrder;
         }
@@ -128,7 +126,7 @@ public class Activities extends Fragment {
         saveSortInfo();
     }
 
-    public void setSortIcons(){
+    private void setSortIcons(){
         if(currentOrder == -1){
             menuActivities.get("sort").setIcon(0);
             menuActivities.get("unsorted").setVisible(false);
@@ -145,7 +143,7 @@ public class Activities extends Fragment {
     }
 
     // Popup for adding an Activity
-    public void addActivityDialog(){
+    private void addActivityDialog(){
         // custom dialog
         final Dialog dialog = new Dialog(dashboard);
         dialog.setContentView(R.layout.dialog_add_name);
@@ -205,7 +203,7 @@ public class Activities extends Fragment {
     }
 
     // Popup for editing a Activity
-    public void editActivityDialog(final int position){
+    private void editActivityDialog(final int position){
         if(!deviceName.equals(activities.get(position).getOwner())) {
             Toast toast = Toast.makeText(dashboard, "You are not the owner...", Toast.LENGTH_LONG);
             toast.show();
@@ -287,7 +285,7 @@ public class Activities extends Fragment {
         dialog.show();
     }
 
-    public void readSavedData(){
+    private void readSavedData(){
         try {
             File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
             // Read or Initializes aisleShareData
@@ -317,7 +315,7 @@ public class Activities extends Fragment {
         }
     }
 
-    public String loadJSONFromAsset(File f) {
+    private String loadJSONFromAsset(File f) {
         String json;
         try {
             FileInputStream fis = new FileInputStream(f);
@@ -333,7 +331,7 @@ public class Activities extends Fragment {
         return json;
     }
 
-    public void saveSortInfo(){
+    private void saveSortInfo(){
         try {
             // Need to update other fragments before saving
             File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
@@ -350,7 +348,7 @@ public class Activities extends Fragment {
         }
     }
 
-    public void saveNewActivity(String activityTitle, long timeCreated){
+    private void saveNewActivity(String activityTitle, long timeCreated){
         try {
             // Need to update other fragments before saving
             File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
@@ -372,7 +370,7 @@ public class Activities extends Fragment {
         }
     }
 
-    public void removeActivity(String activityTitle){
+    private void removeActivity(String activityTitle){
         try {
             // Need to update other fragments before saving
             File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
@@ -460,13 +458,13 @@ public class Activities extends Fragment {
         return super.onOptionsItemSelected(option);
     }
 
-    public void clearMenuCheckables(){
+    private void clearMenuCheckables(){
         menuActivities.get("name").setChecked(false);
         menuActivities.get("time").setChecked(false);
         menuActivities.get("owner").setChecked(false);
     }
 
-    public AlertDialog confirmDeletion(final int position)
+    private AlertDialog confirmDeletion(final int position)
     {
         final String activityName = activities.get(position).getName();
         return new AlertDialog.Builder(dashboard)
@@ -495,9 +493,9 @@ public class Activities extends Fragment {
                 .create();
     }
 
-    public void deleteItems(){
+    private void deleteItems(){
         // custom dialog
-        final Dialog dialog = new Dialog(dashboard); //has a problem, not caring atm
+        final Dialog dialog = new Dialog(dashboard);
         dialog.setContentView(R.layout.dialog_select_list);
 
         final ListView lv = (ListView) dialog.findViewById(R.id.lists);
@@ -550,7 +548,7 @@ public class Activities extends Fragment {
         }
     }
 
-    public void setListeners() {
+    private void setListeners() {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long id) {
                 Intent intent = new Intent(dashboard, CurrentActivity.class);

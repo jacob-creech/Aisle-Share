@@ -40,7 +40,6 @@ public class TransferAdapter extends ArrayAdapter {
 
         boolean hasType = items.get(position).getType().equals("");
         boolean hasUnits = items.get(position).getUnits().equals("");
-        double quantityVal = items.get(position).getQuantity();
 
         // Frame
         row.setId(position);

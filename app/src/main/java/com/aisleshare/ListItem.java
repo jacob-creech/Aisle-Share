@@ -16,10 +16,12 @@ public class ListItem {
         this.created = created;
     }
 
+    // Accessors
     public String getOwner(){ return this.owner; }
     public String getName(){ return this.name; }
     public long getCreated(){ return this.created; }
 
+    // Modifiers
     public void setName(String name){
         this.name = name;
     }

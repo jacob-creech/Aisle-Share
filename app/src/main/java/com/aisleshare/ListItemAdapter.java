@@ -15,9 +15,6 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Collections;
 
-/**
- * Created by Jason on 10/24/2015.
- */
 public class ListItemAdapter extends ArrayAdapter {
     private ArrayList<ListItem> items = null;
     private Context context;
@@ -37,18 +34,10 @@ public class ListItemAdapter extends ArrayAdapter {
         LayoutInflater inflater = ((Activity)context).getLayoutInflater();
         convertView = inflater.inflate(layout, parent, false);
 
-        TextView name = (TextView) convertView.findViewById(R.id.list_name);
-
-        // Frame
-        if(!items.get(position).getOwner().equals(deviceName)){
-            //modifies item background color
-            //row.setBackgroundColor(Color.parseColor("#d7d7d7"));
-        }
-
         // Name
+        TextView name = (TextView) convertView.findViewById(R.id.list_name);
         name.setText(items.get(position).getName());
         name.setId(position);
-
 
         return convertView;
     }

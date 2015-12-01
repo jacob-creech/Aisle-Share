@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Recipes extends Fragment {
-    // TODO: update RECIPE_NAME with a com.Recipes.MESSAGE variable
     public final static String RECIPE_NAME = "com.ShoppingList.MESSAGE";
     private ListView listView;
     private ArrayList<ListItem> recipes;
@@ -64,7 +63,6 @@ public class Recipes extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        //setHasOptionsMenu(true);
         dashboard = getActivity();
         listView = (ListView) getView().findViewById(R.id.recipes);
         recipes = new ArrayList<>();
@@ -84,7 +82,7 @@ public class Recipes extends Fragment {
         setListeners();
     }
 
-    public void sortRecipe(boolean reverseOrder, int order) {
+    private void sortRecipe(boolean reverseOrder, int order) {
         if(reverseOrder) {
             isIncreasingOrder = !isIncreasingOrder;
         }
@@ -125,7 +123,7 @@ public class Recipes extends Fragment {
         saveSortInfo();
     }
 
-    public void setSortIcons(){
+    private void setSortIcons(){
         if(currentOrder == -1){
             menuRecipes.get("sort").setIcon(0);
             menuRecipes.get("unsorted").setVisible(false);
@@ -142,7 +140,7 @@ public class Recipes extends Fragment {
     }
 
     // Popup for adding a Recipe
-    public void addRecipeDialog(){
+    private void addRecipeDialog(){
         // custom dialog
         final Dialog dialog = new Dialog(dashboard);
         dialog.setContentView(R.layout.dialog_add_name);
@@ -202,7 +200,7 @@ public class Recipes extends Fragment {
     }
 
     // Popup for editing a Recipe
-    public void editRecipeDialog(final int position){
+    private void editRecipeDialog(final int position){
         if(!deviceName.equals(recipes.get(position).getOwner())) {
             Toast toast = Toast.makeText(dashboard, "You are not the owner...", Toast.LENGTH_LONG);
             toast.show();
@@ -284,7 +282,7 @@ public class Recipes extends Fragment {
         dialog.show();
     }
 
-    public void readSavedData(){
+    private void readSavedData(){
         try {
             File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
             // Read or Initializes aisleShareData
@@ -314,7 +312,7 @@ public class Recipes extends Fragment {
         }
     }
 
-    public String loadJSONFromAsset(File f) {
+    private String loadJSONFromAsset(File f) {
         String json;
         try {
             FileInputStream fis = new FileInputStream(f);
@@ -330,7 +328,7 @@ public class Recipes extends Fragment {
         return json;
     }
 
-    public void saveSortInfo(){
+    private void saveSortInfo(){
         try {
             // Need to update other fragments before saving
             File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
@@ -347,7 +345,7 @@ public class Recipes extends Fragment {
         }
     }
 
-    public void saveNewRecipe(String recipeTitle, long timeCreated){
+    private void saveNewRecipe(String recipeTitle, long timeCreated){
         try {
             // Need to update other fragments before saving
             File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
@@ -369,7 +367,7 @@ public class Recipes extends Fragment {
         }
     }
 
-    public void removeRecipe(String recipeTitle){
+    private void removeRecipe(String recipeTitle){
         try {
             // Need to update other fragments before saving
             File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
@@ -458,13 +456,13 @@ public class Recipes extends Fragment {
         return super.onOptionsItemSelected(option);
     }
 
-    public void clearMenuCheckables(){
+    private void clearMenuCheckables(){
         menuRecipes.get("name").setChecked(false);
         menuRecipes.get("time").setChecked(false);
         menuRecipes.get("owner").setChecked(false);
     }
 
-    public AlertDialog confirmDeletion(final int position)
+    private AlertDialog confirmDeletion(final int position)
     {
         final String recipeName = recipes.get(position).getName();
         return new AlertDialog.Builder(dashboard)
@@ -493,9 +491,9 @@ public class Recipes extends Fragment {
                 .create();
     }
 
-    public void deleteItems(){
+    private void deleteItems(){
         // custom dialog
-        final Dialog dialog = new Dialog(dashboard); //has a problem, not caring atm
+        final Dialog dialog = new Dialog(dashboard);
         dialog.setContentView(R.layout.dialog_select_list);
 
         final ListView lv = (ListView) dialog.findViewById(R.id.lists);
@@ -548,7 +546,7 @@ public class Recipes extends Fragment {
         }
     }
 
-    public void setListeners() {
+    private void setListeners() {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long id) {
                 Intent intent = new Intent(dashboard, CurrentRecipe.class);

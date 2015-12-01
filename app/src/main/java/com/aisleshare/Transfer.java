@@ -53,7 +53,7 @@ public class Transfer extends AppCompatActivity {
     }
 
     // Sorted based on the order index parameter
-    public void sortList(boolean reverseOrder, int order) {
+    private void sortList(boolean reverseOrder, int order) {
         if(reverseOrder) {
             isIncreasingOrder = !isIncreasingOrder;
         }
@@ -124,7 +124,7 @@ public class Transfer extends AppCompatActivity {
         customAdapter.notifyDataSetChanged();
     }
 
-    public void editItemDialog(final int position){
+    private void editItemDialog(final int position){
         final Item item = items.get(position);
 
         // custom dialog
@@ -228,7 +228,7 @@ public class Transfer extends AppCompatActivity {
         dialog.show();
     }
 
-    public void setTitle(Bundle savedInstanceState){
+    private void setTitle(Bundle savedInstanceState){
         String title;
         Bundle extras = getIntent().getExtras();
         if (savedInstanceState == null) {
@@ -240,7 +240,7 @@ public class Transfer extends AppCompatActivity {
         setTitle(title);
     }
 
-    public void readSavedItems(){
+    private void readSavedItems(){
         try {
             File file = new File(getFilesDir().getPath() + "/Aisle_Share_Data.json");
             // Read or Initializes aisleShareData
@@ -271,7 +271,7 @@ public class Transfer extends AppCompatActivity {
         }
     }
 
-    public String loadJSONFromAsset(File f) {
+    private String loadJSONFromAsset(File f) {
         String json;
         try {
             FileInputStream fis = new FileInputStream(f);
@@ -287,7 +287,7 @@ public class Transfer extends AppCompatActivity {
         return json;
     }
 
-    public void setListeners() {
+    private void setListeners() {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -393,7 +393,7 @@ public class Transfer extends AppCompatActivity {
         customAdapter.notifyDataSetChanged();
     }
 
-    public void selectAllToggle(){
+    private void selectAllToggle(){
         final Button done = (Button) findViewById(R.id.Done);
         final CheckBox cb = (CheckBox) findViewById(R.id.select_all_cb);
         if(cb.isChecked()){

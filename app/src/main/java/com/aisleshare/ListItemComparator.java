@@ -4,9 +4,6 @@ import android.content.Context;
 import android.provider.Settings;
 import java.util.Comparator;
 
-/**
- * Created by Jason on 10/23/2015.
- */
 public class ListItemComparator {
     private String deviceName;
 

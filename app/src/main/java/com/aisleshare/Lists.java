@@ -63,7 +63,6 @@ public class Lists extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        //setHasOptionsMenu(true);
         dashboard = getActivity();
         listView = (ListView) getView().findViewById(R.id.lists);
         lists = new ArrayList<>();
@@ -83,7 +82,7 @@ public class Lists extends Fragment {
         setListeners();
     }
 
-    public void sortList(boolean reverseOrder, int order) {
+    private void sortList(boolean reverseOrder, int order) {
         if(reverseOrder) {
             isIncreasingOrder = !isIncreasingOrder;
         }
@@ -124,7 +123,7 @@ public class Lists extends Fragment {
         saveSortInfo();
     }
 
-    public void setSortIcons(){
+    private void setSortIcons(){
         if(currentOrder == -1){
             menuLists.get("sort").setIcon(0);
             menuLists.get("unsorted").setVisible(false);
@@ -141,7 +140,7 @@ public class Lists extends Fragment {
     }
 
     // Popup for adding a List
-    public void addListDialog(){
+    private void addListDialog(){
         // custom dialog
         final Dialog dialog = new Dialog(dashboard);
         dialog.setContentView(R.layout.dialog_add_name);
@@ -202,7 +201,7 @@ public class Lists extends Fragment {
     }
 
     // Popup for editing a List
-    public void editListDialog(final int position){
+    private void editListDialog(final int position){
         if(!deviceName.equals(lists.get(position).getOwner())) {
             Toast toast = Toast.makeText(dashboard, "You are not the owner...", Toast.LENGTH_LONG);
             toast.show();
@@ -284,7 +283,7 @@ public class Lists extends Fragment {
         dialog.show();
     }
 
-    public void readSavedData(){
+    private void readSavedData(){
         try {
             File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
             // Read or Initializes aisleShareData
@@ -313,7 +312,7 @@ public class Lists extends Fragment {
         }
     }
 
-    public String loadJSONFromAsset(File f) {
+    private String loadJSONFromAsset(File f) {
         String json;
         try {
             FileInputStream fis = new FileInputStream(f);
@@ -329,7 +328,7 @@ public class Lists extends Fragment {
         return json;
     }
 
-    public void saveSortInfo(){
+    private void saveSortInfo(){
         try {
             // Need to update other fragments before saving
             File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
@@ -346,7 +345,7 @@ public class Lists extends Fragment {
         }
     }
 
-    public void saveNewList(String listTitle, long timeCreated){
+    private void saveNewList(String listTitle, long timeCreated){
         try {
             // Need to update other fragments before saving
             File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
@@ -368,7 +367,7 @@ public class Lists extends Fragment {
         }
     }
 
-    public void removeList(String listTitle){
+    private void removeList(String listTitle){
         try {
             // Need to update other fragments before saving
             File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
@@ -456,13 +455,13 @@ public class Lists extends Fragment {
         return super.onOptionsItemSelected(option);
     }
 
-    public void clearMenuCheckables(){
+    private void clearMenuCheckables(){
         menuLists.get("name").setChecked(false);
         menuLists.get("time").setChecked(false);
         menuLists.get("owner").setChecked(false);
     }
 
-    public AlertDialog confirmDeletion(final int position)
+    private AlertDialog confirmDeletion(final int position)
     {
         final String listName = lists.get(position).getName();
         return new AlertDialog.Builder(dashboard)
@@ -491,9 +490,9 @@ public class Lists extends Fragment {
             .create();
     }
 
-    public void deleteItems(){
+    private void deleteItems(){
         // custom dialog
-        final Dialog dialog = new Dialog(dashboard); //has a problem, not caring atm
+        final Dialog dialog = new Dialog(dashboard);
         dialog.setContentView(R.layout.dialog_select_list);
 
         final ListView lv = (ListView) dialog.findViewById(R.id.lists);
@@ -546,7 +545,7 @@ public class Lists extends Fragment {
         }
     }
 
-    public void setListeners() {
+    private void setListeners() {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long id) {
                 Intent intent = new Intent(dashboard, CurrentList.class);

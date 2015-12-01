@@ -104,7 +104,7 @@ public class CurrentActivity extends AppCompatActivity {
 
     }
 
-    public void setSwipeToDelete() {
+    private void setSwipeToDelete() {
         SwipeDismissList.OnDismissCallback callback = new SwipeDismissList.OnDismissCallback() {
             @Override
             public SwipeDismissList.Undoable onDismiss(AbsListView listView, final int position) {
@@ -146,7 +146,7 @@ public class CurrentActivity extends AppCompatActivity {
         swipeAdapter = new SwipeDismissList(listView, callback, mode);
     }
 
-    public void addHeaders() {
+    private void addHeaders() {
         String title = items.get(0).getType();
         if(title.equals("")){
             title = "No Category";
@@ -158,13 +158,13 @@ public class CurrentActivity extends AppCompatActivity {
                 if(title.equals("")){
                     title = "No Category";
                 }
-                items.add(i+1, new Item(deviceName, title, false));
+                items.add(i + 1, new Item(deviceName, title, false));
                 i++;
             }
         }
     }
 
-    public void removeHeaders() {
+    private void removeHeaders() {
         for(int i = 0; i < items.size(); i++) {
             if(!items.get(i).isItem()) {
                 items.remove(i);
@@ -173,6 +173,7 @@ public class CurrentActivity extends AppCompatActivity {
         }
     }
 
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_current_activity, menu);
@@ -297,7 +298,7 @@ public class CurrentActivity extends AppCompatActivity {
         super.onBackPressed();
     }
 
-    public void clearMenuCheckables(){
+    private void clearMenuCheckables(){
         menuItems.get("name").setChecked(false);
         menuItems.get("type").setChecked(false);
         menuItems.get("time").setChecked(false);
@@ -305,7 +306,7 @@ public class CurrentActivity extends AppCompatActivity {
         menuItems.get("owner").setChecked(false);
     }
 
-    public void setListeners() {
+    private void setListeners() {
 
         // Floating Action Button
         FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.float_button);
@@ -369,7 +370,7 @@ public class CurrentActivity extends AppCompatActivity {
         }
     }
 
-    public void setActivityTitle(Bundle savedInstanceState){
+    private void setActivityTitle(Bundle savedInstanceState){
         Bundle extras = getIntent().getExtras();
         if (savedInstanceState == null) {
             activityTitle = getIntent().getStringExtra("com.ShoppingList.MESSAGE");
@@ -381,7 +382,7 @@ public class CurrentActivity extends AppCompatActivity {
     }
 
     // Sorted based on the order index parameter
-    public void sortList(boolean reverseOrder, int order) {
+    private void sortList(boolean reverseOrder, int order) {
         if(reverseOrder) {
             isIncreasingOrder = !isIncreasingOrder;
         }
@@ -436,13 +437,13 @@ public class CurrentActivity extends AppCompatActivity {
         }
     }
 
-    public void setDirection(){
+    private void setDirection(){
         if(!isIncreasingOrder) {
             Collections.reverse(items);
         }
     }
 
-    public void setSortIcon(){
+    private void setSortIcon(){
         if(menuItems.get("sort") != null && menuItems.get("unsorted") != null) {
             if(currentOrder == -1) {
                 menuItems.get("sort").setIcon(0);
@@ -459,8 +460,8 @@ public class CurrentActivity extends AppCompatActivity {
         }
     }
 
-    public String autoCompleteDupCheck(ArrayList<String> inputArray, String inputString) {
-        //prevents and kills the duplicates
+    private String autoCompleteDupCheck(ArrayList<String> inputArray, String inputString) {
+        // prevents duplicate records
         int index;
         for(index = 0 ; index < inputArray.size(); index++) {
             if(inputArray.get(index).compareTo(inputString) == 0) {
@@ -474,8 +475,7 @@ public class CurrentActivity extends AppCompatActivity {
     }
 
     // Popup for adding an Item
-    public void addItemDialog(){
-        // custom dialog
+    private void addItemDialog(){
         final Dialog dialog = new Dialog(CurrentActivity.this);
         dialog.setContentView(R.layout.dialog_add_item);
         dialog.setTitle("Add a New Item");
@@ -579,7 +579,8 @@ public class CurrentActivity extends AppCompatActivity {
                     String type = itemType.getText().toString();
                     double quantity;
                     String unit = itemUnits.getText().toString();
-                    String duplicator; //used to check for duplicate auto complete words
+                    // used to check for duplicate auto complete words
+                    String duplicator;
                     if (!itemQuantity.getText().toString().isEmpty()) {
                         quantity = Double.parseDouble(itemQuantity.getText().toString());
                     } else {
@@ -626,7 +627,8 @@ public class CurrentActivity extends AppCompatActivity {
                     String type = itemType.getText().toString();
                     double quantity;
                     String unit = itemUnits.getText().toString();
-                    String duplicator; //used to check for duplicate auto complete words
+                    // used to check for duplicate auto complete words
+                    String duplicator;
                     if (!itemQuantity.getText().toString().isEmpty()) {
                         quantity = Double.parseDouble(itemQuantity.getText().toString());
                     } else {
@@ -664,7 +666,7 @@ public class CurrentActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    public void editItemDialog(final int position){
+    private void editItemDialog(final int position){
         final Item item = items.get(position);
         if(!deviceName.equals(item.getOwner())){
             Context context = getApplicationContext();
@@ -751,7 +753,8 @@ public class CurrentActivity extends AppCompatActivity {
                     String type = itemType.getText().toString();
                     double quantity;
                     String unit = itemUnits.getText().toString();
-                    String duplicator; //used to check for duplicate auto complete words
+                    // used to check for duplicate auto complete words
+                    String duplicator;
                     if (!itemQuantity.getText().toString().isEmpty()) {
                         quantity = Double.parseDouble(itemQuantity.getText().toString());
                     } else {
@@ -792,7 +795,7 @@ public class CurrentActivity extends AppCompatActivity {
     }
 
     // Popup for adding an Item
-    public void addToListDialog() {
+    private void addToListDialog() {
         if (items.size() == 0) {
             Toast toast = Toast.makeText(CurrentActivity.this, "No items to add...", Toast.LENGTH_LONG);
             toast.show();
@@ -837,7 +840,9 @@ public class CurrentActivity extends AppCompatActivity {
                     aisleShareData.optJSONObject("Transfers").remove("items");
                     aisleShareData.optJSONObject("Transfers").accumulate("items", new JSONArray());
                     for (Item i : items) {
-                        aisleShareData.optJSONObject("Transfers").optJSONArray("items").put(i.getJSONString());
+                        if (i.isItem()) {
+                            aisleShareData.optJSONObject("Transfers").optJSONArray("items").put(i.getJSONString());
+                        }
                     }
                     FileOutputStream fos = new FileOutputStream(getFilesDir().getPath() + "/Aisle_Share_Data.json");
                     fos.write(aisleShareData.toString().getBytes());
@@ -863,8 +868,8 @@ public class CurrentActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    public void undoBox(){
-        // -- Load undo popup --
+    private void undoBox(){
+        // Load undo popup
         LayoutInflater inflater = (LayoutInflater) listView.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(de.timroes.swipetodismiss.R.layout.undo_popup, null);
         Button undoButton = (Button)view.findViewById(de.timroes.swipetodismiss.R.id.undo);
@@ -891,7 +896,7 @@ public class CurrentActivity extends AppCompatActivity {
         }
         undoPopup = new PopupWindow(view);
         undoPopup.setAnimationStyle(de.timroes.swipetodismiss.R.style.fade_animation);
-        // Get scren width in dp and set width respectively
+        // Get screen width in dp and set width respectively
         int xdensity = (int)(listView.getContext().getResources().getDisplayMetrics().widthPixels / density);
         if(xdensity < 300) {
             undoPopup.setWidth((int)(density * 220));
@@ -908,7 +913,7 @@ public class CurrentActivity extends AppCompatActivity {
         hideUndoBoxTimer();
     }
 
-    public void hideUndoBoxTimer(){
+    private void hideUndoBoxTimer(){
         undoTimer = new CountDownTimer(5000, 5000) {
             public void onTick(long millisUntilFinished) {}
             public void onFinish() {
@@ -921,7 +926,7 @@ public class CurrentActivity extends AppCompatActivity {
         }.start();
     }
 
-    public void readSavedArray(JSONArray input, int id) {
+    private void readSavedArray(JSONArray input, int id) {
         try {
             if (input != null) {
                 int len = input.length();
@@ -937,7 +942,7 @@ public class CurrentActivity extends AppCompatActivity {
         }
     }
 
-    public void readSavedData(){
+    private void readSavedData(){
         try {
             File file = new File(getFilesDir().getPath() + "/Aisle_Share_Data.json");
             // Read or Initializes aisleShareData
@@ -976,7 +981,7 @@ public class CurrentActivity extends AppCompatActivity {
         }
     }
 
-    public String loadJSONFromAsset(File f) {
+    private String loadJSONFromAsset(File f) {
         String json;
         try {
             FileInputStream fis = new FileInputStream(f);
@@ -992,7 +997,7 @@ public class CurrentActivity extends AppCompatActivity {
         return json;
     }
 
-    public void saveData(){
+    private void saveData(){
         try {
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).remove("items");
             aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).accumulate("items", new JSONArray());

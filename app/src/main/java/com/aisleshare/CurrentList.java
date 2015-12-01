@@ -166,6 +166,9 @@ public class CurrentList extends AppCompatActivity {
             readSavedData();
             sortList(false, currentOrder);
             itemAdapter.notifyDataSetChanged();
+            if (items.size() > 0){
+                emptyNotice.setVisibility(View.INVISIBLE);
+            }
             transfering = false;
         }
 
@@ -186,7 +189,7 @@ public class CurrentList extends AppCompatActivity {
         mBlueService = new Bluetooth(CurrentList.this, mHandler);
     }
 
-    public void setSwipeToDelete() {
+    private void setSwipeToDelete() {
         SwipeDismissList.OnDismissCallback callback = new SwipeDismissList.OnDismissCallback() {
             @Override
             public SwipeDismissList.Undoable onDismiss(AbsListView listView, final int position) {
@@ -221,7 +224,7 @@ public class CurrentList extends AppCompatActivity {
         swipeAdapter = new SwipeDismissList(listView, callback, mode);
     }
 
-    public void addCheckedHeader(){
+    private void addCheckedHeader(){
         for(int i = 0; i < items.size(); i++) {
             if(items.get(i).getChecked()) {
                 items.add(i, new Item(deviceName, "Checked Items", false));
@@ -230,7 +233,7 @@ public class CurrentList extends AppCompatActivity {
         }
     }
 
-    public void addHeaders() {
+    private void addHeaders() {
         String title = items.get(0).getType();
         if(title.equals("")){
             title = "No Category";
@@ -248,7 +251,7 @@ public class CurrentList extends AppCompatActivity {
         }
     }
 
-    public void removeHeaders() {
+    private void removeHeaders() {
         for(int i = 0; i < items.size(); i++) {
             if(!items.get(i).isItem()) {
                 items.remove(i);
@@ -258,7 +261,7 @@ public class CurrentList extends AppCompatActivity {
     }
 
     // Sorted based on the order index parameter
-    public void sortList(boolean reverseOrder, int order) {
+    private void sortList(boolean reverseOrder, int order) {
         if(reverseOrder) {
             isIncreasingOrder = !isIncreasingOrder;
         }
@@ -325,13 +328,13 @@ public class CurrentList extends AppCompatActivity {
         }
     }
 
-    public void setDirection(){
+    private void setDirection(){
         if(!isIncreasingOrder) {
             Collections.reverse(items);
         }
     }
 
-    public void setSortIcon(){
+    private void setSortIcon(){
         if(menuItems.get("sort") != null && menuItems.get("unsorted") != null) {
             if(currentOrder == -1) {
                 menuItems.get("sort").setIcon(0);
@@ -348,6 +351,7 @@ public class CurrentList extends AppCompatActivity {
         }
     }
 
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_current_list, menu);
@@ -462,7 +466,7 @@ public class CurrentList extends AppCompatActivity {
     }
 
     // Popup for adding an Item
-    public void addToListDialog(final String type) {
+    private void addToListDialog(final String type) {
         // custom dialog
         final Dialog dialog = new Dialog(CurrentList.this);
         dialog.setContentView(R.layout.dialog_select_list);
@@ -545,15 +549,13 @@ public class CurrentList extends AppCompatActivity {
         dialog.show();
     }
 
-    //TODO: find a way
+    //TODO: find a way (Jacob)
     private void setBluetooth() {
         Intent serverIntent = new Intent(CurrentList.this, DeviceListActivity.class);
         startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
     }
 
-
-
-    public void clearMenuCheckables(){
+    private void clearMenuCheckables(){
         menuItems.get("name").setChecked(false);
         menuItems.get("type").setChecked(false);
         menuItems.get("time").setChecked(false);
@@ -561,8 +563,8 @@ public class CurrentList extends AppCompatActivity {
         menuItems.get("owner").setChecked(false);
     }
 
-    public String autoComplete_DupCheck(ArrayList<String> inputArray, String inputString) {
-        //prevents and kills the dups
+    private String autoComplete_DupCheck(ArrayList<String> inputArray, String inputString) {
+        // prevents duplicate records
         int index;
         for(index = 0 ; index < inputArray.size(); index++) {
             if(inputArray.get(index).compareTo(inputString) == 0) {
@@ -576,7 +578,7 @@ public class CurrentList extends AppCompatActivity {
     }
 
     // Popup for adding an Item
-    public void addItemDialog(){
+    private void addItemDialog(){
         // custom dialog
         final Dialog dialog = new Dialog(CurrentList.this);
         dialog.setContentView(R.layout.dialog_add_item);
@@ -679,7 +681,8 @@ public class CurrentList extends AppCompatActivity {
                     String type = itemType.getText().toString();
                     double quantity;
                     String unit = itemUnits.getText().toString();
-                    String duplicator; //used to check for duplicate auto complete words
+                    // used to check for duplicate auto complete words
+                    String duplicator;
                     if(!itemQuantity.getText().toString().isEmpty()) {
                         quantity = Double.parseDouble(itemQuantity.getText().toString());
                     }
@@ -730,7 +733,8 @@ public class CurrentList extends AppCompatActivity {
                     String type = itemType.getText().toString();
                     double quantity;
                     String unit = itemUnits.getText().toString();
-                    String duplicator; //used to check for duplicate auto complete words
+                    // used to check for duplicate auto complete words
+                    String duplicator;
                     if(!itemQuantity.getText().toString().isEmpty()) {
                         quantity = Double.parseDouble(itemQuantity.getText().toString());
                     }
@@ -771,7 +775,7 @@ public class CurrentList extends AppCompatActivity {
     }
 
     // Checks/UnChecks an item by clicking on any element in its row
-    public void itemClick(View v){
+    private void itemClick(View v){
         if(v.getId() > items.size() || v.getId() < 0){
             return;
         }
@@ -783,7 +787,7 @@ public class CurrentList extends AppCompatActivity {
         sendMessage(item.getJSONString());
     }
 
-    public void setListTitle(Bundle savedInstanceState){
+    private void setListTitle(Bundle savedInstanceState){
         Bundle extras = getIntent().getExtras();
         if (savedInstanceState == null) {
             listTitle = getIntent().getStringExtra("com.ShoppingList.MESSAGE");
@@ -854,8 +858,8 @@ public class CurrentList extends AppCompatActivity {
         }
     }
 
-    public void undoBox(){
-        // -- Load undo popup --
+    private void undoBox(){
+        // Load undo popup
         LayoutInflater inflater = (LayoutInflater) listView.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(de.timroes.swipetodismiss.R.layout.undo_popup, null);
         Button undoButton = (Button)view.findViewById(de.timroes.swipetodismiss.R.id.undo);
@@ -882,7 +886,7 @@ public class CurrentList extends AppCompatActivity {
         }
         undoPopup = new PopupWindow(view);
         undoPopup.setAnimationStyle(de.timroes.swipetodismiss.R.style.fade_animation);
-        // Get scren width in dp and set width respectively
+        // Get screen width in dp and set width respectively
         int xdensity = (int)(listView.getContext().getResources().getDisplayMetrics().widthPixels / density);
         if(xdensity < 300) {
             undoPopup.setWidth((int)(density * 220));
@@ -899,7 +903,7 @@ public class CurrentList extends AppCompatActivity {
         hideUndoBoxTimer();
     }
 
-    public void hideUndoBoxTimer(){
+    private void hideUndoBoxTimer(){
         undoTimer = new CountDownTimer(5000, 5000) {
             public void onTick(long millisUntilFinished) {}
             public void onFinish() {
@@ -912,7 +916,7 @@ public class CurrentList extends AppCompatActivity {
         }.start();
     }
 
-    public void readSavedArray(JSONArray input, int id) {
+    private void readSavedArray(JSONArray input, int id) {
         try {
             if (input != null) {
                 int len = input.length();
@@ -928,7 +932,7 @@ public class CurrentList extends AppCompatActivity {
         }
     }
 
-    public void readSavedData(){
+    private void readSavedData(){
         try {
             File file = new File(getFilesDir().getPath() + "/Aisle_Share_Data.json");
             // Read or Initializes aisleShareData
@@ -967,7 +971,7 @@ public class CurrentList extends AppCompatActivity {
         }
     }
 
-    public String loadJSONFromAsset(File f) {
+    private String loadJSONFromAsset(File f) {
         String json;
         try {
             FileInputStream fis = new FileInputStream(f);
@@ -983,7 +987,7 @@ public class CurrentList extends AppCompatActivity {
         return json;
     }
 
-    public void saveData(){
+    private void saveData(){
         try {
             aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).remove("items");
             aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).accumulate("items", new JSONArray());
@@ -1006,7 +1010,7 @@ public class CurrentList extends AppCompatActivity {
         }
     }
 
-    public void setListeners() {
+    private void setListeners() {
         // Floating Action Button
         FloatingActionButton addButton = (FloatingActionButton) findViewById(R.id.float_button);
         addButton.setOnClickListener(new View.OnClickListener() {
@@ -1037,7 +1041,7 @@ public class CurrentList extends AppCompatActivity {
         });*/
     }
 
-    public void sendMessage(String message) {
+    private void sendMessage(String message) {
         // Check that we're actually connected before trying anything
         if(mBlueService != null) {
             if (mBlueService.getState() != Bluetooth.STATE_CONNECTED) {
@@ -1103,7 +1107,7 @@ public class CurrentList extends AppCompatActivity {
     }
 
 
-    public void editItemDialog(final int position){
+    private void editItemDialog(final int position){
         final Item item = items.get(position);
         if(!deviceName.equals(item.getOwner())){
             Context context = getApplicationContext();
@@ -1191,7 +1195,8 @@ public class CurrentList extends AppCompatActivity {
                     String type = itemType.getText().toString();
                     double quantity;
                     String unit = itemUnits.getText().toString();
-                    String duplicator; //used to check for duplicate auto complete words
+                    // used to check for duplicate auto complete words
+                    String duplicator;
                     if (!itemQuantity.getText().toString().isEmpty()) {
                         quantity = Double.parseDouble(itemQuantity.getText().toString());
                     } else {

@@ -100,7 +100,7 @@ public class Dashboard  extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void initializeStorage(){
+    private void initializeStorage(){
         try {
             File file = new File(getFilesDir().getPath() + "/Aisle_Share_Data.json");
             if (!file.exists()) {
@@ -140,7 +140,7 @@ public class Dashboard  extends AppCompatActivity {
         }
     }
 
-    public void saveData(){
+    private void saveData(){
         try {
             File file = new File(getFilesDir().getPath() + "/Aisle_Share_Data.json");
             aisleShareData = new JSONObject(loadJSONFromAsset(file));
@@ -156,7 +156,7 @@ public class Dashboard  extends AppCompatActivity {
     }
 
 
-    public AlertDialog confirmAutocompleteDeletion()
+    private AlertDialog confirmAutocompleteDeletion()
     {
         return new AlertDialog.Builder(Dashboard.this)
                 .setTitle("Confirm Deletion")
@@ -190,7 +190,7 @@ public class Dashboard  extends AppCompatActivity {
                 .create();
     }
 
-    public String loadJSONFromAsset(File f) {
+    private String loadJSONFromAsset(File f) {
         String json;
         try {
             FileInputStream fis = new FileInputStream(f);

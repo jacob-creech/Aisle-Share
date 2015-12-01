@@ -34,7 +34,8 @@ public class ItemAdapter extends ArrayAdapter{
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        if(items.get(position).isItem()) { //this is a typical item
+        // Is it an Item or Header
+        if(items.get(position).isItem()) {
             layout = original_layout;
             LayoutInflater inflater = ((Activity)context).getLayoutInflater();
             convertView = inflater.inflate(layout, parent, false);
@@ -54,7 +55,7 @@ public class ItemAdapter extends ArrayAdapter{
             boolean hasUnits = items.get(position).getUnits().equals("");
             double quantityVal = items.get(position).getQuantity();
 
-            // Item is not owned
+            // Item is not owned; show the imported symbol
             if (!items.get(position).getOwner().equals(deviceName)) {
                 if (imported != null) {
                     imported.setVisibility(View.VISIBLE);
@@ -121,7 +122,7 @@ public class ItemAdapter extends ArrayAdapter{
                 cb.setId(position);
             }
         }
-        else { //this is a header item
+        else {
             layout = R.layout.row_header;
             LayoutInflater inflater = ((Activity)context).getLayoutInflater();
             convertView = inflater.inflate(layout, parent, false);

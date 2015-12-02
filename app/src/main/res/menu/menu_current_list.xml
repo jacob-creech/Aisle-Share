@@ -30,7 +30,7 @@
         </menu>
     </item>
     <item
-        android:title="Add"
+        android:title="Add To List"
         android:id="@+id/plus"
         android:icon="@mipmap/add_to_list"
         app:showAsAction="always">

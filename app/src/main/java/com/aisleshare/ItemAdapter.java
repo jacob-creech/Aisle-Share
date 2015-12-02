@@ -21,15 +21,13 @@ public class ItemAdapter extends ArrayAdapter{
     private String deviceName;
     private int original_layout;
     private int layout;
-    private boolean showTrash;
 
-    public ItemAdapter(Context context, ArrayList<Item> items, int layout, boolean showTrash) {
+    public ItemAdapter(Context context, ArrayList<Item> items, int layout) {
         super(context,layout,items);
         this.context = context;
         this.items = items;
         this.deviceName = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
         this.original_layout = layout;
-        this.showTrash = showTrash;
     }
 
     @Override
@@ -136,7 +134,7 @@ public class ItemAdapter extends ArrayAdapter{
             name.setId(position);
             name.setTag("Disable Swipe");
 
-            if (showTrash) {
+            if (items.get(position).showTrash()) {
                 ImageView trash = (ImageView) convertView.findViewById(R.id.trash);
                 trash.setVisibility(View.VISIBLE);
                 trash.setId(position);

@@ -92,7 +92,7 @@ public class CurrentActivity extends AppCompatActivity {
             emptyNotice.setVisibility(View.VISIBLE);
         }
 
-        itemAdapter = new ItemAdapter(this, items, R.layout.row_activity, false);
+        itemAdapter = new ItemAdapter(this, items, R.layout.row_activity);
         listView.setAdapter(itemAdapter);
 
         try {
@@ -421,11 +421,11 @@ public class CurrentActivity extends AppCompatActivity {
                 Collections.sort(items, created);
                 setDirection();
                 break;}
-            // Type
+            // Category
             case 3:{
                 Collections.sort(items, name);
-                setDirection();
                 Collections.sort(items, type);
+                setDirection();
                 addHeaders();
                 break;}
             // Owner
@@ -952,13 +952,13 @@ public class CurrentActivity extends AppCompatActivity {
             currentOrder = aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).getInt("sort");
             isIncreasingOrder = aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).getBoolean("direction");
             disableAutocomplete = aisleShareData.optBoolean("DisableAutocomplete");
-            JSONArray read_cat = aisleShareData.getJSONArray("category");
+            JSONArray read_cat = aisleShareData.optJSONArray("category");
             readSavedArray(read_cat, 0);
-            JSONArray read_name = aisleShareData.getJSONArray("name");
+            JSONArray read_name = aisleShareData.optJSONArray("name");
             readSavedArray(read_name, 1);
-            JSONArray read_unit = aisleShareData.getJSONArray("unit");
+            JSONArray read_unit = aisleShareData.optJSONArray("unit");
             readSavedArray(read_unit, 2);
-            JSONArray read_items = aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).getJSONArray("items");
+            JSONArray read_items = aisleShareData.optJSONObject("Activities").optJSONObject(activityTitle).optJSONArray("items");
             for(int index = 0; index < read_items.length(); index++){
                 try {
                     JSONObject obj = new JSONObject(read_items.get(index).toString());

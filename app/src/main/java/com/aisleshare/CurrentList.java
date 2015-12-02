@@ -110,7 +110,7 @@ public class CurrentList extends AppCompatActivity {
             emptyNotice.setVisibility(View.VISIBLE);
         }
 
-        itemAdapter = new ItemAdapter(this, items, R.layout.row_list, true);
+        itemAdapter = new ItemAdapter(this, items, R.layout.row_list);
         listView.setAdapter(itemAdapter);
 
         try {
@@ -227,7 +227,9 @@ public class CurrentList extends AppCompatActivity {
     private void addCheckedHeader(){
         for(int i = 0; i < items.size(); i++) {
             if(items.get(i).getChecked()) {
-                items.add(i, new Item(deviceName, "Checked Items", false));
+                Item item = new Item(deviceName, "Checked Items", false);
+                item.setShowTrash(true);
+                items.add(i, item);
                 break;
             }
         }
@@ -240,6 +242,7 @@ public class CurrentList extends AppCompatActivity {
         }
         items.add(0, new Item(deviceName, title, false));
         for(int i = 1; i < items.size()-1; i++) {
+            if (items.get(i + 1).getChecked()) { break; }
             if(items.get(i).getType().compareTo(items.get(i + 1).getType()) != 0) {
                 title = items.get(i+1).getType();
                 if(title.equals("")){
@@ -309,13 +312,14 @@ public class CurrentList extends AppCompatActivity {
                 Collections.sort(items, checked);
                 addCheckedHeader();
                 break;}
-            // Type
+            // Category
             case 3:{
                 Collections.sort(items, name);
+                Collections.sort(items, type);
                 setDirection();
                 Collections.sort(items, checked);
-                Collections.sort(items, type);
                 addHeaders();
+                addCheckedHeader();
                 break;}
             // Owner
             case 4:{
@@ -941,13 +945,13 @@ public class CurrentList extends AppCompatActivity {
             currentOrder = aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).getInt("sort");
             isIncreasingOrder = aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).getBoolean("direction");
             disableAutocomplete = aisleShareData.optBoolean("DisableAutocomplete");
-            JSONArray read_cat = aisleShareData.getJSONArray("category");
+            JSONArray read_cat = aisleShareData.optJSONArray("category");
             readSavedArray(read_cat, 0);
-            JSONArray read_name = aisleShareData.getJSONArray("name");
+            JSONArray read_name = aisleShareData.optJSONArray("name");
             readSavedArray(read_name, 1);
-            JSONArray read_unit = aisleShareData.getJSONArray("unit");
+            JSONArray read_unit = aisleShareData.optJSONArray("unit");
             readSavedArray(read_unit, 2);
-            JSONArray read_items = aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).getJSONArray("items");
+            JSONArray read_items = aisleShareData.optJSONObject("Lists").optJSONObject(listTitle).optJSONArray("items");
             items.clear();
             for(int index = 0; index < read_items.length(); index++){
                 try {

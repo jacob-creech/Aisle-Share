@@ -9,6 +9,7 @@ public class Item {
     private boolean checked;
     private long created;
     private boolean isItem;
+    private boolean showTrash;
 
     Item(String owner, String name){
         this.owner = owner;
@@ -19,6 +20,7 @@ public class Item {
         this.checked = false;
         this.created = System.currentTimeMillis()/1000;
         this.isItem = true;
+        this.showTrash = false;
     }
     Item(String owner, String name, String type){
         this.owner = owner;
@@ -29,6 +31,7 @@ public class Item {
         this.checked = false;
         this.created = System.currentTimeMillis()/1000;
         this.isItem = true;
+        this.showTrash = false;
     }
     Item(String owner, String name, boolean item){
         this.owner = owner;
@@ -39,6 +42,7 @@ public class Item {
         this.checked = false;
         this.created = System.currentTimeMillis()/1000;
         this.isItem = item;
+        this.showTrash = false;
     }
     Item(String owner, String name, String type, double quantity){
         this.owner = owner;
@@ -49,6 +53,7 @@ public class Item {
         this.checked = false;
         this.created = System.currentTimeMillis()/1000;
         this.isItem = true;
+        this.showTrash = false;
     }
     Item(String owner, String name, String type, double quantity, String units){
         this.owner = owner;
@@ -59,6 +64,7 @@ public class Item {
         this.checked = false;
         this.created = System.currentTimeMillis()/1000;
         this.isItem = true;
+        this.showTrash = false;
     }
     Item(String owner, String name, String type, double quantity, String units, boolean value){
         this.owner = owner;
@@ -69,6 +75,7 @@ public class Item {
         this.checked = value;
         this.created = System.currentTimeMillis()/1000;
         this.isItem = true;
+        this.showTrash = false;
     }
     Item(String owner, String name, String type, double quantity, String units, boolean value, long created){
         this.owner = owner;
@@ -79,6 +86,7 @@ public class Item {
         this.checked = value;
         this.created = created;
         this.isItem = true;
+        this.showTrash = false;
     }
 
     // Accessors
@@ -98,8 +106,7 @@ public class Item {
         jsonString += ",\"units\":" + checkNull(units);
         jsonString += ",\"type\":" + checkNull(type);
         jsonString += ",\"timeCreated\":" + this.getCreated();
-        jsonString += ",\"checked\":" + this.getChecked();
-        jsonString += ",\"isItem\":" + this.isItem() + "}";
+        jsonString += ",\"checked\":" + this.getChecked() + "}";
 
         return jsonString;
     }
@@ -112,6 +119,7 @@ public class Item {
         }
     }
     public boolean isItem() { return this.isItem; }
+    public boolean showTrash() { return this.showTrash; }
 
     // Modifiers
     public void setName(String name){ this.name = name; }
@@ -119,5 +127,6 @@ public class Item {
     public void setQuantity(double quantity){ this.quantity = quantity; }
     public void setUnits(String units){ this.units = units; }
     public void toggleChecked(){ checked = !checked; }
-    public void setChecked(boolean value){ checked = value; }
+    public void setChecked(boolean checked){ this.checked = checked; }
+    public void setShowTrash(boolean showTrash) { this.showTrash = showTrash; }
 }

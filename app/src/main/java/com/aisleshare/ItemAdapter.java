@@ -58,16 +58,6 @@ public class ItemAdapter extends ArrayAdapter{
                 if (imported != null) {
                     imported.setVisibility(View.VISIBLE);
                 }
-
-                row.setTag("Disable Swipe");
-                primary.setTag("Disable Swipe");
-                cb.setTag("Disable Swipe");
-                col1.setTag("Disable Swipe");
-                name.setTag("Disable Swipe");
-                type.setTag("Disable Swipe");
-                col2.setTag("Disable Swipe");
-                quantity.setTag("Disable Swipe");
-                units.setTag("Disable Swipe");
             }
 
             // Frame

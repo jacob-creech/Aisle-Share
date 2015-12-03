@@ -194,7 +194,7 @@ public class CurrentList extends AppCompatActivity {
             @Override
             public SwipeDismissList.Undoable onDismiss(AbsListView listView, final int position) {
                 final Item i = items.get(position);
-                if(deviceName.equals(i.getOwner()) && i.isItem()) {
+                if(i.isItem()) {
                     items.remove(position);
                     sortList(false, currentOrder);
                     itemAdapter.notifyDataSetChanged();
@@ -204,13 +204,8 @@ public class CurrentList extends AppCompatActivity {
                     saveData();
                     return new SwipeDismissList.Undoable() {
                         public void undo() {
-                            // if sorted by type, the position could be wrong if headers removed
-                            if (currentOrder == 3) {
-                                items.add(i);
-                                sortList(false, currentOrder);
-                            } else {
-                                items.add(position, i);
-                            }
+                            items.add(i);
+                            sortList(false, currentOrder);
                             itemAdapter.notifyDataSetChanged();
                             emptyNotice.setVisibility(View.INVISIBLE);
                             saveData();
@@ -459,7 +454,9 @@ public class CurrentList extends AppCompatActivity {
                 finish();
                 return true;
             case R.id.share:
-                setupBluetooth();
+                if (mBlueService == null) {
+                    setupBluetooth();
+                }
                 setBluetooth();
                 break;
         }
@@ -553,7 +550,7 @@ public class CurrentList extends AppCompatActivity {
         dialog.show();
     }
 
-    //TODO: find a way (Jacob)
+    //TODO: find a way to do a popup
     private void setBluetooth() {
         Intent serverIntent = new Intent(CurrentList.this, DeviceListActivity.class);
         startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
@@ -759,6 +756,7 @@ public class CurrentList extends AppCompatActivity {
 
 
                     items.add(i);
+                    sendMessage(i.getJSONString());
                     saveData();
                     sortList(false, currentOrder);
                     itemAdapter.notifyDataSetChanged();
@@ -779,16 +777,18 @@ public class CurrentList extends AppCompatActivity {
     }
 
     // Checks/UnChecks an item by clicking on any element in its row
-    private void itemClick(View v){
+    public void itemClick(View v){
         if(v.getId() > items.size() || v.getId() < 0){
             return;
         }
         Item item = items.get(v.getId());
-        item.toggleChecked();
-        saveData();
-        sortList(false, currentOrder);
-        itemAdapter.notifyDataSetChanged();
-        sendMessage(item.getJSONString());
+        if (item.isItem()) {
+            item.toggleChecked();
+            saveData();
+            sortList(false, currentOrder);
+            itemAdapter.notifyDataSetChanged();
+            sendMessage(item.getJSONString());
+        }
     }
 
     private void setListTitle(Bundle savedInstanceState){
@@ -831,7 +831,7 @@ public class CurrentList extends AppCompatActivity {
                             if (!items.get(index).isItem()){
                                 break;
                             }
-                            else if (deviceName.equals(items.get(index).getOwner()) && items.get(index).getChecked()) {
+                            else if (items.get(index).getChecked()) {
                                 items.remove(index);
                                 removals = true;
                                 index--;
@@ -1034,15 +1034,6 @@ public class CurrentList extends AppCompatActivity {
 
         // Long Click opens contextual menu
         registerForContextMenu(listView);
-
-        // TODO: Pending Jacob - Remove send toast code below
-        /*Button bMessageButton = (Button) findViewById(R.id.button);
-        bMessageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendMessage("1");
-            }
-        });*/
     }
 
     private void sendMessage(String message) {
@@ -1088,7 +1079,7 @@ public class CurrentList extends AppCompatActivity {
                     items_backup.add(item);
                 }
 
-                if(items.get(index).getOwner().equals(deviceName) && items.get(index).isItem()) {
+                if(items.get(index).isItem()) {
                     items.remove(index);
                     sortList(false, currentOrder);
                     itemAdapter.notifyDataSetChanged();
@@ -1221,6 +1212,7 @@ public class CurrentList extends AppCompatActivity {
                     item.setQuantity(quantity);
                     item.setUnits(unit);
                     items.set(position, item);
+                    sendMessage(item.getJSONString());
 
                     saveData();
                     sortList(false, currentOrder);
@@ -1316,9 +1308,13 @@ public class CurrentList extends AppCompatActivity {
                                 JSONObject obj = new JSONObject(item);
                                 boolean found = false;
                                 for (Item i : items) {
-                                    if (i.getName().equals(obj.getString("name")) &&
-                                            i.getCreated() == obj.getLong("timeCreated")) {
+                                    if (i.getCreated() == obj.getLong("timeCreated") &&
+                                            i.getOwner().equals(obj.getString("owner"))) {
                                         i.setChecked(obj.getBoolean("checked"));
+                                        i.setName(obj.getString("name"));
+                                        i.setType(obj.getString("type"));
+                                        i.setQuantity(obj.getDouble("quantity"));
+                                        i.setUnits(obj.getString("units"));
                                         found = true;
                                     }
                                 }
@@ -1333,6 +1329,7 @@ public class CurrentList extends AppCompatActivity {
                                         obj.getLong("timeCreated")));
                                 }
                             }
+                            sortList(false, currentOrder);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -1347,9 +1344,11 @@ public class CurrentList extends AppCompatActivity {
                                 + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
                         String message = "";
                         for(Item i : items){
-                            message += i.getJSONString() + "|";
-                            //byte[] send = i.getJSONString().getBytes();
-                            //mBlueService.write(send);
+                            if (i.isItem()) {
+                                message += i.getJSONString() + "|";
+                                //byte[] send = i.getJSONString().getBytes();
+                                //mBlueService.write(send);
+                            }
                         }
                         CurrentList.this.sendMessage(message);
                     }

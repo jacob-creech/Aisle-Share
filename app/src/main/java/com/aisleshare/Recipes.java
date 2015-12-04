@@ -565,23 +565,25 @@ public class Recipes extends Fragment {
         super.onCreateContextMenu(menu, v, menuInfo);
         MenuInflater inflater = getActivity().getMenuInflater();
         inflater.inflate(R.menu.context_menu_dash, menu);
+        menu.findItem(R.id.add_to_list).getSubMenu().findItem(R.id.addRecipe).setVisible(false);
+        menu.findItem(R.id.add_to_list).getSubMenu().findItem(R.id.addActivity).setVisible(false);
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem menuItem) {
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
-        int index = info.position;
-
         if (!getUserVisibleHint()) {
             return false;
         }
+
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuItem.getMenuInfo();
+        int index = info.position;
 
         switch (menuItem.getItemId()) {
             case R.id.edit:
                 editRecipeDialog(index);
                 return true;
-            case R.id.share:
-                // TODO: share the recipe
+            case R.id.add_to_list:
+                addToListDialog(recipes.get(index).getName());
                 return true;
             case R.id.delete:
                 confirmDeletion(index).show();
@@ -591,5 +593,88 @@ public class Recipes extends Fragment {
             default:
                 return super.onContextItemSelected(menuItem);
         }
+    }
+
+    // Popup for adding an Item
+    private void addToListDialog(final String recipeTitle) {
+        // Need to update other fragments before saving
+        try {
+            File file = new File(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
+            aisleShareData = new JSONObject(loadJSONFromAsset(file));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        // custom dialog
+        final Dialog dialog = new Dialog(dashboard);
+        dialog.setContentView(R.layout.dialog_select_list);
+        dialog.setTitle("Select a List");
+
+        final ListView lv = (ListView) dialog.findViewById(R.id.lists);
+        final Button cancel = (Button) dialog.findViewById(R.id.cancel);
+
+        final ArrayList<String> entries = new ArrayList<>();
+        JSONArray names = aisleShareData.optJSONObject("Lists").names();
+        if(names != null) {
+            for (int i = 0; i < names.length(); i++) {
+                try {
+                    entries.add(names.get(i).toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        else{
+            return;
+        }
+
+        ArrayAdapter<String> itemAdapter = new ArrayAdapter<>(dashboard,android.R.layout.simple_list_item_1, entries);
+        lv.setAdapter(itemAdapter);
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String name = entries.get(position);
+                JSONArray sel_items = new JSONArray();
+                try {
+                    int sel_currentOrder = aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).optInt("sort");
+                    boolean sel_isIncreasingOrder = aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).optBoolean("order");
+                    sel_items = aisleShareData.optJSONObject("Recipes").optJSONObject(recipeTitle).optJSONArray("items");
+
+                    aisleShareData.optJSONObject("Transfers").put("sort", sel_currentOrder);
+                    aisleShareData.optJSONObject("Transfers").put("order", sel_isIncreasingOrder);
+                    aisleShareData.optJSONObject("Transfers").put("name", name);
+                    aisleShareData.optJSONObject("Transfers").remove("items");
+                    aisleShareData.optJSONObject("Transfers").accumulate("items", new JSONArray());
+                    for (int index = 0; index < sel_items.length(); index++) {
+                        aisleShareData.optJSONObject("Transfers").optJSONArray("items").put(sel_items.get(index));
+                    }
+                    FileOutputStream fos = new FileOutputStream(dashboard.getFilesDir().getPath() + "/Aisle_Share_Data.json");
+                    fos.write(aisleShareData.toString().getBytes());
+                    fos.close();
+                } catch (JSONException | IOException e) {
+                    e.printStackTrace();
+                }
+                dialog.dismiss();
+
+                if (sel_items.length() > 0) {
+                    Intent intent = new Intent(dashboard, Transfer.class);
+                    intent.putExtra(RECIPE_NAME, "Select which Items to Add");
+                    startActivity(intent);
+                } else {
+                    Toast toast = Toast.makeText(dashboard, name + " is empty...", Toast.LENGTH_LONG);
+                    toast.show();
+                }
+            }
+        });
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
     }
 }

@@ -46,10 +46,37 @@ public class Transfer extends AppCompatActivity {
         setTitle(savedInstanceState);
         readSavedItems();
         setListeners();
-        sortList(isIncreasingOrder, currentOrder);
+        sortList(false, currentOrder);
 
         customAdapter = new TransferAdapter(this, items, R.layout.row_transfer);
         listView.setAdapter(customAdapter);
+    }
+
+    private void addHeaders() {
+        String title = items.get(0).getType();
+        if(title.equals("")){
+            title = "No Category";
+        }
+        items.add(0, new Item("", title, false));
+        for(int i = 1; i < items.size()-1; i++) {
+            if(items.get(i).getType().compareTo(items.get(i + 1).getType()) != 0) {
+                title = items.get(i+1).getType();
+                if(title.equals("")){
+                    title = "No Category";
+                }
+                items.add(i + 1, new Item("", title, false));
+                i++;
+            }
+        }
+    }
+
+    private void removeHeaders() {
+        for(int i = 0; i < items.size(); i++) {
+            if(!items.get(i).isItem()) {
+                items.remove(i);
+                i--;
+            }
+        }
     }
 
     // Sorted based on the order index parameter
@@ -62,34 +89,54 @@ public class Transfer extends AppCompatActivity {
             isIncreasingOrder = true;
         }
 
+        removeHeaders();
+
         ItemComparator compare = new ItemComparator(Transfer.this);
+        ItemComparator.Name name = compare.new Name();
+        ItemComparator.Quantity quantity = compare.new Quantity();
+        ItemComparator.Created created = compare.new Created();
+        ItemComparator.Type type = compare.new Type();
+        ItemComparator.Owner owner = compare.new Owner();
 
         switch (currentOrder){
+            // Unsorted
+            case -1:
+                break;
             // Name
             case 0:{
-                ItemComparator.Name sorter = compare.new Name();
-                Collections.sort(items, sorter);
+                Collections.sort(items, name);
+                setDirection();
                 break;}
             // Quantity
             case 1:{
-                ItemComparator.Quantity sorter = compare.new Quantity();
-                Collections.sort(items, sorter);
+                Collections.sort(items, name);
+                Collections.sort(items, quantity);
+                setDirection();
                 break;}
             // Time Created
             case 2:{
-                ItemComparator.Created sorter = compare.new Created();
-                Collections.sort(items, sorter);
+                Collections.sort(items, created);
+                setDirection();
                 break;}
-            // Type
+            // Category
             case 3:{
-                ItemComparator.Type sorter = compare.new Type();
-                Collections.sort(items, sorter);
+                Collections.sort(items, name);
+                Collections.sort(items, type);
+                setDirection();
+                addHeaders();
                 break;}
             // Owner
             case 4:{
-                ItemComparator.Owner sorter = compare.new Owner();
-                Collections.sort(items, sorter);
+                Collections.sort(items, name);
+                Collections.sort(items, owner);
+                setDirection();
                 break;}
+        }
+    }
+
+    private void setDirection(){
+        if(!isIncreasingOrder) {
+            Collections.reverse(items);
         }
     }
 
@@ -213,6 +260,18 @@ public class Transfer extends AppCompatActivity {
                     item.setChecked(true);
                     items.set(position, item);
 
+                    final CheckBox cb = (CheckBox) findViewById(R.id.select_all_cb);
+                    boolean allChecked = true;
+                    for (Item i : items) {
+                        if (!i.getChecked()){
+                            allChecked = false;
+                            break;
+                        }
+                    }
+                    if (allChecked) {
+                        cb.setChecked(true);
+                    }
+
                     final Button done = (Button) findViewById(R.id.Done);
                     done.setEnabled(true);
 
@@ -317,7 +376,7 @@ public class Transfer extends AppCompatActivity {
             public void onClick(View v) {
                 boolean someChecked = false;
                 for (Item i : items) {
-                    if (i.getChecked()) {
+                    if (i.getChecked() && i.isItem()) {
                         i.toggleChecked();
                         aisleShareData.optJSONObject("Lists").optJSONObject(listName).
                                 optJSONArray("items").put(i.getJSONString());
@@ -375,6 +434,19 @@ public class Transfer extends AppCompatActivity {
             items.get(v.getId()).setQuantity((int) Math.ceil(quantity - 1));
         }
         items.get(v.getId()).setChecked(true);
+
+        final CheckBox cb = (CheckBox) findViewById(R.id.select_all_cb);
+        boolean allChecked = true;
+        for (Item i : items) {
+            if (!i.getChecked()){
+                allChecked = false;
+                break;
+            }
+        }
+        if (allChecked) {
+            cb.setChecked(true);
+        }
+
         final Button done = (Button) findViewById(R.id.Done);
         done.setEnabled(true);
 
@@ -387,6 +459,19 @@ public class Transfer extends AppCompatActivity {
             items.get(v.getId()).setQuantity((int) Math.floor(quantity + 1));
         }
         items.get(v.getId()).setChecked(true);
+
+        final CheckBox cb = (CheckBox) findViewById(R.id.select_all_cb);
+        boolean allChecked = true;
+        for (Item i : items) {
+            if (!i.getChecked()){
+                allChecked = false;
+                break;
+            }
+        }
+        if (allChecked) {
+            cb.setChecked(true);
+        }
+
         final Button done = (Button) findViewById(R.id.Done);
         done.setEnabled(true);
 

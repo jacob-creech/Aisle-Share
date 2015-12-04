@@ -2,8 +2,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/edit"
         android:title="Rename"/>
-    <item android:id="@+id/share"
-        android:title="Share"/>
+    <item android:id="@+id/add_to_list"
+        android:title="Add To List">
+        <menu
+            android:id="@+id/plus_menu">
+            <item
+                android:title="Add a Recipe"
+                android:id="@+id/addRecipe"/>
+            <item
+                android:title="Add an Activity"
+                android:id="@+id/addActivity"/>
+        </menu>
+    </item>
     <item android:id="@+id/delete"
         android:title="Delete"/>
     <item android:id="@+id/cancel"

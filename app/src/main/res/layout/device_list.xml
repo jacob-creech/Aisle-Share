@@ -1,14 +1,24 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Select a Device"
+        android:id="@+id/title"
+        android:textColor="#FF3385E5"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp" />
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight=".9">
+        android:layout_weight=".8">
 
         <LinearLayout
             android:orientation="vertical"
@@ -20,7 +30,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/title_paired_devices"
-                android:visibility="gone"
+                android:visibility="visible"
                 android:background="#666"
                 android:textColor="#fff"
                 android:paddingLeft="5dp" />
@@ -35,13 +45,15 @@
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="fill_parent"
-            android:layout_weight=".5">
+            android:layout_weight=".5"
+            android:id="@+id/visible_devices"
+            android:visibility="gone">
 
             <TextView android:id="@+id/title_new_devices"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/title_other_devices"
-                android:visibility="gone"
+                android:visibility="visible"
                 android:background="#666"
                 android:textColor="#fff"
                 android:paddingLeft="5dp" />
@@ -50,12 +62,30 @@
                 android:layout_width="match_parent"
                 android:layout_height="fill_parent"
                 android:stackFromBottom="false" />
+
         </LinearLayout>
+
     </LinearLayout>
 
-    <Button android:id="@+id/button_scan"
-        android:layout_width="fill_parent"
-        android:layout_height="60dp"
-        android:text="@string/button_scan"
-        android:layout_weight=".1" />
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight=".1">
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="60dp"
+            android:text="Cancel"
+            android:id="@+id/cancel"
+            android:layout_weight=".5" />
+
+        <Button android:id="@+id/button_scan"
+            android:layout_width="fill_parent"
+            android:layout_height="60dp"
+            android:text="Scan"
+            android:layout_weight=".5" />
+
+    </LinearLayout>
+
 </LinearLayout>

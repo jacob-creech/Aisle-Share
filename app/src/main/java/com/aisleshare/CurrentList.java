@@ -522,7 +522,6 @@ public class CurrentList extends AppCompatActivity {
         dialog.show();
     }
 
-    //TODO: find a way to do a popup
     private void setBluetooth() {
         Intent serverIntent = new Intent(CurrentList.this, DeviceListActivity.class);
         startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);

@@ -19,14 +19,8 @@
                 android:title="Sort By Name"/>
             <item android:id="@+id/sort_type"
                 android:title="Sort By Category"/>
-            <!-- todo: remove quantity or make visible (prefer removal) -->
-            <item android:id="@+id/sort_quantity"
-                android:title="Sort By Quantity"
-                android:visible="false"/>
             <item android:id="@+id/sort_owner"
                 android:title="Sort By Owner"/>
-            <item android:id="@+id/unsorted"
-                android:title="Turn Off Sort"/>
         </menu>
     </item>
     <item

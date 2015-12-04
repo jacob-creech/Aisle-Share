@@ -135,7 +135,7 @@ public class CurrentRecipe extends AppCompatActivity {
                     };
                 }
                 else {
-                    Toast toast = Toast.makeText(CurrentRecipe.this, "Item not owned...", Toast.LENGTH_LONG);
+                    Toast toast = Toast.makeText(CurrentRecipe.this, "Item not owned", Toast.LENGTH_LONG);
                     toast.show();
                 }
                 return null;
@@ -155,24 +155,17 @@ public class CurrentRecipe extends AppCompatActivity {
         menuItems.put("name", menu.findItem(R.id.sort_name));
         menuItems.put("type", menu.findItem(R.id.sort_type));
         menuItems.put("time", menu.findItem(R.id.sort_time));
-        menuItems.put("quantity", menu.findItem(R.id.sort_quantity));
         menuItems.put("owner", menu.findItem(R.id.sort_owner));
-        menuItems.put("unsorted", menu.findItem(R.id.unsorted));
 
         menuItems.get("name").setCheckable(true);
         menuItems.get("type").setCheckable(true);
         menuItems.get("time").setCheckable(true);
-        menuItems.get("quantity").setCheckable(true);
         menuItems.get("owner").setCheckable(true);
-        menuItems.get("unsorted").setVisible(false);
 
         sortList(false, currentOrder);
         switch (currentOrder){
             case 0:
                 menuItems.get("name").setChecked(true);
-                break;
-            case 1:
-                menuItems.get("quantity").setChecked(true);
                 break;
             case 2:
                 menuItems.get("time").setChecked(true);
@@ -202,11 +195,6 @@ public class CurrentRecipe extends AppCompatActivity {
                 clearMenuCheckables();
                 option.setChecked(true);
                 break;
-            case R.id.sort_quantity:
-                sortList(true, 1);
-                clearMenuCheckables();
-                option.setChecked(true);
-                break;
             case R.id.sort_time:
                 sortList(true, 2);
                 clearMenuCheckables();
@@ -221,10 +209,6 @@ public class CurrentRecipe extends AppCompatActivity {
                 sortList(true, 4);
                 clearMenuCheckables();
                 option.setChecked(true);
-                break;
-            case R.id.unsorted:
-                sortList(false, -1);
-                clearMenuCheckables();
                 break;
             case R.id.sort:
                 return true;
@@ -274,7 +258,6 @@ public class CurrentRecipe extends AppCompatActivity {
         menuItems.get("name").setChecked(false);
         menuItems.get("type").setChecked(false);
         menuItems.get("time").setChecked(false);
-        menuItems.get("quantity").setChecked(false);
         menuItems.get("owner").setChecked(false);
     }
 
@@ -356,14 +339,14 @@ public class CurrentRecipe extends AppCompatActivity {
         if(title.equals("")){
             title = "No Category";
         }
-        items.add(0, new Item(deviceName, title, false));
+        items.add(0, new Item("", title, false));
         for(int i = 1; i < items.size()-1; i++) {
             if(items.get(i).getType().compareTo(items.get(i + 1).getType()) != 0) {
                 title = items.get(i+1).getType();
                 if(title.equals("")){
                     title = "No Category";
                 }
-                items.add(i + 1, new Item(deviceName, title, false));
+                items.add(i + 1, new Item("", title, false));
                 i++;
             }
         }
@@ -399,9 +382,6 @@ public class CurrentRecipe extends AppCompatActivity {
         ItemComparator.Owner owner = compare.new Owner();
 
         switch (currentOrder){
-            // Unsorted
-            case -1:
-                break;
             // Name
             case 0:{
                 Collections.sort(items, name);
@@ -441,18 +421,11 @@ public class CurrentRecipe extends AppCompatActivity {
     }
 
     private void setSortIcon(){
-        if(menuItems.get("sort") != null && menuItems.get("unsorted") != null) {
-            if(currentOrder == -1) {
-                menuItems.get("sort").setIcon(0);
-                menuItems.get("unsorted").setVisible(false);
-            }
-            else{
-                menuItems.get("unsorted").setVisible(true);
-                if (isIncreasingOrder) {
-                    menuItems.get("sort").setIcon(R.mipmap.inc_sort);
-                } else {
-                    menuItems.get("sort").setIcon(R.mipmap.dec_sort);
-                }
+        if(menuItems.get("sort") != null) {
+            if (isIncreasingOrder) {
+                menuItems.get("sort").setIcon(R.mipmap.inc_sort);
+            } else {
+                menuItems.get("sort").setIcon(R.mipmap.dec_sort);
             }
         }
     }
@@ -611,7 +584,7 @@ public class CurrentRecipe extends AppCompatActivity {
                     toast.setGravity(Gravity.TOP, 0, 0);
                     toast.show();
                 } else {
-                    itemName.setError("Name is empty...");
+                    itemName.setError("Name is empty");
                 }
             }
         });
@@ -651,7 +624,7 @@ public class CurrentRecipe extends AppCompatActivity {
                     dialog.dismiss();
                     emptyNotice.setVisibility(View.INVISIBLE);
                 } else {
-                    itemName.setError("Name is empty...");
+                    itemName.setError("Name is empty");
                 }
             }
         });
@@ -667,7 +640,7 @@ public class CurrentRecipe extends AppCompatActivity {
         final Item item = items.get(position);
         if(!deviceName.equals(item.getOwner())){
             Context context = getApplicationContext();
-            CharSequence text = "You are not the owner...";
+            CharSequence text = "You are not the owner";
             int duration = Toast.LENGTH_LONG;
 
             Toast toast = Toast.makeText(context, text, duration);
@@ -779,7 +752,7 @@ public class CurrentRecipe extends AppCompatActivity {
                     itemAdapter.notifyDataSetChanged();
                     dialog.dismiss();
                 } else {
-                    itemName.setError("Name is empty...");
+                    itemName.setError("Name is empty");
                 }
             }
         });
@@ -794,7 +767,7 @@ public class CurrentRecipe extends AppCompatActivity {
     // Popup for adding an Item
     private void addToListDialog() {
         if (items.size() == 0) {
-            Toast toast = Toast.makeText(CurrentRecipe.this, "No items to add...", Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(CurrentRecipe.this, "No items to add", Toast.LENGTH_LONG);
             toast.show();
             return;
         }

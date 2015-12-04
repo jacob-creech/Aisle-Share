@@ -95,12 +95,6 @@ public class Lists extends Fragment {
 
         ListItemComparator compare = new ListItemComparator(dashboard);
 
-        // Unsorted
-        if(currentOrder == -1){
-            saveSortInfo();
-            return;
-        }
-
         switch (currentOrder){
             // Name
             case 0:{
@@ -126,18 +120,11 @@ public class Lists extends Fragment {
     }
 
     private void setSortIcons(){
-        if(currentOrder == -1){
-            menuLists.get("sort").setIcon(0);
-            menuLists.get("unsorted").setVisible(false);
+        if(isIncreasingOrder) {
+            menuLists.get("sort").setIcon(R.mipmap.inc_sort);
         }
-        else {
-            menuLists.get("unsorted").setVisible(true);
-            if(isIncreasingOrder) {
-                menuLists.get("sort").setIcon(R.mipmap.inc_sort);
-            }
-            else{
-                menuLists.get("sort").setIcon(R.mipmap.dec_sort);
-            }
+        else{
+            menuLists.get("sort").setIcon(R.mipmap.dec_sort);
         }
     }
 
@@ -177,7 +164,7 @@ public class Lists extends Fragment {
 
                     for (int index = 0; index < lists.size(); index++) {
                         if (lists.get(index).getName().equals(name)) {
-                            listName.setError("List already exists...");
+                            listName.setError("List already exists");
                             return;
                         }
                     }
@@ -194,7 +181,7 @@ public class Lists extends Fragment {
                     intent.putExtra(LIST_NAME, name);
                     startActivity(intent);
                 } else {
-                    listName.setError("Name is empty...");
+                    listName.setError("Name is empty");
                 }
             }
         });
@@ -205,7 +192,7 @@ public class Lists extends Fragment {
     // Popup for editing a List
     private void editListDialog(final int position){
         if(!deviceName.equals(lists.get(position).getOwner())) {
-            Toast toast = Toast.makeText(dashboard, "You are not the owner...", Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(dashboard, "You are not the owner", Toast.LENGTH_LONG);
             toast.show();
             return;
         }
@@ -251,7 +238,7 @@ public class Lists extends Fragment {
 
                     for (int index = 0; index < lists.size(); index++) {
                         if (lists.get(index).getName().equals(name) && index != position) {
-                            listName.setError("List already exists...");
+                            listName.setError("List already exists");
                             return;
                         }
                     }
@@ -277,7 +264,7 @@ public class Lists extends Fragment {
                         e.printStackTrace();
                     }
                 } else {
-                    listName.setError("Name is empty...");
+                    listName.setError("Name is empty");
                 }
             }
         });
@@ -392,13 +379,11 @@ public class Lists extends Fragment {
         menuLists.put("name", menu.findItem(R.id.sort_name));
         menuLists.put("time", menu.findItem(R.id.sort_time));
         menuLists.put("owner", menu.findItem(R.id.sort_owner));
-        menuLists.put("unsorted", menu.findItem(R.id.unsorted));
         menuLists.put("delete", menu.findItem(R.id.delete));
 
         menuLists.get("name").setCheckable(true);
         menuLists.get("time").setCheckable(true);
         menuLists.get("owner").setCheckable(true);
-        menuLists.get("unsorted").setVisible(false);
 
         setSortIcons();
         switch (currentOrder){
@@ -441,11 +426,6 @@ public class Lists extends Fragment {
                 setSortIcons();
                 clearMenuCheckables();
                 option.setChecked(true);
-                break;
-            case R.id.unsorted:
-                sortList(false, -1);
-                setSortIcons();
-                clearMenuCheckables();
                 break;
             case R.id.delete:
                 deleteItems();
@@ -670,7 +650,7 @@ public class Lists extends Fragment {
                     intent.putExtra(LIST_NAME, "Select which Items to Add");
                     startActivity(intent);
                 } else {
-                    Toast toast = Toast.makeText(dashboard, name + " is empty...", Toast.LENGTH_LONG);
+                    Toast toast = Toast.makeText(dashboard, name + " is empty", Toast.LENGTH_LONG);
                     toast.show();
                 }
             }

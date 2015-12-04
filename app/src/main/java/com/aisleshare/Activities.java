@@ -96,12 +96,6 @@ public class Activities extends Fragment {
 
         ListItemComparator compare = new ListItemComparator(dashboard);
 
-        // Unsorted
-        if(currentOrder == -1){
-            saveSortInfo();
-            return;
-        }
-
         switch (currentOrder){
             // Name
             case 0:{
@@ -127,18 +121,11 @@ public class Activities extends Fragment {
     }
 
     private void setSortIcons(){
-        if(currentOrder == -1){
-            menuActivities.get("sort").setIcon(0);
-            menuActivities.get("unsorted").setVisible(false);
+        if(isIncreasingOrder) {
+            menuActivities.get("sort").setIcon(R.mipmap.inc_sort);
         }
-        else {
-            menuActivities.get("unsorted").setVisible(true);
-            if(isIncreasingOrder) {
-                menuActivities.get("sort").setIcon(R.mipmap.inc_sort);
-            }
-            else{
-                menuActivities.get("sort").setIcon(R.mipmap.dec_sort);
-            }
+        else{
+            menuActivities.get("sort").setIcon(R.mipmap.dec_sort);
         }
     }
 
@@ -178,7 +165,7 @@ public class Activities extends Fragment {
 
                     for (int index = 0; index < activities.size(); index++) {
                         if (activities.get(index).getName().equals(name)) {
-                            activityName.setError("Activity already exists...");
+                            activityName.setError("Activity already exists");
                             return;
                         }
                     }
@@ -194,7 +181,7 @@ public class Activities extends Fragment {
                     intent.putExtra(ACTIVITY_NAME, name);
                     startActivity(intent);
                 } else {
-                    activityName.setError("Name is empty...");
+                    activityName.setError("Name is empty");
                 }
             }
         });
@@ -205,7 +192,7 @@ public class Activities extends Fragment {
     // Popup for editing a Activity
     private void editActivityDialog(final int position){
         if(!deviceName.equals(activities.get(position).getOwner())) {
-            Toast toast = Toast.makeText(dashboard, "You are not the owner...", Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(dashboard, "You are not the owner", Toast.LENGTH_LONG);
             toast.show();
             return;
         }
@@ -251,7 +238,7 @@ public class Activities extends Fragment {
 
                     for (int index = 0; index < activities.size(); index++) {
                         if (activities.get(index).getName().equals(name) && index != position) {
-                            activityName.setError("Activity already exists...");
+                            activityName.setError("Activity already exists");
                             return;
                         }
                     }
@@ -277,7 +264,7 @@ public class Activities extends Fragment {
                         e.printStackTrace();
                     }
                 } else {
-                    activityName.setError("Name is empty...");
+                    activityName.setError("Name is empty");
                 }
             }
         });
@@ -393,13 +380,11 @@ public class Activities extends Fragment {
         menuActivities.put("name", menu.findItem(R.id.sort_name));
         menuActivities.put("time", menu.findItem(R.id.sort_time));
         menuActivities.put("owner", menu.findItem(R.id.sort_owner));
-        menuActivities.put("unsorted", menu.findItem(R.id.unsorted));
         menuActivities.put("delete", menu.findItem(R.id.delete));
 
         menuActivities.get("name").setCheckable(true);
         menuActivities.get("time").setCheckable(true);
         menuActivities.get("owner").setCheckable(true);
-        menuActivities.get("unsorted").setVisible(false);
 
         setSortIcons();
         switch (currentOrder){
@@ -442,11 +427,6 @@ public class Activities extends Fragment {
                 setSortIcons();
                 clearMenuCheckables();
                 option.setChecked(true);
-                break;
-            case R.id.unsorted:
-                sortActivity(false, -1);
-                setSortIcons();
-                clearMenuCheckables();
                 break;
             case R.id.delete:
                 deleteItems();
@@ -664,7 +644,7 @@ public class Activities extends Fragment {
                     intent.putExtra(ACTIVITY_NAME, "Select which Items to Add");
                     startActivity(intent);
                 } else {
-                    Toast toast = Toast.makeText(dashboard, name + " is empty...", Toast.LENGTH_LONG);
+                    Toast toast = Toast.makeText(dashboard, activityTitle + " is empty", Toast.LENGTH_LONG);
                     toast.show();
                 }
             }

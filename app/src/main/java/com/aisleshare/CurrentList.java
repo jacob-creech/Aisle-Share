@@ -222,7 +222,7 @@ public class CurrentList extends AppCompatActivity {
     private void addCheckedHeader(){
         for(int i = 0; i < items.size(); i++) {
             if(items.get(i).getChecked()) {
-                Item item = new Item(deviceName, "Checked Items", false);
+                Item item = new Item("", "Checked Items", false);
                 item.setShowTrash(true);
                 items.add(i, item);
                 break;
@@ -235,7 +235,7 @@ public class CurrentList extends AppCompatActivity {
         if(title.equals("")){
             title = "No Category";
         }
-        items.add(0, new Item(deviceName, title, false));
+        items.add(0, new Item("", title, false));
         for(int i = 1; i < items.size()-1; i++) {
             if (items.get(i + 1).getChecked()) { break; }
             if(items.get(i).getType().compareTo(items.get(i + 1).getType()) != 0) {
@@ -243,7 +243,7 @@ public class CurrentList extends AppCompatActivity {
                 if(title.equals("")){
                     title = "No Category";
                 }
-                items.add(i + 1, new Item(deviceName, title, false));
+                items.add(i + 1, new Item("", title, false));
                 i++;
             }
         }
@@ -280,11 +280,6 @@ public class CurrentList extends AppCompatActivity {
         ItemComparator.Checked checked = compare.new Checked();
 
         switch (currentOrder){
-            // Unsorted
-            case -1:
-                Collections.sort(items, checked);
-                addCheckedHeader();
-                break;
             // Name
             case 0:{
                 Collections.sort(items, name);
@@ -334,18 +329,11 @@ public class CurrentList extends AppCompatActivity {
     }
 
     private void setSortIcon(){
-        if(menuItems.get("sort") != null && menuItems.get("unsorted") != null) {
-            if(currentOrder == -1) {
-                menuItems.get("sort").setIcon(0);
-                menuItems.get("unsorted").setVisible(false);
-            }
-            else{
-                menuItems.get("unsorted").setVisible(true);
-                if (isIncreasingOrder) {
-                    menuItems.get("sort").setIcon(R.mipmap.inc_sort);
-                } else {
-                    menuItems.get("sort").setIcon(R.mipmap.dec_sort);
-                }
+        if(menuItems.get("sort") != null) {
+            if (isIncreasingOrder) {
+                menuItems.get("sort").setIcon(R.mipmap.inc_sort);
+            } else {
+                menuItems.get("sort").setIcon(R.mipmap.dec_sort);
             }
         }
     }
@@ -359,24 +347,17 @@ public class CurrentList extends AppCompatActivity {
         menuItems.put("name", menu.findItem(R.id.sort_name));
         menuItems.put("type", menu.findItem(R.id.sort_type));
         menuItems.put("time", menu.findItem(R.id.sort_time));
-        menuItems.put("quantity", menu.findItem(R.id.sort_quantity));
         menuItems.put("owner", menu.findItem(R.id.sort_owner));
-        menuItems.put("unsorted", menu.findItem(R.id.unsorted));
 
         menuItems.get("name").setCheckable(true);
         menuItems.get("type").setCheckable(true);
         menuItems.get("time").setCheckable(true);
-        menuItems.get("quantity").setCheckable(true);
         menuItems.get("owner").setCheckable(true);
-        menuItems.get("unsorted").setVisible(false);
 
         sortList(false, currentOrder);
         switch (currentOrder){
             case 0:
                 menuItems.get("name").setChecked(true);
-                break;
-            case 1:
-                menuItems.get("quantity").setChecked(true);
                 break;
             case 2:
                 menuItems.get("time").setChecked(true);
@@ -406,11 +387,6 @@ public class CurrentList extends AppCompatActivity {
                 clearMenuCheckables();
                 option.setChecked(true);
                 break;
-            case R.id.sort_quantity:
-                sortList(true, 1);
-                clearMenuCheckables();
-                option.setChecked(true);
-                break;
             case R.id.sort_time:
                 sortList(true, 2);
                 clearMenuCheckables();
@@ -425,10 +401,6 @@ public class CurrentList extends AppCompatActivity {
                 sortList(true, 4);
                 clearMenuCheckables();
                 option.setChecked(true);
-                break;
-            case R.id.unsorted:
-                sortList(false, -1);
-                clearMenuCheckables();
                 break;
             case R.id.addRecipe:
                 addToListDialog("Recipes");
@@ -534,7 +506,7 @@ public class CurrentList extends AppCompatActivity {
                     intent.putExtra(LIST_NAME, "Select which Items to Add");
                     startActivity(intent);
                 } else {
-                    Toast toast = Toast.makeText(CurrentList.this, name + " is empty...", Toast.LENGTH_LONG);
+                    Toast toast = Toast.makeText(CurrentList.this, name + " is empty", Toast.LENGTH_LONG);
                     toast.show();
                 }
             }
@@ -560,7 +532,6 @@ public class CurrentList extends AppCompatActivity {
         menuItems.get("name").setChecked(false);
         menuItems.get("type").setChecked(false);
         menuItems.get("time").setChecked(false);
-        menuItems.get("quantity").setChecked(false);
         menuItems.get("owner").setChecked(false);
     }
 
@@ -721,7 +692,7 @@ public class CurrentList extends AppCompatActivity {
                     toast.show();
                 }
                 else{
-                    itemName.setError("Name is empty...");
+                    itemName.setError("Name is empty");
                 }
             }
         });
@@ -764,7 +735,7 @@ public class CurrentList extends AppCompatActivity {
                     emptyNotice.setVisibility(View.INVISIBLE);
                 }
                 else{
-                    itemName.setError("Name is empty...");
+                    itemName.setError("Name is empty");
                 }
             }
         });
@@ -857,7 +828,7 @@ public class CurrentList extends AppCompatActivity {
                 .show();
         }
         else{
-            Toast toast = Toast.makeText(CurrentList.this, "No checked items to remove...", Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(CurrentList.this, "No checked items to remove", Toast.LENGTH_LONG);
             toast.show();
         }
     }
@@ -1090,7 +1061,7 @@ public class CurrentList extends AppCompatActivity {
                     undoBox();
                 }
                 else if (!items.get(index).getOwner().equals(deviceName)) {
-                    Toast toast = Toast.makeText(CurrentList.this, "You are not the owner...", Toast.LENGTH_LONG);
+                    Toast toast = Toast.makeText(CurrentList.this, "You are not the owner", Toast.LENGTH_LONG);
                     toast.show();
                 }
                 return true;
@@ -1106,7 +1077,7 @@ public class CurrentList extends AppCompatActivity {
         final Item item = items.get(position);
         if(!deviceName.equals(item.getOwner())){
             Context context = getApplicationContext();
-            CharSequence text = "You are not the owner...";
+            CharSequence text = "You are not the owner";
             int duration = Toast.LENGTH_LONG;
 
             Toast toast = Toast.makeText(context, text, duration);
@@ -1219,7 +1190,7 @@ public class CurrentList extends AppCompatActivity {
                     itemAdapter.notifyDataSetChanged();
                     dialog.dismiss();
                 } else {
-                    itemName.setError("Name is empty...");
+                    itemName.setError("Name is empty");
                 }
             }
         });
@@ -1327,6 +1298,7 @@ public class CurrentList extends AppCompatActivity {
                                         obj.getString("units"),
                                         obj.getBoolean("checked"),
                                         obj.getLong("timeCreated")));
+                                    emptyNotice.setVisibility(View.INVISIBLE);
                                 }
                             }
                             sortList(false, currentOrder);

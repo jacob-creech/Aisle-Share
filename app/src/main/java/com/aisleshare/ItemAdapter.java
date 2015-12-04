@@ -55,9 +55,10 @@ public class ItemAdapter extends ArrayAdapter{
 
             // Item is not owned; show the imported symbol
             if (!items.get(position).getOwner().equals(deviceName)) {
-                if (imported != null) {
+                /*if (imported != null) {
                     imported.setVisibility(View.VISIBLE);
-                }
+                }*/
+                row.setBackgroundColor(0xFFDDDDDD);
             }
 
             // Frame

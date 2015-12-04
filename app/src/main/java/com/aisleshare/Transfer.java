@@ -99,9 +99,6 @@ public class Transfer extends AppCompatActivity {
         ItemComparator.Owner owner = compare.new Owner();
 
         switch (currentOrder){
-            // Unsorted
-            case -1:
-                break;
             // Name
             case 0:{
                 Collections.sort(items, name);
@@ -279,7 +276,7 @@ public class Transfer extends AppCompatActivity {
                     customAdapter.notifyDataSetChanged();
                     dialog.dismiss();
                 } else {
-                    itemName.setError("Name is empty...");
+                    itemName.setError("Name is empty");
                 }
             }
         });

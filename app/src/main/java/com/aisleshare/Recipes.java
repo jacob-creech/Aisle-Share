@@ -93,12 +93,6 @@ public class Recipes extends Fragment {
 
         ListItemComparator compare = new ListItemComparator(dashboard);
 
-        // Unsorted
-        if(currentOrder == -1){
-            saveSortInfo();
-            return;
-        }
-
         switch (currentOrder){
             // Name
             case 0:{
@@ -124,18 +118,11 @@ public class Recipes extends Fragment {
     }
 
     private void setSortIcons(){
-        if(currentOrder == -1){
-            menuRecipes.get("sort").setIcon(0);
-            menuRecipes.get("unsorted").setVisible(false);
+        if(isIncreasingOrder) {
+            menuRecipes.get("sort").setIcon(R.mipmap.inc_sort);
         }
-        else {
-            menuRecipes.get("unsorted").setVisible(true);
-            if(isIncreasingOrder) {
-                menuRecipes.get("sort").setIcon(R.mipmap.inc_sort);
-            }
-            else{
-                menuRecipes.get("sort").setIcon(R.mipmap.dec_sort);
-            }
+        else{
+            menuRecipes.get("sort").setIcon(R.mipmap.dec_sort);
         }
     }
 
@@ -175,7 +162,7 @@ public class Recipes extends Fragment {
 
                     for (int index = 0; index < recipes.size(); index++) {
                         if (recipes.get(index).getName().equals(name)) {
-                            recipeName.setError("Recipe already exists...");
+                            recipeName.setError("Recipe already exists");
                             return;
                         }
                     }
@@ -191,7 +178,7 @@ public class Recipes extends Fragment {
                     intent.putExtra(RECIPE_NAME, name);
                     startActivity(intent);
                 } else {
-                    recipeName.setError("Name is empty...");
+                    recipeName.setError("Name is empty");
                 }
             }
         });
@@ -202,7 +189,7 @@ public class Recipes extends Fragment {
     // Popup for editing a Recipe
     private void editRecipeDialog(final int position){
         if(!deviceName.equals(recipes.get(position).getOwner())) {
-            Toast toast = Toast.makeText(dashboard, "You are not the owner...", Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(dashboard, "You are not the owner", Toast.LENGTH_LONG);
             toast.show();
             return;
         }
@@ -248,7 +235,7 @@ public class Recipes extends Fragment {
 
                     for (int index = 0; index < recipes.size(); index++) {
                         if (recipes.get(index).getName().equals(name) && index != position) {
-                            recipeName.setError("Recipe already exists...");
+                            recipeName.setError("Recipe already exists");
                             return;
                         }
                     }
@@ -274,7 +261,7 @@ public class Recipes extends Fragment {
                         e.printStackTrace();
                     }
                 } else {
-                    recipeName.setError("Name is empty...");
+                    recipeName.setError("Name is empty");
                 }
             }
         });
@@ -390,13 +377,11 @@ public class Recipes extends Fragment {
         menuRecipes.put("name", menu.findItem(R.id.sort_name));
         menuRecipes.put("time", menu.findItem(R.id.sort_time));
         menuRecipes.put("owner", menu.findItem(R.id.sort_owner));
-        menuRecipes.put("unsorted", menu.findItem(R.id.unsorted));
         menuRecipes.put("delete", menu.findItem(R.id.delete));
 
         menuRecipes.get("name").setCheckable(true);
         menuRecipes.get("time").setCheckable(true);
         menuRecipes.get("owner").setCheckable(true);
-        menuRecipes.get("unsorted").setVisible(false);
 
         setSortIcons();
         switch (currentOrder){
@@ -440,11 +425,6 @@ public class Recipes extends Fragment {
                 setSortIcons();
                 clearMenuCheckables();
                 option.setChecked(true);
-                break;
-            case R.id.unsorted:
-                sortRecipe(false, -1);
-                setSortIcons();
-                clearMenuCheckables();
                 break;
             case R.id.delete:
                 deleteItems();
@@ -662,7 +642,7 @@ public class Recipes extends Fragment {
                     intent.putExtra(RECIPE_NAME, "Select which Items to Add");
                     startActivity(intent);
                 } else {
-                    Toast toast = Toast.makeText(dashboard, name + " is empty...", Toast.LENGTH_LONG);
+                    Toast toast = Toast.makeText(dashboard, recipeTitle + " is empty", Toast.LENGTH_LONG);
                     toast.show();
                 }
             }

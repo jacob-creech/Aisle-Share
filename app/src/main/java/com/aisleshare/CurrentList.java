@@ -443,14 +443,15 @@ public class CurrentList extends AppCompatActivity {
         // custom dialog
         final Dialog dialog = new Dialog(CurrentList.this);
         dialog.setContentView(R.layout.dialog_select_list);
-        if(type.equals("Recipes")) {
-            dialog.setTitle("Select a Recipe");
-        }
-        else if(type.equals("Activities")) {
-            dialog.setTitle("Select an Activity");
-        }
-        else{
-            return;
+        switch (type){
+            case "Recipes":
+                dialog.setTitle("Select a Recipe");
+                break;
+            case "Activities":
+                dialog.setTitle("Select an Activity");
+                break;
+            default:
+                return;
         }
 
         final ListView lv = (ListView) dialog.findViewById(R.id.lists);
@@ -1255,57 +1256,70 @@ public class CurrentList extends AppCompatActivity {
                     byte[] readBuf = (byte[]) msg.obj;
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
-                    if(readMessage.equals("1")) {
-                        Toast.makeText(CurrentList.this, "YES!!", Toast.LENGTH_SHORT).show();
-                    }
-                    else{
-                        try {
-                            List<String> sentItems = new ArrayList<>();
-                            int currentItem = 0;
-                            sentItems.add("");
-                            for(int index = 0; index < readMessage.length(); index ++){
-                                String c = readMessage.substring(index, index +1);
-                                if(!c.equals("|")){
-                                    sentItems.set(currentItem, sentItems.get(currentItem) + c);
-                                }
-                                else if (index != readMessage.length() - 1) {
-                                    currentItem++;
-                                    sentItems.add("");
-                                }
+                    try {
+                        // Separate out the sent items
+                        List<String> sentItems = new ArrayList<>();
+                        int currentItem = 0;
+                        sentItems.add("");
+                        boolean multiItems = false;
+                        for(int index = 0; index < readMessage.length(); index ++){
+                            String c = readMessage.substring(index, index + 1);
+                            if(!c.equals("|")){
+                                sentItems.set(currentItem, sentItems.get(currentItem) + c);
+                                continue;
                             }
 
-                            for(String item : sentItems) {
-                                JSONObject obj = new JSONObject(item);
-                                boolean found = false;
-                                for (Item i : items) {
-                                    if (i.getCreated() == obj.getLong("timeCreated") &&
-                                            i.getOwner().equals(obj.getString("owner"))) {
+                            // Only runs below this point if we found a "|"
+                            if (index != readMessage.length() - 1) {
+                                currentItem++;
+                                sentItems.add("");
+                            }
+                            multiItems = true;
+                        }
+
+                        // Update the this device's items accordingly
+                        for(String item : sentItems) {
+                            JSONObject obj = new JSONObject(item);
+                            boolean found = false;
+                            for (Item i : items) {
+                                if (i.getCreated() == obj.getLong("timeCreated")) {
+                                    // multiItems implies a reconnect so accumulate all that has been checked
+                                    // Else update the single item accordingly
+                                    if (multiItems && obj.getBoolean("checked")) {
                                         i.setChecked(obj.getBoolean("checked"));
+                                    }
+                                    else if (!multiItems) {
+                                        i.setChecked(obj.getBoolean("checked"));
+                                    }
+
+                                    // Handles Edits by Other Owners
+                                    if (i.getOwner().equals(obj.getString("owner"))) {
                                         i.setName(obj.getString("name"));
                                         i.setType(obj.getString("type"));
                                         i.setQuantity(obj.getDouble("quantity"));
                                         i.setUnits(obj.getString("units"));
-                                        found = true;
                                     }
-                                }
-                                if (!found) {
-                                    items.add(new Item(
-                                        obj.getString("owner"),
-                                        obj.getString("name"),
-                                        obj.getString("type"),
-                                        obj.getDouble("quantity"),
-                                        obj.getString("units"),
-                                        obj.getBoolean("checked"),
-                                        obj.getLong("timeCreated")));
-                                    emptyNotice.setVisibility(View.INVISIBLE);
+                                    found = true;
+                                    break;
                                 }
                             }
-                            sortList(false, currentOrder);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                            if (!found) {
+                                items.add(new Item(
+                                    obj.getString("owner"),
+                                    obj.getString("name"),
+                                    obj.getString("type"),
+                                    obj.getDouble("quantity"),
+                                    obj.getString("units"),
+                                    obj.getBoolean("checked"),
+                                    obj.getLong("timeCreated")));
+                                emptyNotice.setVisibility(View.INVISIBLE);
+                            }
                         }
-                        itemAdapter.notifyDataSetChanged();
+                        sortList(false, currentOrder);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
+                    itemAdapter.notifyDataSetChanged();
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
                     // save the connected device's name

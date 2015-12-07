@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -86,6 +87,7 @@ public class CurrentList extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_current_list);
+        setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         listView = (ListView)findViewById(R.id.currentItems);
         items = new ArrayList<>();
@@ -231,6 +233,9 @@ public class CurrentList extends AppCompatActivity {
     }
 
     private void addHeaders() {
+        if (items.size() == 0) {
+            return;
+        }
         String title = items.get(0).getType();
         if(title.equals("")){
             title = "No Category";

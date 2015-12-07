@@ -78,13 +78,20 @@
             android:layout_height="60dp"
             android:text="Cancel"
             android:id="@+id/cancel"
-            android:layout_weight=".5" />
+            android:layout_weight=".33" />
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="60dp"
+            android:text="Disconnect"
+            android:id="@+id/disconnect"
+            android:layout_weight=".33" />
 
         <Button android:id="@+id/button_scan"
             android:layout_width="fill_parent"
             android:layout_height="60dp"
             android:text="Scan"
-            android:layout_weight=".5" />
+            android:layout_weight=".33" />
 
     </LinearLayout>
 

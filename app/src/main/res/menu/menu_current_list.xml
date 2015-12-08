@@ -5,7 +5,7 @@
         android:title="Share"
         android:id="@+id/share"
         app:showAsAction="always"
-        android:icon="@mipmap/share_list"
+        android:icon="@mipmap/bluetooth"
         />
     <item
         android:title="Sort"

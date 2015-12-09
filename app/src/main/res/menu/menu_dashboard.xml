@@ -7,10 +7,10 @@
         app:showAsAction="ifRoom|withText">
         <menu
             android:id="@+id/sort">
+            <item android:id="@+id/sort_time"
+                android:title="Sort By Time Added"/>
             <item android:id="@+id/sort_name"
                 android:title="Sort By Name"/>
-            <item android:id="@+id/sort_time"
-                android:title="Sort By Time Created"/>
             <item android:id="@+id/sort_owner"
                 android:title="Sort By Owner"/>
         </menu>
